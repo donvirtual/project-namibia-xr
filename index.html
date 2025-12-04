@@ -3,44 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Oma's Expeditie - ULTIMATE HD</title>
+    <title>Dr. Oma's Expeditie - FINALE</title>
 
     <!-- A-Frame Core -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
     <!-- A-Frame Extras (Animation Support) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-
-    <!--
-    =====================================================
-    📦 REQUIRED ASSET FILES
-    =====================================================
-
-    Create folder: C:\Users\donku\assets\
-
-    Download these files:
-
-    CHARACTERS:
-    - rhino.glb         (Animated rhino with Idle/Pain clips)
-    - hunter.glb        (Animated humanoid with Idle/Attack clips)
-    - spear.glb         (Tribal spear weapon)
-
-    ENVIRONMENT:
-    - tree.glb          (Acacia tree)
-    - rock.glb          (Desert boulder)
-    - grass.glb         (Grass tuft)
-
-    TEXTURES:
-    - sky.jpg           (360° equirectangular desert sky)
-    - ground.jpg        (Sand texture, seamless, 1024x1024)
-
-    DOWNLOAD SOURCES:
-    - Sketchfab.com (search "low poly [name]", filter: Free + Downloadable)
-    - Poly.pizza (Google Poly archive)
-    - Unsplash.com (for sky.jpg - search "namibia desert sky")
-
-    =====================================================
-    -->
 
     <style>
         body {
@@ -54,61 +23,61 @@
             left: 20px;
             color: #FFD700;
             font-family: 'Arial Black', sans-serif;
-            font-size: 24px;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 1);
+            font-size: 28px;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 1);
             z-index: 1000;
             pointer-events: none;
         }
         #hud {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 25px;
-            border-radius: 15px;
-            border: 4px solid #FFD700;
-            max-width: 450px;
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            border: 5px solid #FFD700;
+            max-width: 500px;
+            backdrop-filter: blur(15px);
         }
         .level-title {
             color: #FF6347;
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         .objective {
             color: #00FF00;
-            font-size: 20px;
-            margin: 10px 0;
+            font-size: 24px;
+            margin: 15px 0;
         }
         .progress {
             color: #87CEEB;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
         }
         #skip-btn {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            padding: 15px 30px;
+            padding: 20px 40px;
             background: linear-gradient(135deg, #FF6347, #FF4500);
-            border: 3px solid #FFD700;
-            border-radius: 10px;
+            border: 4px solid #FFD700;
+            border-radius: 15px;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             z-index: 1001;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
             transition: all 0.3s;
         }
         #skip-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(255,99,71,0.8);
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(255,99,71,0.9);
         }
     </style>
 </head>
 <body>
     <div id="overlay">
         <div id="hud">
-            <div class="level-title" id="level-title">🦏 DR. OMA'S EXPEDITIE HD</div>
+            <div class="level-title" id="level-title">🌍 DR. OMA'S EXPEDITIE</div>
             <div class="objective" id="objective">Namibian Steppe wordt geladen...</div>
             <div class="progress" id="progress"></div>
         </div>
@@ -117,11 +86,11 @@
     <button id="skip-btn" onclick="window.gameManager.skipLevel()">⏭️ SKIP LEVEL</button>
 
     <a-scene
-        webxr="optionalFeatures: hit-test;"
+        webxr="optionalFeatures: hit-test, hand-tracking;"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
-        fog="type: exponential; color: #E6D4B8; density: 0.015"
+        fog="type: exponential; color: #D4C4A8; density: 0.008"
         loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a">
 
         <!-- =====================================================
@@ -131,12 +100,9 @@
             <!-- Characters -->
             <a-asset-item id="rhino-asset" src="assets/rhino.glb" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="hunter-asset" src="assets/hunter.glb" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="spear-asset" src="assets/spear.glb" response-type="arraybuffer"></a-asset-item>
 
             <!-- Environment -->
             <a-asset-item id="tree-asset" src="assets/tree.glb" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="rock-asset" src="assets/rock.glb" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="grass-asset" src="assets/grass.glb" response-type="arraybuffer"></a-asset-item>
 
             <!-- Textures -->
             <img id="sky-asset" src="assets/sky.jpg" crossorigin="anonymous">
@@ -154,16 +120,25 @@
             material="shader: flat">
         </a-sky>
 
-        <!-- Ground Plane (Massive desert floor) -->
+        <!-- Ground Plane (Subtle tiling fix) -->
         <a-plane
             id="ground"
             position="0 0 0"
             rotation="-90 0 0"
-            width="100"
-            height="100"
-            material="src: #ground-asset; repeat: 50 50; roughness: 0.9; metalness: 0.1"
+            width="200"
+            height="200"
+            material="src: #ground-asset; repeat: 20 20; roughness: 1.0; metalness: 0.0"
             shadow="receive: true">
         </a-plane>
+
+        <!-- Sand Fog at Ground Level -->
+        <a-entity
+            id="ground-fog"
+            geometry="primitive: plane; width: 200; height: 200"
+            material="shader: flat; color: #D4C4A8; opacity: 0.3; transparent: true"
+            position="0 0.01 0"
+            rotation="-90 0 0">
+        </a-entity>
 
         <!-- =====================================================
              LIGHTING (Realistic Desert Sun)
@@ -173,32 +148,32 @@
         <a-entity
             light="type: directional;
                    color: #FFF5CC;
-                   intensity: 1.5;
+                   intensity: 1.8;
                    castShadow: true;
                    shadowMapWidth: 2048;
                    shadowMapHeight: 2048;
-                   shadowCameraFar: 50;
-                   shadowCameraLeft: -20;
-                   shadowCameraRight: 20;
-                   shadowCameraTop: 20;
-                   shadowCameraBottom: -20"
-            position="-10 15 5">
+                   shadowCameraFar: 100;
+                   shadowCameraLeft: -40;
+                   shadowCameraRight: 40;
+                   shadowCameraTop: 40;
+                   shadowCameraBottom: -40"
+            position="-20 25 10">
         </a-entity>
 
         <!-- Ambient (Warm desert tone) -->
         <a-entity
             light="type: ambient;
-                   color: #886644;
-                   intensity: 0.6">
+                   color: #AA8866;
+                   intensity: 0.7">
         </a-entity>
 
         <!-- Fill Light (Subtle) -->
         <a-entity
             light="type: point;
                    color: #FFE4B5;
-                   intensity: 0.3;
-                   distance: 20"
-            position="5 3 -5">
+                   intensity: 0.4;
+                   distance: 30"
+            position="10 5 -10">
         </a-entity>
 
         <!-- =====================================================
@@ -216,44 +191,63 @@
                     opacity="0.9"
                     raycaster="objects: .clickable; far: 150"
                     fuse="false"
-                    animation__click="property: scale; startEvents: click; dur: 100; from: 0.1 0.1 0.1; to: 1 1 1">
+                    animation__click="property: scale; startEvents: click; dur: 120; from: 0.1 0.1 0.1; to: 1 1 1">
                 </a-cursor>
             </a-camera>
+
+            <!-- LEFT HAND SHIELD (Level 2) -->
+            <a-entity
+                id="left-hand"
+                hand-controls="hand: left"
+                position="-0.3 1.4 -0.4">
+                <a-entity
+                    id="shield"
+                    visible="false"
+                    geometry="primitive: cylinder; radius: 0.4; height: 0.05"
+                    material="color: #4169E1; metalness: 0.8; roughness: 0.2; emissive: #1E90FF; emissiveIntensity: 0.3"
+                    rotation="90 0 0"
+                    shadow="cast: true">
+                </a-entity>
+            </a-entity>
+
+            <!-- RIGHT HAND -->
+            <a-entity hand-controls="hand: right"></a-entity>
         </a-entity>
 
         <!-- =====================================================
              GAME MANAGER
              ===================================================== -->
 
-        <a-entity id="game-manager" hd-game-manager steppe-generator></a-entity>
+        <a-entity id="game-manager" final-game-manager grazing-animals></a-entity>
 
     </a-scene>
 
     <script>
         // =====================================================
-        // AUDIO ENGINE
+        // AUDIO ENGINE (Enhanced)
         // =====================================================
-        class HDAudioEngine {
+        class FinalAudioEngine {
             constructor() {
                 this.context = new (window.AudioContext || window.webkitAudioContext)();
                 this.masterGain = this.context.createGain();
-                this.masterGain.gain.value = 0.4;
+                this.masterGain.gain.value = 0.5;
                 this.masterGain.connect(this.context.destination);
             }
 
-            playHit() { this.playTone('square', 800, 0.2, 0.1); }
-            playBlock() { this.playTone('triangle', 600, 0.25, 0.2); }
-            playDamage() { this.playTone('sawtooth', 150, 0.3, 0.4); }
-            playDrumBeat() { this.playTone('sawtooth', 60, 0.3, 0.15); }
+            playPing() { this.playTone('sine', 800, 0.15, 0.15); }
+            playHit() { this.playTone('square', 900, 0.2, 0.1); }
+            playBlock() { this.playTone('triangle', 700, 0.3, 0.25); }
+            playDamage() { this.playTone('sawtooth', 120, 0.35, 0.5); }
+            playDrumBeat() { this.playTone('sawtooth', 50, 0.3, 0.18); }
 
             playSuccess() {
                 const melody = [523.25, 659.25, 783.99, 1046.50];
-                this.playMelody(melody, 150);
+                this.playMelody(melody, 180);
             }
 
             playVictory() {
                 const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
-                this.playMelody(melody, 200);
+                this.playMelody(melody, 220);
             }
 
             playTone(type, freq, gain, duration) {
@@ -271,7 +265,7 @@
 
             playMelody(notes, interval) {
                 notes.forEach((freq, i) => {
-                    setTimeout(() => this.playTone('sine', freq, 0.15, 0.8), i * interval);
+                    setTimeout(() => this.playTone('sine', freq, 0.18, 1.0), i * interval);
                 });
             }
 
@@ -280,7 +274,7 @@
             }
         }
 
-        const audioEngine = new HDAudioEngine();
+        const audioEngine = new FinalAudioEngine();
 
         // =====================================================
         // PHYSICS SYSTEM
@@ -313,103 +307,57 @@
         const physics = new PhysicsSystem();
 
         // =====================================================
-        // STEPPE GENERATOR (Procedural Environment)
+        // GRAZING ANIMALS COMPONENT
         // =====================================================
-        AFRAME.registerComponent('steppe-generator', {
+        AFRAME.registerComponent('grazing-animals', {
             init: function() {
-                console.log('🌍 Generating Namibian Steppe...');
+                console.log('🦏 Spawning grazing animals in background...');
 
                 setTimeout(() => {
-                    this.generateSteppe();
-                }, 1000);
+                    this.spawnAnimals();
+                }, 2000);
             },
 
-            generateSteppe: function() {
-                const scene = this.el.sceneEl;
-
-                // Check asset availability
-                const hasTree = document.getElementById('tree-asset');
-                const hasRock = document.getElementById('rock-asset');
-                const hasGrass = document.getElementById('grass-asset');
-
-                // Trees (Acacia)
-                const treeCount = hasTree ? 20 : 0;
-                for (let i = 0; i < treeCount; i++) {
-                    this.spawnTree();
+            spawnAnimals: function() {
+                const hasRhino = !!document.getElementById('rhino-asset');
+                if (!hasRhino) {
+                    console.log('No rhino model, skipping grazing animals');
+                    return;
                 }
 
-                // Rocks (Boulders)
-                const rockCount = hasRock ? 15 : 0;
-                for (let i = 0; i < rockCount; i++) {
-                    this.spawnRock();
+                const animalCount = 8;
+
+                for (let i = 0; i < animalCount; i++) {
+                    const angle = (Math.PI * 2 / animalCount) * i;
+                    const distance = 25 + Math.random() * 20; // 25-45m away
+
+                    const x = Math.cos(angle) * distance;
+                    const z = Math.sin(angle) * distance;
+
+                    const animal = document.createElement('a-entity');
+                    animal.setAttribute('gltf-model', '#rhino-asset');
+                    animal.setAttribute('position', `${x} 0 ${z}`);
+                    animal.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
+
+                    const scale = 0.8 + Math.random() * 0.6; // 0.8 - 1.4
+                    animal.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+                    // Slow idle breathing
+                    animal.setAttribute('animation__idle', {
+                        property: 'rotation',
+                        to: `0 ${(Math.random() * 360) + 10} 0`,
+                        dur: 15000 + Math.random() * 10000,
+                        loop: true,
+                        dir: 'alternate',
+                        easing: 'linear'
+                    });
+
+                    animal.setAttribute('shadow', 'cast: true; receive: true');
+
+                    this.el.sceneEl.appendChild(animal);
                 }
 
-                // Grass Tufts
-                const grassCount = hasGrass ? 50 : 0;
-                for (let i = 0; i < grassCount; i++) {
-                    this.spawnGrass();
-                }
-
-                console.log(`✓ Spawned: ${treeCount} trees, ${rockCount} rocks, ${grassCount} grass`);
-            },
-
-            getRandomPositionInDonut: function(innerRadius, outerRadius) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
-                return {
-                    x: Math.cos(angle) * radius,
-                    z: Math.sin(angle) * radius
-                };
-            },
-
-            spawnTree: function() {
-                const tree = document.createElement('a-entity');
-                const pos = this.getRandomPositionInDonut(8, 25);
-
-                tree.setAttribute('position', `${pos.x} 0 ${pos.z}`);
-                tree.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
-                tree.setAttribute('scale', {
-                    x: 0.8 + Math.random() * 0.4,
-                    y: 0.8 + Math.random() * 0.4,
-                    z: 0.8 + Math.random() * 0.4
-                });
-                tree.setAttribute('gltf-model', '#tree-asset');
-                tree.setAttribute('shadow', 'cast: true; receive: true');
-
-                this.el.sceneEl.appendChild(tree);
-            },
-
-            spawnRock: function() {
-                const rock = document.createElement('a-entity');
-                const pos = this.getRandomPositionInDonut(6, 25);
-
-                rock.setAttribute('position', `${pos.x} 0 ${pos.z}`);
-                rock.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
-                rock.setAttribute('scale', {
-                    x: 0.7 + Math.random() * 0.6,
-                    y: 0.7 + Math.random() * 0.6,
-                    z: 0.7 + Math.random() * 0.6
-                });
-                rock.setAttribute('gltf-model', '#rock-asset');
-                rock.setAttribute('shadow', 'cast: true; receive: true');
-
-                this.el.sceneEl.appendChild(rock);
-            },
-
-            spawnGrass: function() {
-                const grass = document.createElement('a-entity');
-                const pos = this.getRandomPositionInDonut(4, 30);
-
-                grass.setAttribute('position', `${pos.x} 0 ${pos.z}`);
-                grass.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
-                grass.setAttribute('scale', {
-                    x: 0.5 + Math.random() * 0.5,
-                    y: 0.5 + Math.random() * 0.5,
-                    z: 0.5 + Math.random() * 0.5
-                });
-                grass.setAttribute('gltf-model', '#grass-asset');
-
-                this.el.sceneEl.appendChild(grass);
+                console.log(`✓ Spawned ${animalCount} grazing animals`);
             }
         });
 
@@ -425,13 +373,12 @@
         };
 
         // =====================================================
-        // HD GAME MANAGER
+        // FINAL GAME MANAGER
         // =====================================================
-        AFRAME.registerComponent('hd-game-manager', {
+        AFRAME.registerComponent('final-game-manager', {
             init: function() {
                 this.currentState = GAME_STATES.INTRO;
-                this.level1Score = 0;
-                this.level1Target = 5;
+                this.level1Target = 1; // Only need to find Namibië!
                 this.level2Score = 0;
                 this.level2Target = 5;
                 this.level3Complete = false;
@@ -439,20 +386,21 @@
                 this.activeObjects = [];
                 this.physicsObjects = [];
                 this.camera = document.querySelector('#camera');
+                this.shield = document.querySelector('#shield');
 
                 // Asset availability
                 this.hasRhino = !!document.getElementById('rhino-asset');
                 this.hasHunter = !!document.getElementById('hunter-asset');
-                this.hasSpear = !!document.getElementById('spear-asset');
 
                 window.gameManager = this;
 
-                setTimeout(() => this.startIntro(), 2000);
+                setTimeout(() => this.startIntro(), 2500);
             },
 
             tick: function(time, deltaTime) {
                 const dt = deltaTime / 1000;
 
+                // Physics for flying objects
                 this.physicsObjects.forEach(obj => {
                     if (obj.userData && obj.userData.velocity) {
                         const hitGround = physics.applyGravity(obj, obj.userData.velocity, dt);
@@ -463,6 +411,11 @@
                         }
                     }
                 });
+
+                // Level 2: Shield collision detection
+                if (this.currentState === GAME_STATES.LEVEL_2 && this.shield) {
+                    this.checkShieldCollisions();
+                }
             },
 
             skipLevel: function() {
@@ -477,258 +430,316 @@
 
             startIntro: function() {
                 this.currentState = GAME_STATES.INTRO;
-                this.updateHUD('🦏 DR. OMA\'S EXPEDITIE HD', 'KLIK OM TE STARTEN', '');
+                this.updateHUD('🌍 DR. OMA\'S EXPEDITIE', 'KLIK OM TE STARTEN', '');
 
                 const panel = this.createClickablePanel(
-                    'MISSIE BRIEFING\n\nWelkom in de Namibische Steppe!\n\n' +
-                    '3D Assets:\n' +
+                    'MISSIE BRIEFING\n\nWelkom Dokter!\n\n' +
+                    '3D Assets Status:\n' +
                     (this.hasRhino ? '✓' : '✗') + ' Neushoorn\n' +
-                    (this.hasHunter ? '✓' : '✗') + ' Jagers\n' +
-                    (this.hasSpear ? '✓' : '✗') + ' Speren\n\n' +
-                    'Niveau 1: Verdedig Wetenschap\n' +
+                    (this.hasHunter ? '✓' : '✗') + ' Jagers\n\n' +
+                    'Niveau 1: Vind Namibië!\n' +
                     'Niveau 2: Blokkeer Speren\n' +
-                    'Niveau 3: Operatie\n\n' +
-                    '>>> KLIK HIER <<<',
+                    'Niveau 3: Rectaal Onderzoek\n\n' +
+                    '>>> KLIK HIER OM TE STARTEN <<<',
                     '#00FF00',
-                    4,
+                    5,
                     () => this.startLevel1()
                 );
             },
 
+            // =====================================================
+            // LEVEL 1: THE TRAVELER'S MEMORY
+            // =====================================================
             startLevel1: function() {
                 this.currentState = GAME_STATES.LEVEL_1;
-                this.level1Score = 0;
                 this.clearAllObjects();
 
-                this.updateHUD('🌑 NIVEAU 1', 'KLIK rode Flat Earths!', `${this.level1Score} / ${this.level1Target}`);
+                this.updateHUD('✈️ NIVEAU 1: REISERVARING', 'Vind NAMIBIË!', '');
 
-                for (let i = 0; i < 10; i++) {
+                const destinations = [
+                    { name: 'Los Angeles', isTarget: false },
+                    { name: 'Xian', isTarget: false },
+                    { name: 'Jerusalem', isTarget: false },
+                    { name: 'Hongarije', isTarget: false },
+                    { name: 'Denemarken', isTarget: false },
+                    { name: 'Texel', isTarget: false },
+                    { name: 'NAMIBIË', isTarget: true },
+                ];
+
+                destinations.forEach((dest, i) => {
                     setTimeout(() => {
                         if (this.currentState === GAME_STATES.LEVEL_1) {
-                            this.spawnLevel1Object((Math.PI * 2 / 10) * i);
+                            this.spawnGlobe(dest, (Math.PI * 2 / destinations.length) * i);
                         }
-                    }, i * 800);
-                }
+                    }, i * 600);
+                });
             },
 
-            spawnLevel1Object: function(angle) {
-                const isFake = Math.random() < 0.6;
-                const obj = document.createElement('a-entity');
+            spawnGlobe: function(destination, angle) {
+                const globe = document.createElement('a-entity');
 
-                const radius = 4;
-                const height = 1.5;
+                const radius = 5;
+                const height = 1.6;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                obj.setAttribute('position', `${x} ${height} ${z}`);
-                obj.classList.add('level1-object', 'clickable');
-                obj.setAttribute('data-type', isFake ? 'fake' : 'truth');
+                globe.setAttribute('position', `${x} ${height} ${z}`);
+                globe.classList.add('globe', 'clickable');
+                globe.setAttribute('data-name', destination.name);
+                globe.setAttribute('data-is-target', destination.isTarget);
 
-                if (isFake) {
-                    const cylinder = document.createElement('a-cylinder');
-                    cylinder.setAttribute('radius', '0.5');
-                    cylinder.setAttribute('height', '0.12');
-                    cylinder.setAttribute('color', '#DC143C');
-                    cylinder.setAttribute('metalness', '0.4');
-                    cylinder.setAttribute('roughness', '0.6');
-                    cylinder.setAttribute('shadow', 'cast: true');
-                    obj.appendChild(cylinder);
-                } else {
-                    const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('radius', '0.4');
-                    sphere.setAttribute('color', '#1E90FF');
-                    sphere.setAttribute('metalness', '0.6');
-                    sphere.setAttribute('roughness', '0.3');
-                    sphere.setAttribute('shadow', 'cast: true');
-                    obj.appendChild(sphere);
-                }
+                // The Globe (Earth sphere)
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('radius', '0.5');
+                sphere.setAttribute('color', destination.isTarget ? '#FFD700' : '#4169E1');
+                sphere.setAttribute('metalness', '0.5');
+                sphere.setAttribute('roughness', '0.4');
+                sphere.setAttribute('shadow', 'cast: true');
+                globe.appendChild(sphere);
 
-                const text = document.createElement('a-text');
-                text.setAttribute('value', isFake ? 'FAKE' : 'TRUTH');
-                text.setAttribute('align', 'center');
-                text.setAttribute('color', '#FFFFFF');
-                text.setAttribute('width', '3');
-                text.setAttribute('position', `0 ${isFake ? 0.3 : 0.6} 0`);
-                text.setAttribute('look-at', '[camera]');
-                obj.appendChild(text);
+                // Country Label
+                const label = document.createElement('a-text');
+                label.setAttribute('value', destination.name);
+                label.setAttribute('align', 'center');
+                label.setAttribute('color', destination.isTarget ? '#FF6347' : '#FFFFFF');
+                label.setAttribute('width', '4');
+                label.setAttribute('position', '0 0.9 0');
+                label.setAttribute('look-at', '[camera]');
+                globe.appendChild(label);
 
-                obj.setAttribute('animation', {
+                // Rotation animation
+                globe.setAttribute('animation', {
                     property: 'rotation',
                     to: '0 360 0',
-                    dur: 10000,
+                    dur: 12000,
                     loop: true,
                     easing: 'linear'
                 });
 
-                obj.addEventListener('click', () => this.handleLevel1Hit(obj));
+                globe.addEventListener('click', () => this.handleGlobeClick(globe));
 
-                this.el.sceneEl.appendChild(obj);
-                this.activeObjects.push(obj);
+                this.el.sceneEl.appendChild(globe);
+                this.activeObjects.push(globe);
             },
 
-            handleLevel1Hit: function(obj) {
-                const type = obj.getAttribute('data-type');
+            handleGlobeClick: function(globe) {
+                const isTarget = globe.getAttribute('data-is-target') === 'true';
+                const name = globe.getAttribute('data-name');
 
-                if (type === 'fake') {
-                    this.level1Score++;
-                    audioEngine.playHit();
-                    this.updateHUD('🌑 NIVEAU 1', '✓ GOED!', `${this.level1Score} / ${this.level1Target}`);
-                    this.createExplosion(obj.object3D.position, '#FF6347', 40);
+                if (isTarget) {
+                    // FOUND NAMIBIË!
+                    audioEngine.playSuccess();
+                    this.updateHUD('✈️ NIVEAU 1', `✓ GEVONDEN: ${name}!`, '');
+                    this.createExplosion(globe.object3D.position, '#FFD700', 60);
 
-                    if (this.level1Score >= this.level1Target) {
-                        this.completeLevel1();
+                    if (globe.parentNode) {
+                        globe.parentNode.removeChild(globe);
+                        this.activeObjects = this.activeObjects.filter(o => o !== globe);
                     }
-                } else {
-                    audioEngine.playDamage();
-                    this.flashScreen('#FF0000');
-                }
 
-                if (obj.parentNode) {
-                    obj.parentNode.removeChild(obj);
-                    this.activeObjects = this.activeObjects.filter(o => o !== obj);
+                    setTimeout(() => this.completeLevel1(), 2000);
+                } else {
+                    // Already visited
+                    audioEngine.playPing();
+
+                    // Turn grey
+                    const sphere = globe.querySelector('a-sphere');
+                    sphere.setAttribute('color', '#808080');
+
+                    // Change label
+                    const label = globe.querySelector('a-text');
+                    label.setAttribute('value', 'AL GEWEEST');
+                    label.setAttribute('color', '#999999');
+
+                    this.updateHUD('✈️ NIVEAU 1', `${name} - al geweest!`, '');
                 }
             },
 
             completeLevel1: function() {
                 this.clearAllObjects();
                 audioEngine.playSuccess();
-                this.updateHUD('✓ NIVEAU 1 VOLTOOID!', 'Volgende...', '');
-                setTimeout(() => this.startLevel2(), 2000);
+                this.updateHUD('✓ NIVEAU 1 VOLTOOID!', 'Volgende missie...', '');
+                setTimeout(() => this.startLevel2(), 2500);
             },
 
+            // =====================================================
+            // LEVEL 2: SHIELD DEFENSE
+            // =====================================================
             startLevel2: function() {
                 this.currentState = GAME_STATES.LEVEL_2;
                 this.level2Score = 0;
                 this.clearAllObjects();
 
-                this.updateHUD('🏹 NIVEAU 2', 'KLIK speren!', `${this.level2Score} / ${this.level2Target}`);
+                // Show shield
+                if (this.shield) {
+                    this.shield.setAttribute('visible', 'true');
+                }
+
+                this.updateHUD('🛡️ NIVEAU 2: VERDEDIGING', 'Blokkeer speren met je LINKERHAND!', `${this.level2Score} / ${this.level2Target}`);
 
                 this.level2DrumInterval = setInterval(() => {
                     if (this.currentState === GAME_STATES.LEVEL_2) {
                         audioEngine.playDrumBeat();
                     }
-                }, 800);
+                }, 1000);
 
-                for (let i = 0; i < 8; i++) {
+                // Spawn hunters and spears
+                for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         if (this.currentState === GAME_STATES.LEVEL_2) {
-                            this.spawnSpear((Math.PI * 2 / 8) * i);
+                            this.spawnHunterWithSpear((Math.PI * 2 / 10) * i);
                         }
-                    }, i * 1500);
+                    }, i * 2000);
                 }
             },
 
-            spawnSpear: function(angle) {
-                const spear = document.createElement('a-entity');
-
-                const radius = 5;
-                const height = 2.5;
+            spawnHunterWithSpear: function(angle) {
+                const radius = 8;
+                const height = 0;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                spear.setAttribute('position', `${x} ${height} ${z}`);
-                spear.classList.add('level2-spear', 'clickable');
+                // Hunter model (fixed visibility with scale)
+                if (this.hasHunter) {
+                    const hunter = document.createElement('a-entity');
+                    hunter.setAttribute('gltf-model', '#hunter-asset');
+                    hunter.setAttribute('position', `${x} ${height} ${z}`);
+                    hunter.setAttribute('scale', '5 5 5'); // SCALE UP to fix invisibility!
+                    hunter.setAttribute('rotation', `0 ${THREE.MathUtils.radToDeg(Math.atan2(z, x)) + 90} 0`);
+                    hunter.setAttribute('shadow', 'cast: true');
+
+                    this.el.sceneEl.appendChild(hunter);
+                    this.activeObjects.push(hunter);
+                }
+
+                // Launch spear after 1 second
+                setTimeout(() => {
+                    if (this.currentState === GAME_STATES.LEVEL_2) {
+                        this.launchSpear(x, height + 1.5, z);
+                    }
+                }, 1000);
+            },
+
+            launchSpear: function(startX, startY, startZ) {
+                const spear = document.createElement('a-entity');
+
+                spear.setAttribute('position', `${startX} ${startY} ${startZ}`);
+                spear.classList.add('spear');
                 spear.setAttribute('shadow', 'cast: true');
 
-                if (this.hasSpear) {
-                    spear.setAttribute('gltf-model', '#spear-asset');
-                    spear.setAttribute('scale', '0.8 0.8 0.8');
-                } else {
-                    const shaft = document.createElement('a-cylinder');
-                    shaft.setAttribute('radius', '0.04');
-                    shaft.setAttribute('height', '2');
-                    shaft.setAttribute('color', '#8B4513');
-                    shaft.setAttribute('rotation', '0 0 90');
-                    shaft.setAttribute('metalness', '0.2');
-                    shaft.setAttribute('roughness', '0.8');
-                    spear.appendChild(shaft);
+                // Spear visual (shaft + tip)
+                const shaft = document.createElement('a-cylinder');
+                shaft.setAttribute('radius', '0.05');
+                shaft.setAttribute('height', '2.5');
+                shaft.setAttribute('color', '#8B4513');
+                shaft.setAttribute('rotation', '0 0 90');
+                shaft.setAttribute('metalness', '0.2');
+                shaft.setAttribute('roughness', '0.8');
+                spear.appendChild(shaft);
 
-                    const tip = document.createElement('a-cone');
-                    tip.setAttribute('radius-bottom', '0.1');
-                    tip.setAttribute('height', '0.3');
-                    tip.setAttribute('color', '#C0C0C0');
-                    tip.setAttribute('position', '1 0 0');
-                    tip.setAttribute('rotation', '0 0 -90');
-                    tip.setAttribute('metalness', '0.8');
-                    tip.setAttribute('roughness', '0.3');
-                    spear.appendChild(tip);
-                }
+                const tip = document.createElement('a-cone');
+                tip.setAttribute('radius-bottom', '0.12');
+                tip.setAttribute('height', '0.4');
+                tip.setAttribute('color', '#C0C0C0');
+                tip.setAttribute('position', '1.25 0 0');
+                tip.setAttribute('rotation', '0 0 -90');
+                tip.setAttribute('metalness', '0.9');
+                tip.setAttribute('roughness', '0.2');
+                spear.appendChild(tip);
 
                 spear.setAttribute('look-at', '[camera]');
 
-                // Physics
+                // Physics: Fly towards camera
                 const cameraPos = this.camera.object3D.position;
                 const direction = new THREE.Vector3(
-                    cameraPos.x - x,
-                    cameraPos.y - height + 3,
-                    cameraPos.z - z
+                    cameraPos.x - startX,
+                    cameraPos.y - startY + 2,
+                    cameraPos.z - startZ
                 ).normalize();
 
                 spear.userData = {
                     velocity: {
-                        x: direction.x * 4,
-                        y: direction.y * 4 + 2.5,
-                        z: direction.z * 4
-                    }
+                        x: direction.x * 5,
+                        y: direction.y * 5 + 1.5,
+                        z: direction.z * 5
+                    },
+                    isSpear: true
                 };
-
-                spear.addEventListener('click', () => this.handleLevel2Block(spear));
 
                 this.el.sceneEl.appendChild(spear);
                 this.activeObjects.push(spear);
                 this.physicsObjects.push(spear);
             },
 
-            handleLevel2Block: function(spear) {
-                this.level2Score++;
-                audioEngine.playBlock();
-                this.updateHUD('🏹 NIVEAU 2', '✓ GEBLOKEERD!', `${this.level2Score} / ${this.level2Target}`);
-                this.createExplosion(spear.object3D.position, '#FFD700', 25);
+            checkShieldCollisions: function() {
+                if (!this.shield || !this.shield.object3D) return;
 
-                if (spear.parentNode) {
-                    spear.parentNode.removeChild(spear);
-                    this.activeObjects = this.activeObjects.filter(o => o !== spear);
-                    this.physicsObjects = this.physicsObjects.filter(o => o !== spear);
-                }
+                const shieldPos = new THREE.Vector3();
+                this.shield.object3D.getWorldPosition(shieldPos);
 
-                if (this.level2Score >= this.level2Target) {
-                    this.completeLevel2();
-                }
+                this.physicsObjects.forEach(obj => {
+                    if (obj.userData && obj.userData.isSpear && obj.parentNode) {
+                        const spearPos = obj.object3D.position;
+                        const distance = shieldPos.distanceTo(spearPos);
+
+                        if (distance < 0.6) {
+                            // BLOCKED!
+                            this.level2Score++;
+                            audioEngine.playBlock();
+                            this.updateHUD('🛡️ NIVEAU 2', '✓ GEBLOKEERD!', `${this.level2Score} / ${this.level2Target}`);
+                            this.createExplosion(spearPos, '#FFD700', 30);
+
+                            obj.parentNode.removeChild(obj);
+                            this.activeObjects = this.activeObjects.filter(o => o !== obj);
+                            this.physicsObjects = this.physicsObjects.filter(o => o !== obj);
+
+                            if (this.level2Score >= this.level2Target) {
+                                this.completeLevel2();
+                            }
+                        }
+                    }
+                });
             },
 
             completeLevel2: function() {
                 clearInterval(this.level2DrumInterval);
+                if (this.shield) {
+                    this.shield.setAttribute('visible', 'false');
+                }
                 this.clearAllObjects();
                 audioEngine.playSuccess();
-                this.updateHUD('✓ NIVEAU 2 VOLTOOID!', 'Ziekenboeg...', '');
-                setTimeout(() => this.startLevel3(), 2000);
+                this.updateHUD('✓ NIVEAU 2 VOLTOOID!', 'Naar de operatiekamer...', '');
+                setTimeout(() => this.startLevel3(), 2500);
             },
 
+            // =====================================================
+            // LEVEL 3: THE RECTAL EXAM
+            // =====================================================
             startLevel3: function() {
                 this.currentState = GAME_STATES.LEVEL_3;
                 this.clearAllObjects();
-                this.updateHUD('🦏 NIVEAU 3', 'KLIK de TUMOR!', '');
+                this.updateHUD('🦏 NIVEAU 3: OPERATIE', 'RECTAAL ONDERZOEK!', '');
                 this.spawnRhino();
             },
 
             spawnRhino: function() {
                 const rhinoContainer = document.createElement('a-entity');
                 rhinoContainer.setAttribute('id', 'rhino-boss');
-                rhinoContainer.setAttribute('position', '0 1 -4');
+                rhinoContainer.setAttribute('position', '0 0 -4');
                 rhinoContainer.setAttribute('shadow', 'cast: true; receive: true');
 
                 if (this.hasRhino) {
                     const rhino = document.createElement('a-entity');
                     rhino.setAttribute('gltf-model', '#rhino-asset');
                     rhino.setAttribute('scale', '2 2 2');
-                    rhino.setAttribute('animation-mixer', 'clip: Idle; loop: repeat; timeScale: 0.4');
+                    rhino.setAttribute('rotation', '0 180 0'); // REAR END FACING USER!
 
                     // Breathing animation
                     rhino.setAttribute('animation__breath', {
                         property: 'scale',
                         from: '2 2 2',
                         to: '2.05 2.05 2.05',
-                        dur: 3000,
+                        dur: 3500,
                         loop: true,
                         dir: 'alternate',
                         easing: 'easeInOutSine'
@@ -742,26 +753,27 @@
                     body.setAttribute('height', '1.2');
                     body.setAttribute('depth', '1');
                     body.setAttribute('color', '#696969');
-                    body.setAttribute('opacity', '0.5');
+                    body.setAttribute('opacity', '0.6');
                     body.setAttribute('material', 'transparent: true; metalness: 0.3; roughness: 0.7');
+                    body.setAttribute('rotation', '0 180 0');
                     rhinoContainer.appendChild(body);
                 }
 
-                // Tumor
+                // Tumor (at the REAR)
                 const tumor = document.createElement('a-sphere');
-                tumor.setAttribute('radius', '0.25');
+                tumor.setAttribute('radius', '0.3');
                 tumor.setAttribute('color', '#DC143C');
-                tumor.setAttribute('position', '0.5 0 0');
+                tumor.setAttribute('position', '0 0.5 1.2'); // Rear position
                 tumor.setAttribute('id', 'tumor');
                 tumor.classList.add('tumor', 'clickable');
-                tumor.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 0.8; metalness: 0.5; roughness: 0.3');
+                tumor.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.0; metalness: 0.6; roughness: 0.2');
                 tumor.setAttribute('shadow', 'cast: true');
 
                 tumor.setAttribute('animation', {
                     property: 'scale',
                     from: '1 1 1',
-                    to: '1.5 1.5 1.5',
-                    dur: 1000,
+                    to: '1.6 1.6 1.6',
+                    dur: 1200,
                     loop: true,
                     dir: 'alternate',
                     easing: 'easeInOutSine'
@@ -769,6 +781,36 @@
 
                 tumor.addEventListener('click', () => this.handleTumorGrab(tumor));
                 rhinoContainer.appendChild(tumor);
+
+                // ARROW pointing at tumor
+                const arrow = document.createElement('a-cone');
+                arrow.setAttribute('radius-bottom', '0.2');
+                arrow.setAttribute('height', '0.6');
+                arrow.setAttribute('color', '#FFD700');
+                arrow.setAttribute('position', '0 1.5 1.2');
+                arrow.setAttribute('rotation', '180 0 0');
+                arrow.setAttribute('material', 'emissive: #FFD700; emissiveIntensity: 0.8');
+
+                arrow.setAttribute('animation__bounce', {
+                    property: 'position',
+                    to: '0 1.8 1.2',
+                    dur: 800,
+                    loop: true,
+                    dir: 'alternate',
+                    easing: 'easeInOutQuad'
+                });
+
+                rhinoContainer.appendChild(arrow);
+
+                // LABEL
+                const label = document.createElement('a-text');
+                label.setAttribute('value', 'RECTAAL\nONDERZOEK\nSTARTEN');
+                label.setAttribute('align', 'center');
+                label.setAttribute('color', '#FFD700');
+                label.setAttribute('width', '3');
+                label.setAttribute('position', '1.5 1.5 1.2');
+                label.setAttribute('look-at', '[camera]');
+                rhinoContainer.appendChild(label);
 
                 this.el.sceneEl.appendChild(rhinoContainer);
                 this.activeObjects.push(rhinoContainer);
@@ -781,100 +823,103 @@
 
                 tumor.setAttribute('animation__extract', {
                     property: 'position',
-                    to: '0.5 4 0',
-                    dur: 2000,
+                    to: '0 5 1.2',
+                    dur: 2500,
                     easing: 'easeOutQuad'
                 });
 
                 tumor.setAttribute('animation__scale', {
                     property: 'scale',
                     to: '0 0 0',
-                    dur: 2000,
+                    dur: 2500,
                     easing: 'easeInQuad'
                 });
 
                 setTimeout(() => {
                     if (tumor.parentNode) tumor.parentNode.removeChild(tumor);
                     this.completeLevel3();
-                }, 2000);
+                }, 2500);
             },
 
             completeLevel3: function() {
                 this.clearAllObjects();
-                setTimeout(() => this.startVictory(), 2000);
+                setTimeout(() => this.startVictory(), 2500);
             },
 
+            // =====================================================
+            // VICTORY SEQUENCE
+            // =====================================================
             startVictory: function() {
                 this.currentState = GAME_STATES.VICTORY;
                 audioEngine.playVictory();
-                this.updateHUD('🏆 MISSIE VOLTOOID!', 'Alle levels!', '');
+                this.updateHUD('🏆 MISSIE VOLTOOID!', 'Alle levels uitgespeeld!', '');
 
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 12; i++) {
                     setTimeout(() => {
                         const pos = new THREE.Vector3(
-                            (Math.random() - 0.5) * 8,
-                            2 + Math.random() * 4,
-                            -4 - Math.random() * 3
+                            (Math.random() - 0.5) * 10,
+                            2 + Math.random() * 5,
+                            -4 - Math.random() * 4
                         );
-                        this.createExplosion(pos, ['#FFD700', '#FF6347', '#00FF00', '#87CEEB', '#FF69B4'][i % 5], 70);
-                    }, i * 700);
+                        this.createExplosion(pos, ['#FFD700', '#FF6347', '#00FF00', '#87CEEB', '#FF69B4', '#FFA500'][i % 6], 80);
+                    }, i * 800);
                 }
 
-                setTimeout(() => this.showFinalReward(), 4000);
+                setTimeout(() => this.showFinalReward(), 5000);
             },
 
             showFinalReward: function() {
                 const panel = document.createElement('a-entity');
-                panel.setAttribute('position', '0 1.6 -4.5');
+                panel.setAttribute('position', '0 1.6 -5');
                 panel.setAttribute('look-at', '[camera]');
 
                 const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '4');
-                bg.setAttribute('height', '2.8');
+                bg.setAttribute('width', '5');
+                bg.setAttribute('height', '3.5');
                 bg.setAttribute('color', '#000000');
                 bg.setAttribute('opacity', '0.95');
                 bg.setAttribute('shadow', 'receive: true');
                 panel.appendChild(bg);
 
                 const border = document.createElement('a-plane');
-                border.setAttribute('width', '4.1');
-                border.setAttribute('height', '2.9');
+                border.setAttribute('width', '5.2');
+                border.setAttribute('height', '3.7');
                 border.setAttribute('color', '#FFD700');
-                border.setAttribute('opacity', '0.7');
+                border.setAttribute('opacity', '0.8');
                 border.setAttribute('position', '0 0 -0.01');
                 panel.appendChild(border);
 
                 const title = document.createElement('a-text');
-                title.setAttribute('value', 'MISSIE VOLTOOID!');
+                title.setAttribute('value', '🏆 MISSIE VOLTOOID!');
                 title.setAttribute('align', 'center');
                 title.setAttribute('color', '#00FF00');
-                title.setAttribute('width', '3.5');
-                title.setAttribute('position', '0 1 0.02');
+                title.setAttribute('width', '4.5');
+                title.setAttribute('position', '0 1.3 0.02');
                 panel.appendChild(title);
 
                 const reward = document.createElement('a-text');
-                reward.setAttribute('value', 'LOCATIE CADEAU:\n\nIN DE ZANDBAK\n\n(Graaien maar!)');
+                reward.setAttribute('value', 'LOCATIE CADEAU:\n\n✨ IN DE ZANDBAK ✨\n\n(Graaien maar, Oma!)');
                 reward.setAttribute('align', 'center');
                 reward.setAttribute('color', '#FFD700');
-                reward.setAttribute('width', '3.2');
+                reward.setAttribute('width', '4');
                 reward.setAttribute('position', '0 0.3 0.02');
-                reward.setAttribute('wrap-count', '30');
+                reward.setAttribute('wrap-count', '35');
                 panel.appendChild(reward);
 
                 // 3D Book
                 const book = document.createElement('a-box');
-                book.setAttribute('width', '0.6');
-                book.setAttribute('height', '0.8');
-                book.setAttribute('depth', '0.12');
+                book.setAttribute('width', '0.7');
+                book.setAttribute('height', '0.9');
+                book.setAttribute('depth', '0.15');
                 book.setAttribute('color', '#8B4513');
-                book.setAttribute('position', '0 -0.9 0.2');
+                book.setAttribute('position', '0 -1.0 0.3');
                 book.setAttribute('material', 'roughness: 0.9; metalness: 0.1');
                 book.setAttribute('shadow', 'cast: true');
 
                 book.setAttribute('animation__float', {
                     property: 'position',
-                    to: '0 -0.7 0.2',
-                    dur: 3000,
+                    to: '0 -0.7 0.3',
+                    dur: 3500,
                     loop: true,
                     dir: 'alternate',
                     easing: 'easeInOutSine'
@@ -883,7 +928,7 @@
                 book.setAttribute('animation__rotate', {
                     property: 'rotation',
                     to: '0 360 0',
-                    dur: 10000,
+                    dur: 12000,
                     loop: true,
                     easing: 'linear'
                 });
@@ -893,7 +938,9 @@
                 this.el.sceneEl.appendChild(panel);
             },
 
-            // Utilities
+            // =====================================================
+            // UTILITIES
+            // =====================================================
             updateHUD: function(title, objective, progress) {
                 document.getElementById('level-title').textContent = title;
                 document.getElementById('objective').textContent = objective;
@@ -902,24 +949,24 @@
 
             createClickablePanel: function(text, color, width, onClick) {
                 const panel = document.createElement('a-entity');
-                panel.setAttribute('position', '0 1.6 -4');
+                panel.setAttribute('position', '0 1.6 -4.5');
                 panel.setAttribute('look-at', '[camera]');
                 panel.classList.add('clickable');
 
                 const bg = document.createElement('a-plane');
                 bg.setAttribute('width', width);
-                bg.setAttribute('height', '3');
+                bg.setAttribute('height', '3.5');
                 bg.setAttribute('color', '#000000');
-                bg.setAttribute('opacity', '0.92');
+                bg.setAttribute('opacity', '0.95');
                 panel.appendChild(bg);
 
                 const textEl = document.createElement('a-text');
                 textEl.setAttribute('value', text);
                 textEl.setAttribute('align', 'center');
                 textEl.setAttribute('color', color);
-                textEl.setAttribute('width', width - 0.5);
+                textEl.setAttribute('width', width - 0.6);
                 textEl.setAttribute('position', '0 0 0.02');
-                textEl.setAttribute('wrap-count', '45');
+                textEl.setAttribute('wrap-count', '50');
                 panel.appendChild(textEl);
 
                 panel.addEventListener('click', () => {
@@ -934,32 +981,32 @@
             createExplosion: function(position, color, count = 50) {
                 for (let i = 0; i < count; i++) {
                     const particle = document.createElement('a-sphere');
-                    particle.setAttribute('radius', 0.05 + Math.random() * 0.06);
+                    particle.setAttribute('radius', 0.06 + Math.random() * 0.08);
                     particle.setAttribute('color', color);
                     particle.setAttribute('position', position);
 
-                    const vx = (Math.random() - 0.5) * 4;
-                    const vy = Math.random() * 3 + 0.5;
-                    const vz = (Math.random() - 0.5) * 4;
+                    const vx = (Math.random() - 0.5) * 5;
+                    const vy = Math.random() * 4 + 1;
+                    const vz = (Math.random() - 0.5) * 5;
 
                     particle.setAttribute('animation__pos', {
                         property: 'position',
                         to: `${position.x + vx} ${position.y + vy} ${position.z + vz}`,
-                        dur: 1500,
+                        dur: 1800,
                         easing: 'easeOutQuad'
                     });
 
                     particle.setAttribute('animation__scale', {
                         property: 'scale',
                         to: '0 0 0',
-                        dur: 1500,
+                        dur: 1800,
                         easing: 'easeInQuad'
                     });
 
                     this.el.sceneEl.appendChild(particle);
                     setTimeout(() => {
                         if (particle.parentNode) particle.parentNode.removeChild(particle);
-                    }, 1500);
+                    }, 1800);
                 }
             },
 
@@ -968,20 +1015,20 @@
                 flash.setAttribute('width', '100');
                 flash.setAttribute('height', '100');
                 flash.setAttribute('color', color);
-                flash.setAttribute('opacity', '0.7');
+                flash.setAttribute('opacity', '0.8');
                 flash.setAttribute('position', '0 1.6 -1');
 
                 flash.setAttribute('animation__fade', {
                     property: 'material.opacity',
-                    from: 0.7,
+                    from: 0.8,
                     to: 0,
-                    dur: 700
+                    dur: 900
                 });
 
                 this.el.sceneEl.appendChild(flash);
                 setTimeout(() => {
                     if (flash.parentNode) flash.parentNode.removeChild(flash);
-                }, 700);
+                }, 900);
             },
 
             clearAllObjects: function() {
