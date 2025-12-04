@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Scavenger Hunt - Meta Quest 3S</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            text-shadow: 0 0 8px rgba(0,0,0,0.8);
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #instructions {
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- DOM Overlay for UI -->
+    <div id="overlay">
+        <div id="instructions">
+            <h3>🔍 AR SCAVENGER HUNT</h3>
+            <p>Find the TARGET Geode using the Geiger Counter sound!</p>
+            <p>Use your HANDS to touch the rocks.</p>
+            <p id="status">Searching...</p>
+        </div>
+    </div>
+
+    <a-scene
+        webxr="requiredFeatures: hit-test,local-floor;
+               optionalFeatures: hand-tracking,dom-overlay,dom-overlay-for-handheld-ar;
+               overlayElement: #overlay;"
+        renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true;"
+        background="transparent"
+        loading-screen="enabled: false">
+
+        <!-- Camera Rig -->
+        <a-entity id="rig" position="0 0 0">
+            <a-camera id="camera" position="0 1.6 0" look-controls="enabled: true">
+                <!-- Geiger Counter Component attached to camera -->
+            </a-camera>
+
+            <!-- Hand Tracking (No Controllers) -->
+            <a-entity
+                id="leftHand"
+                hand-tracking-controls="hand: left; modelColor: #FFD700"
+                hand-collider="hand: left">
+            </a-entity>
+
+            <a-entity
+                id="rightHand"
+                hand-tracking-controls="hand: right; modelColor: #FFD700"
+                hand-collider="hand: right">
+            </a-entity>
+        </a-entity>
+
+        <!-- Game Manager (Spawns Geodes & Controls Logic) -->
+        <a-entity id="game-manager" game-controller geiger-counter></a-entity>
+
+        <!-- Lighting for AR -->
+        <a-light type="ambient" intensity="0.8"></a-light>
+        <a-light type="directional" intensity="0.5" position="1 2 1"></a-light>
+
+    </a-scene>
+
+    <script>
+        // =====================================================
+        // AUDIO ENGINE - Web Audio API Synthesizer
+        // =====================================================
+        class AudioSynthesizer {
+            constructor() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.context.createGain();
+                this.masterGain.gain.value = 0.3;
+                this.masterGain.connect(this.context.destination);
+            }
+
+            // Geiger Counter Click (Short High-Frequency Blip)
+            playClick() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+
+                osc.type = 'square';
+                osc.frequency.value = 1200;
+
+                gain.gain.setValueAtTime(0.2, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.05);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.05);
+            }
+
+            // Dull Thud (Wrong Object)
+            playThud() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.value = 80;
+
+                gain.gain.setValueAtTime(0.3, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.3);
+            }
+
+            // Success Fanfare (Ascending Chord)
+            playSuccess() {
+                const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C-E-G-C
+                frequencies.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = this.context.createOscillator();
+                        const gain = this.context.createGain();
+
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+
+                        gain.gain.setValueAtTime(0.2, this.context.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.6);
+
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+
+                        osc.start(this.context.currentTime);
+                        osc.stop(this.context.currentTime + 0.6);
+                    }, i * 150);
+                });
+            }
+
+            // Resume context (required for mobile/VR browsers)
+            resume() {
+                if (this.context.state === 'suspended') {
+                    this.context.resume();
+                }
+            }
+        }
+
+        // Global Audio Instance
+        const audioEngine = new AudioSynthesizer();
+
+        // =====================================================
+        // GAME CONTROLLER COMPONENT
+        // Spawns Geodes & Manages Game State
+        // =====================================================
+        AFRAME.registerComponent('game-controller', {
+            init: function() {
+                this.geodes = [];
+                this.targetGeode = null;
+                this.gameWon = false;
+
+                // Wait for scene to load, then spawn geodes
+                this.el.sceneEl.addEventListener('loaded', () => {
+                    setTimeout(() => this.spawnGeodes(), 1000);
+                });
+
+                // Resume audio on first interaction
+                this.el.sceneEl.addEventListener('enter-vr', () => {
+                    audioEngine.resume();
+                });
+            },
+
+            spawnGeodes: function() {
+                const scene = this.el.sceneEl;
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position;
+
+                // Spawn 15 geodes in a random distribution around the user
+                for (let i = 0; i < 15; i++) {
+                    const angle = (Math.PI * 2 / 15) * i + Math.random() * 0.5;
+                    const radius = 1.5 + Math.random() * 1.5; // 1.5m to 3m
+                    const height = 1.0 + Math.random() * 1.0; // 1m to 2m
+
+                    const x = cameraPos.x + Math.cos(angle) * radius;
+                    const y = height;
+                    const z = cameraPos.z + Math.sin(angle) * radius;
+
+                    // Create geode entity
+                    const geode = document.createElement('a-entity');
+                    geode.setAttribute('geometry', {
+                        primitive: 'icosahedron',
+                        radius: 0.15 + Math.random() * 0.1
+                    });
+
+                    // Random desert colors
+                    const colors = ['#D2691E', '#CD853F', '#DAA520', '#B8860B', '#FF8C00'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+
+                    geode.setAttribute('material', {
+                        color: color,
+                        roughness: 0.8,
+                        metalness: 0.2,
+                        flatShading: true
+                    });
+
+                    geode.setAttribute('position', `${x} ${y} ${z}`);
+
+                    // Slow rotation animation
+                    geode.setAttribute('animation', {
+                        property: 'rotation',
+                        to: `${Math.random() * 360} ${Math.random() * 360} ${Math.random() * 360}`,
+                        loop: true,
+                        dur: 8000 + Math.random() * 4000,
+                        easing: 'linear'
+                    });
+
+                    geode.classList.add('geode');
+                    geode.setAttribute('geode-id', i);
+
+                    scene.appendChild(geode);
+                    this.geodes.push(geode);
+                }
+
+                // Randomly select one as the TARGET
+                this.targetGeode = this.geodes[Math.floor(Math.random() * this.geodes.length)];
+                this.targetGeode.classList.add('target-geode');
+
+                // Add a subtle glow to the target (visual hint)
+                this.targetGeode.setAttribute('material', 'emissive', '#FF6347');
+                this.targetGeode.setAttribute('material', 'emissiveIntensity', 0.3);
+
+                console.log('✅ Spawned 15 geodes. Target ID:', this.targetGeode.getAttribute('geode-id'));
+            },
+
+            destroyGeode: function(geode, isTarget) {
+                if (this.gameWon) return;
+
+                if (isTarget) {
+                    // WIN STATE
+                    this.gameWon = true;
+                    audioEngine.playSuccess();
+
+                    // Update UI
+                    document.getElementById('status').innerHTML = '<strong style="color:#00FF00;">✓ DATA FOUND!</strong>';
+
+                    // Particle explosion
+                    this.createExplosion(geode);
+
+                    // Show victory message
+                    setTimeout(() => {
+                        this.showVictoryPanel(geode);
+                    }, 500);
+
+                    // Remove geode
+                    geode.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 500,
+                        easing: 'easeInCubic'
+                    });
+
+                    setTimeout(() => geode.parentNode.removeChild(geode), 500);
+
+                } else {
+                    // Wrong geode
+                    audioEngine.playThud();
+
+                    // Small particle burst
+                    this.createSmallBurst(geode);
+
+                    // Remove geode
+                    geode.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 300,
+                        easing: 'easeInCubic'
+                    });
+
+                    setTimeout(() => geode.parentNode.removeChild(geode), 300);
+                }
+            },
+
+            createExplosion: function(geode) {
+                const pos = geode.object3D.position;
+
+                // Create 30 particle fragments
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('a-sphere');
+                    particle.setAttribute('radius', 0.02 + Math.random() * 0.03);
+                    particle.setAttribute('color', '#FF6347');
+                    particle.setAttribute('position', pos);
+
+                    const vx = (Math.random() - 0.5) * 2;
+                    const vy = Math.random() * 1.5;
+                    const vz = (Math.random() - 0.5) * 2;
+
+                    particle.setAttribute('animation__pos', {
+                        property: 'position',
+                        to: `${pos.x + vx} ${pos.y + vy} ${pos.z + vz}`,
+                        dur: 1000,
+                        easing: 'easeOutQuad'
+                    });
+
+                    particle.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 1000,
+                        easing: 'easeInQuad'
+                    });
+
+                    this.el.sceneEl.appendChild(particle);
+                    setTimeout(() => particle.parentNode.removeChild(particle), 1000);
+                }
+            },
+
+            createSmallBurst: function(geode) {
+                const pos = geode.object3D.position;
+
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('a-sphere');
+                    particle.setAttribute('radius', 0.015);
+                    particle.setAttribute('color', '#555555');
+                    particle.setAttribute('position', pos);
+
+                    const vx = (Math.random() - 0.5) * 0.5;
+                    const vy = Math.random() * 0.5;
+                    const vz = (Math.random() - 0.5) * 0.5;
+
+                    particle.setAttribute('animation__pos', {
+                        property: 'position',
+                        to: `${pos.x + vx} ${pos.y + vy} ${pos.z + vz}`,
+                        dur: 500
+                    });
+
+                    particle.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 500
+                    });
+
+                    this.el.sceneEl.appendChild(particle);
+                    setTimeout(() => particle.parentNode.removeChild(particle), 500);
+                }
+            },
+
+            showVictoryPanel: function(geode) {
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position.clone();
+                const cameraRot = camera.object3D.rotation;
+
+                // Position panel 1.5m in front of camera
+                const forward = new THREE.Vector3(0, 0, -1.5);
+                forward.applyQuaternion(camera.object3D.quaternion);
+                forward.add(cameraPos);
+
+                const panel = document.createElement('a-entity');
+                panel.setAttribute('position', forward);
+                panel.setAttribute('rotation', `0 ${THREE.MathUtils.radToDeg(cameraRot.y)} 0`);
+
+                // Background plane
+                const bg = document.createElement('a-plane');
+                bg.setAttribute('width', '1.2');
+                bg.setAttribute('height', '0.6');
+                bg.setAttribute('color', '#000000');
+                bg.setAttribute('opacity', '0.85');
+                panel.appendChild(bg);
+
+                // Text
+                const text = document.createElement('a-text');
+                text.setAttribute('value', 'DATA FOUND\n\nLOCATIE:\nZOEK IN DE OVEN!');
+                text.setAttribute('align', 'center');
+                text.setAttribute('color', '#00FF00');
+                text.setAttribute('width', '1');
+                text.setAttribute('position', '0 0 0.01');
+                text.setAttribute('wrap-count', '25');
+                panel.appendChild(text);
+
+                this.el.sceneEl.appendChild(panel);
+            }
+        });
+
+        // =====================================================
+        // GEIGER COUNTER COMPONENT
+        // Plays faster clicks as camera approaches target
+        // =====================================================
+        AFRAME.registerComponent('geiger-counter', {
+            init: function() {
+                this.camera = document.querySelector('#camera');
+                this.lastClickTime = 0;
+                this.clickInterval = 1000;
+                this.enabled = false;
+
+                // Wait for target to be set
+                setTimeout(() => {
+                    this.enabled = true;
+                }, 2000);
+            },
+
+            tick: function(time) {
+                if (!this.enabled) return;
+
+                const gameController = document.querySelector('#game-manager').components['game-controller'];
+                if (!gameController || !gameController.targetGeode || gameController.gameWon) return;
+
+                // Calculate distance to target
+                const cameraPos = this.camera.object3D.position;
+                const targetPos = gameController.targetGeode.object3D.position;
+                const distance = cameraPos.distanceTo(targetPos);
+
+                // Map distance to click interval
+                // Close (<0.5m): 100ms | Medium (1m): 300ms | Far (>2m): 1000ms
+                if (distance < 0.5) {
+                    this.clickInterval = 100;
+                } else if (distance < 1.0) {
+                    this.clickInterval = 200;
+                } else if (distance < 1.5) {
+                    this.clickInterval = 400;
+                } else if (distance < 2.0) {
+                    this.clickInterval = 700;
+                } else {
+                    this.clickInterval = 1000;
+                }
+
+                // Play click if enough time has passed
+                if (time - this.lastClickTime > this.clickInterval) {
+                    audioEngine.playClick();
+                    this.lastClickTime = time;
+                }
+            }
+        });
+
+        // =====================================================
+        // HAND COLLIDER COMPONENT
+        // Detects proximity to geodes (Simple Distance Check)
+        // =====================================================
+        AFRAME.registerComponent('hand-collider', {
+            schema: {
+                hand: { type: 'string', default: 'right' }
+            },
+
+            init: function() {
+                this.handMesh = null;
+                this.collisionRadius = 0.12; // 12cm collision sphere
+                this.collidedGeodes = new Set();
+
+                // Wait for hand model to load
+                this.el.addEventListener('model-loaded', () => {
+                    this.handMesh = this.el.object3D;
+                    this.createVisualIndicator();
+                });
+            },
+
+            createVisualIndicator: function() {
+                // Add a small sphere to index finger tip for visual feedback
+                const indicator = document.createElement('a-sphere');
+                indicator.setAttribute('radius', '0.02');
+                indicator.setAttribute('color', '#00FF00');
+                indicator.setAttribute('opacity', '0.5');
+                indicator.setAttribute('position', '0 0 0');
+                this.el.appendChild(indicator);
+            },
+
+            tick: function() {
+                if (!this.handMesh) return;
+
+                const handPos = this.el.object3D.position;
+                const gameController = document.querySelector('#game-manager').components['game-controller'];
+
+                if (!gameController || gameController.gameWon) return;
+
+                // Check collision with all geodes
+                const geodes = document.querySelectorAll('.geode');
+                geodes.forEach(geode => {
+                    const geodePos = geode.object3D.position;
+                    const distance = handPos.distanceTo(geodePos);
+
+                    if (distance < this.collisionRadius) {
+                        // Collision detected!
+                        if (!this.collidedGeodes.has(geode)) {
+                            this.collidedGeodes.add(geode);
+
+                            const isTarget = geode.classList.contains('target-geode');
+                            gameController.destroyGeode(geode, isTarget);
+                        }
+                    } else {
+                        // Reset collision state when hand moves away
+                        this.collidedGeodes.delete(geode);
+                    }
+                });
+            }
+        });
+
+        // =====================================================
+        // FALLBACK: Start audio context on any user interaction
+        // =====================================================
+        document.addEventListener('click', () => audioEngine.resume());
+        document.addEventListener('touchstart', () => audioEngine.resume());
+    </script>
+</body>
+</html>
