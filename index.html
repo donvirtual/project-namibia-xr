@@ -112,7 +112,7 @@
             <a-asset-item id="tree-asset" src="assets/tree.glb" response-type="arraybuffer"></a-asset-item>
 
             <!-- Textures -->
-            <img id="sky-asset" src="assets/sky.jpg" crossorigin="anonymous">
+            <img id="sky-asset" src="assets/sky_night.jpg" crossorigin="anonymous">
             <img id="ground-asset" src="assets/ground.jpg" crossorigin="anonymous">
         </a-assets>
 
@@ -127,14 +127,14 @@
             material="shader: flat">
         </a-sky>
 
-        <!-- Ground Plane (Subtle tiling fix) -->
+        <!-- Ground Plane (Enhanced sand texture) -->
         <a-plane
             id="ground"
-            position="0 0 0"
+            position="0 -0.1 0"
             rotation="-90 0 0"
             width="200"
             height="200"
-            material="src: #ground-asset; repeat: 20 20; roughness: 1.0; metalness: 0.0"
+            material="src: #ground-asset; repeat: 40 40; roughness: 1; metalness: 0.0"
             shadow="receive: true">
         </a-plane>
 
@@ -148,14 +148,14 @@
         </a-entity>
 
         <!-- =====================================================
-             LIGHTING (Realistic Desert Sun)
+             LIGHTING (NIGHT MODE - Namibian Starlight)
              ===================================================== -->
 
-        <!-- Sun (Directional - casts shadows) -->
+        <!-- Moon Light (Directional - casts shadows) -->
         <a-entity
             light="type: directional;
-                   color: #FFF5CC;
-                   intensity: 1.8;
+                   color: #AADDEE;
+                   intensity: 0.8;
                    castShadow: true;
                    shadowMapWidth: 2048;
                    shadowMapHeight: 2048;
@@ -167,20 +167,20 @@
             position="-20 25 10">
         </a-entity>
 
-        <!-- Ambient (Warm desert tone) -->
+        <!-- Ambient (Cool night sky) -->
         <a-entity
             light="type: ambient;
-                   color: #AA8866;
-                   intensity: 0.7">
+                   color: #223344;
+                   intensity: 0.4">
         </a-entity>
 
-        <!-- Fill Light (Subtle) -->
+        <!-- Campfire/Torch Light (Warm orange glow) -->
         <a-entity
             light="type: point;
-                   color: #FFE4B5;
-                   intensity: 0.4;
-                   distance: 30"
-            position="10 5 -10">
+                   color: #FFaa00;
+                   intensity: 1.2;
+                   distance: 5"
+            position="2 1 -1">
         </a-entity>
 
         <!-- =====================================================
@@ -606,7 +606,10 @@
                     }
                 }, 1000);
 
-                // Spawn hunters and spears
+                // Spawn 3 bushes at 15m radius for ambush
+                this.spawnAmbushBushes();
+
+                // Spawn hunters and spears (they emerge from bushes)
                 for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         if (this.currentState === GAME_STATES.LEVEL_2) {
@@ -616,18 +619,72 @@
                 }
             },
 
+            spawnAmbushBushes: function() {
+                const bushRadius = 15;
+                const bushCount = 3;
+
+                for (let i = 0; i < bushCount; i++) {
+                    const angle = (Math.PI * 2 / bushCount) * i;
+                    const x = Math.cos(angle) * bushRadius;
+                    const z = Math.sin(angle) * bushRadius;
+
+                    // Create procedural bush (cluster of green spheres)
+                    const bush = document.createElement('a-entity');
+                    bush.setAttribute('position', `${x} 0 ${z}`);
+
+                    // Main foliage (large green sphere)
+                    const foliage1 = document.createElement('a-sphere');
+                    foliage1.setAttribute('radius', '2');
+                    foliage1.setAttribute('position', '0 1.5 0');
+                    foliage1.setAttribute('color', '#2d5016');
+                    foliage1.setAttribute('roughness', '1');
+                    foliage1.setAttribute('shadow', 'cast: true; receive: true');
+                    bush.appendChild(foliage1);
+
+                    // Additional clusters for volume
+                    const foliage2 = document.createElement('a-sphere');
+                    foliage2.setAttribute('radius', '1.5');
+                    foliage2.setAttribute('position', '-1 1 0.5');
+                    foliage2.setAttribute('color', '#3a6b1e');
+                    foliage2.setAttribute('roughness', '1');
+                    bush.appendChild(foliage2);
+
+                    const foliage3 = document.createElement('a-sphere');
+                    foliage3.setAttribute('radius', '1.3');
+                    foliage3.setAttribute('position', '1 0.8 -0.5');
+                    foliage3.setAttribute('color', '#2d5016');
+                    foliage3.setAttribute('roughness', '1');
+                    bush.appendChild(foliage3);
+
+                    // Trunk (brown cylinder)
+                    const trunk = document.createElement('a-cylinder');
+                    trunk.setAttribute('radius', '0.3');
+                    trunk.setAttribute('height', '2');
+                    trunk.setAttribute('position', '0 1 0');
+                    trunk.setAttribute('color', '#4a3c28');
+                    trunk.setAttribute('roughness', '1');
+                    trunk.setAttribute('shadow', 'cast: true');
+                    bush.appendChild(trunk);
+
+                    this.el.sceneEl.appendChild(bush);
+                    this.activeObjects.push(bush);
+                }
+
+                console.log(`✓ Spawned ${bushCount} ambush bushes at ${bushRadius}m radius`);
+            },
+
             spawnHunterWithSpear: function(angle) {
                 const radius = 8;
                 const height = 0;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                // Hunter model (fixed visibility with scale)
+                // Hunter model (CORRECTED SCALE - was 5x too big!)
                 if (this.hasHunter) {
                     const hunter = document.createElement('a-entity');
                     hunter.setAttribute('gltf-model', '#hunter-asset');
                     hunter.setAttribute('position', `${x} ${height} ${z}`);
-                    hunter.setAttribute('scale', '5 5 5'); // SCALE UP to fix invisibility!
+                    hunter.setAttribute('scale', '0.04 0.04 0.04'); // FIXED: Realistic human scale
                     hunter.setAttribute('rotation', `0 ${THREE.MathUtils.radToDeg(Math.atan2(z, x)) + 90} 0`);
                     hunter.setAttribute('shadow', 'cast: true');
 
@@ -755,7 +812,7 @@
                     const rhino = document.createElement('a-entity');
                     rhino.setAttribute('gltf-model', '#rhino-asset');
                     rhino.setAttribute('scale', '2 2 2');
-                    rhino.setAttribute('rotation', '0 180 0'); // REAR END FACING USER!
+                    rhino.setAttribute('rotation', '0 200 0'); // REAR END PROPERLY FACING USER (20° offset)!
 
                     // Breathing animation
                     rhino.setAttribute('animation__breath', {
