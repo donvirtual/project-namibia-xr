@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Namibië - DEBUG MODE</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        #debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00FF00;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 10000;
+        }
+        #overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #FFD700;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #instructions {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #FFD700;
+            max-width: 350px;
+        }
+        .title {
+            color: #FF6347;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Panel -->
+    <div id="debug-panel">
+        <h3 style="margin-top:0; color:#FF6347;">🐛 DEBUG MODE</h3>
+        <div id="debug-log">Initializing...</div>
+    </div>
+
+    <!-- DOM Overlay -->
+    <div id="overlay">
+        <div id="instructions">
+            <div class="title">🌍 PROJECT NAMIBIË [DEBUG]</div>
+            <p>Desktop mode: Klik op pagina voor audio</p>
+            <p id="status">Ontdekken...</p>
+            <p style="font-size: 14px; opacity: 0.7;">Check DEBUG panel rechts →</p>
+        </div>
+    </div>
+
+    <a-scene
+        background="color: #87CEEB"
+        fog="type: linear; color: #FFA500; near: 10; far: 50">
+
+        <!-- Camera -->
+        <a-entity id="rig" position="0 0 0">
+            <a-camera id="camera" position="0 1.6 0" look-controls="enabled: true" wasd-controls="enabled: true">
+            </a-camera>
+
+            <!-- Debug: Show cursor for clicking -->
+            <a-cursor></a-cursor>
+        </a-entity>
+
+        <!-- Game Manager -->
+        <a-entity id="game-manager" game-controller-debug geiger-counter-debug></a-entity>
+
+        <!-- Lighting -->
+        <a-light type="ambient" intensity="0.9" color="#FFF8DC"></a-light>
+        <a-light type="directional" intensity="0.6" position="2 3 1" color="#FFE4B5"></a-light>
+
+    </a-scene>
+
+    <script>
+        // Debug Logger
+        function log(message, color = '#00FF00') {
+            const debugLog = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `<div style="color:${color};">[${timestamp}] ${message}</div>`;
+            console.log(message);
+        }
+
+        // Audio Engine
+        class AudioSynthesizer {
+            constructor() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.context.createGain();
+                this.masterGain.gain.value = 0.35;
+                this.masterGain.connect(this.context.destination);
+                log('Audio context created');
+            }
+
+            playClick() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                osc.type = 'square';
+                osc.frequency.value = 1300;
+                gain.gain.setValueAtTime(0.15, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.04);
+            }
+
+            playBuzzer() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.value = 120;
+                gain.gain.setValueAtTime(0.25, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.4);
+            }
+
+            playDiscovery() {
+                const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+                melody.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = this.context.createOscillator();
+                        const gain = this.context.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.18, this.context.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.8);
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start(this.context.currentTime);
+                        osc.stop(this.context.currentTime + 0.8);
+                    }, i * 180);
+                });
+            }
+
+            resume() {
+                if (this.context.state === 'suspended') {
+                    this.context.resume();
+                    log('Audio context resumed', '#FFD700');
+                }
+            }
+        }
+
+        const audioEngine = new AudioSynthesizer();
+
+        // Game Data
+        const GAME_DATA = {
+            visitedCountries: ['Peru', 'Japan', 'Noorwegen', 'Canada', 'China', 'India', 'IJsland', 'Egypte'],
+            targetCountry: 'NAMIBIË',
+            clueMessage: 'LOCATIE BEVESTIGD\n\nCOÖRDINATEN:\nDE OVEN'
+        };
+
+        // Game Controller (Debug Version)
+        AFRAME.registerComponent('game-controller-debug', {
+            init: function() {
+                this.orbs = [];
+                this.targetOrb = null;
+                this.gameWon = false;
+
+                log('Game controller initialized');
+
+                this.el.sceneEl.addEventListener('loaded', () => {
+                    log('Scene loaded, spawning orbs...');
+                    setTimeout(() => this.spawnMemoryOrbs(), 1000);
+                });
+            },
+
+            spawnMemoryOrbs: function() {
+                const scene = this.el.sceneEl;
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position;
+
+                log('Spawning 10 memory orbs...');
+
+                const totalOrbs = 10;
+                const orbData = [];
+
+                // Add 8 decoys
+                for (let i = 0; i < 8; i++) {
+                    orbData.push({
+                        type: 'decoy',
+                        label: GAME_DATA.visitedCountries[i],
+                        color: '#87CEEB'
+                    });
+                }
+
+                // Add 1 trap
+                orbData.push({
+                    type: 'trap',
+                    label: 'FLAT EARTH',
+                    color: '#DC143C'
+                });
+
+                // Add 1 target
+                orbData.push({
+                    type: 'target',
+                    label: GAME_DATA.targetCountry,
+                    color: '#FFD700'
+                });
+
+                orbData.sort(() => Math.random() - 0.5);
+
+                orbData.forEach((data, i) => {
+                    const angle = (Math.PI * 2 / totalOrbs) * i;
+                    const radius = 2.5;
+                    const height = 1.6;
+
+                    const x = cameraPos.x + Math.cos(angle) * radius;
+                    const y = height;
+                    const z = cameraPos.z + Math.sin(angle) * radius;
+
+                    const orb = this.createMemoryOrb(data, { x, y, z });
+                    scene.appendChild(orb);
+                    this.orbs.push(orb);
+
+                    if (data.type === 'target') {
+                        this.targetOrb = orb;
+                        log(`Target orb: ${data.label} at position ${i}`, '#FFD700');
+                    }
+                });
+
+                log(`✓ Spawned ${this.orbs.length} orbs`, '#00FF00');
+            },
+
+            createMemoryOrb: function(data, position) {
+                const orbContainer = document.createElement('a-entity');
+                orbContainer.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+                orbContainer.classList.add('memory-orb');
+                orbContainer.setAttribute('orb-type', data.type);
+                orbContainer.setAttribute('orb-label', data.label);
+
+                // Glass sphere
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('radius', '0.22');
+                sphere.setAttribute('material', {
+                    color: data.color,
+                    transparent: true,
+                    opacity: 0.6,
+                    metalness: 0.1,
+                    roughness: 0.2
+                });
+
+                sphere.setAttribute('animation__pulse', {
+                    property: 'material.opacity',
+                    from: 0.4,
+                    to: 0.8,
+                    dur: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true,
+                    dir: 'alternate'
+                });
+
+                sphere.setAttribute('animation__rotate', {
+                    property: 'rotation',
+                    to: '0 360 0',
+                    dur: 12000,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                // Make clickable
+                sphere.classList.add('clickable');
+                sphere.addEventListener('click', () => {
+                    log(`Clicked: ${data.label} (${data.type})`, '#FFD700');
+                    this.handleOrbInteraction(orbContainer);
+                });
+
+                orbContainer.appendChild(sphere);
+
+                // Text label
+                const textLabel = document.createElement('a-text');
+                textLabel.setAttribute('value', data.label);
+                textLabel.setAttribute('align', 'center');
+                textLabel.setAttribute('color', '#FFFFFF');
+                textLabel.setAttribute('width', '1.5');
+                textLabel.setAttribute('position', '0 0 0');
+                textLabel.setAttribute('scale', '0.8 0.8 0.8');
+
+                orbContainer.appendChild(textLabel);
+
+                return orbContainer;
+            },
+
+            handleOrbInteraction: function(orb) {
+                if (this.gameWon) return;
+
+                const orbType = orb.getAttribute('orb-type');
+                const orbLabel = orb.getAttribute('orb-label');
+
+                log(`Interaction: ${orbLabel} (${orbType})`, '#FFFF00');
+
+                if (orbType === 'target') {
+                    this.gameWon = true;
+                    audioEngine.playDiscovery();
+                    document.getElementById('status').innerHTML = '<strong style="color:#00FF00;">✓ NAMIBIË GEVONDEN!</strong>';
+                    log('🎉 WIN! Target found!', '#00FF00');
+                    this.showVictoryPanel(orb);
+                    this.removeOrb(orb);
+
+                } else if (orbType === 'trap') {
+                    audioEngine.playBuzzer();
+                    log('⚠️ TRAP triggered!', '#FF0000');
+                    this.removeOrb(orb);
+
+                } else {
+                    audioEngine.playBuzzer();
+                    log(`Archive: ${orbLabel}`, '#888888');
+                    this.removeOrb(orb);
+                }
+            },
+
+            removeOrb: function(orb) {
+                orb.setAttribute('animation__scale', {
+                    property: 'scale',
+                    to: '0 0 0',
+                    dur: 500
+                });
+                setTimeout(() => {
+                    if (orb.parentNode) orb.parentNode.removeChild(orb);
+                }, 500);
+            },
+
+            showVictoryPanel: function(orb) {
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position.clone();
+                const forward = new THREE.Vector3(0, 0, -2);
+                forward.applyQuaternion(camera.object3D.quaternion);
+                forward.add(cameraPos);
+
+                const panel = document.createElement('a-entity');
+                panel.setAttribute('position', forward);
+                panel.setAttribute('look-at', '[camera]');
+
+                const bg = document.createElement('a-plane');
+                bg.setAttribute('width', '2');
+                bg.setAttribute('height', '1.5');
+                bg.setAttribute('color', '#000000');
+                bg.setAttribute('opacity', '0.9');
+                panel.appendChild(bg);
+
+                const text = document.createElement('a-text');
+                text.setAttribute('value', 'LOCATIE BEVESTIGD\n\nCOÖRDINATEN:\nDE OVEN');
+                text.setAttribute('align', 'center');
+                text.setAttribute('color', '#FFD700');
+                text.setAttribute('width', '1.8');
+                text.setAttribute('position', '0 0 0.02');
+                panel.appendChild(text);
+
+                this.el.sceneEl.appendChild(panel);
+                log('Victory panel shown', '#00FF00');
+            }
+        });
+
+        // Geiger Counter
+        AFRAME.registerComponent('geiger-counter-debug', {
+            init: function() {
+                this.camera = document.querySelector('#camera');
+                this.lastClickTime = 0;
+                this.clickInterval = 1000;
+                this.enabled = false;
+
+                log('Geiger counter initialized');
+
+                setTimeout(() => {
+                    this.enabled = true;
+                    log('Geiger counter enabled', '#FFD700');
+                }, 2500);
+            },
+
+            tick: function(time) {
+                if (!this.enabled) return;
+
+                const gameController = document.querySelector('#game-manager').components['game-controller-debug'];
+                if (!gameController || !gameController.targetOrb || gameController.gameWon) return;
+
+                const cameraPos = this.camera.object3D.position;
+                const targetPos = gameController.targetOrb.object3D.position;
+                const distance = cameraPos.distanceTo(targetPos);
+
+                if (distance < 1.0) {
+                    this.clickInterval = 150;
+                } else if (distance < 2.0) {
+                    this.clickInterval = 350;
+                } else if (distance < 3.0) {
+                    this.clickInterval = 650;
+                } else {
+                    this.clickInterval = 1000;
+                }
+
+                if (time - this.lastClickTime > this.clickInterval) {
+                    audioEngine.playClick();
+                    this.lastClickTime = time;
+                }
+            }
+        });
+
+        // Resume audio on click
+        document.addEventListener('click', () => {
+            audioEngine.resume();
+        });
+
+        log('All systems initialized - Click page to start audio', '#00FF00');
+    </script>
+</body>
+</html>

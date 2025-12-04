@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Namibië - Click Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #87CEEB;
+            margin-bottom: 40px;
+        }
+
+        .game-area {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #FFD700;
+        }
+
+        .instruction {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .orb-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .orb-button {
+            padding: 30px 20px;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .orb-button:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .orb-button:active:before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .orb-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .orb-button.decoy {
+            background: linear-gradient(135deg, #87CEEB, #4682B4);
+            color: white;
+        }
+
+        .orb-button.trap {
+            background: linear-gradient(135deg, #DC143C, #8B0000);
+            color: white;
+            animation: pulse-red 2s infinite;
+        }
+
+        .orb-button.target {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            animation: pulse-gold 2s infinite;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 20px rgba(220, 20, 60, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(220, 20, 60, 0.8); }
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 1); }
+        }
+
+        .feedback {
+            min-height: 100px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #666;
+        }
+
+        .feedback.success {
+            border-color: #00FF00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .feedback.error {
+            border-color: #FF0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+
+        .feedback.archive {
+            border-color: #888888;
+            background: rgba(136, 136, 136, 0.1);
+        }
+
+        .victory-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 50px;
+            border-radius: 20px;
+            border: 4px solid #FFD700;
+            text-align: center;
+            z-index: 1000;
+            transition: transform 0.5s ease;
+            max-width: 90%;
+        }
+
+        .victory-panel.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .victory-panel h2 {
+            color: #00FF00;
+            font-size: 48px;
+            margin: 0 0 20px 0;
+        }
+
+        .victory-panel .clue {
+            color: #FFD700;
+            font-size: 32px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #87CEEB;
+            margin-top: 5px;
+        }
+
+        .reset-btn {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 PROJECT NAMIBIË</h1>
+        <p class="subtitle">Click Test Versie - Zoek de NAMIBIË orb!</p>
+
+        <div class="game-area">
+            <div class="instruction">
+                <strong>🎯 Instructies:</strong> Klik op de orbs om ze te testen.<br>
+                <span style="color: #87CEEB;">■</span> <strong>Blauw</strong> = Bezochte landen (archief)<br>
+                <span style="color: #DC143C;">■</span> <strong>Rood</strong> = FLAT EARTH (trap!)<br>
+                <span style="color: #FFD700;">■</span> <strong>Goud</strong> = NAMIBIË (target!)
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="clicks-count">0</div>
+                    <div class="stat-label">CLICKS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="orbs-remaining">10</div>
+                    <div class="stat-label">ORBS OVER</div>
+                </div>
+            </div>
+
+            <div class="orb-grid" id="orb-grid">
+                <!-- Orbs worden hier gegenereerd -->
+            </div>
+
+            <div class="feedback" id="feedback">
+                <strong>Wachten op interactie...</strong>
+                <p>Klik op een orb om te beginnen!</p>
+            </div>
+
+            <button class="reset-btn" onclick="resetGame()">🔄 Opnieuw Spelen</button>
+        </div>
+    </div>
+
+    <div class="victory-panel" id="victory-panel">
+        <h2>🎉 LOCATIE GEVONDEN! 🎉</h2>
+        <div class="clue">
+            COÖRDINATEN:<br>
+            <strong>DE OVEN</strong>
+        </div>
+        <p style="color: #87CEEB; font-size: 18px;">
+            Op de Quest 3S zie je dit in AR met hand tracking!
+        </p>
+        <button class="reset-btn" onclick="resetGame()">Speel Opnieuw</button>
+    </div>
+
+    <script>
+        // Audio Context
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            switch(type) {
+                case 'click':
+                    osc.type = 'square';
+                    osc.frequency.value = 1300;
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                    osc.stop(audioCtx.currentTime + 0.05);
+                    break;
+                case 'buzzer':
+                    osc.type = 'sawtooth';
+                    osc.frequency.value = 120;
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'glitch':
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            const glitchOsc = audioCtx.createOscillator();
+                            const glitchGain = audioCtx.createGain();
+                            glitchOsc.type = 'square';
+                            glitchOsc.frequency.value = 200 + Math.random() * 300;
+                            glitchGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                            glitchGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                            glitchOsc.connect(glitchGain);
+                            glitchGain.connect(audioCtx.destination);
+                            glitchOsc.start();
+                            glitchOsc.stop(audioCtx.currentTime + 0.1);
+                        }, i * 80);
+                    }
+                    return;
+                case 'success':
+                    const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+                    melody.forEach((freq, i) => {
+                        setTimeout(() => {
+                            const melodyOsc = audioCtx.createOscillator();
+                            const melodyGain = audioCtx.createGain();
+                            melodyOsc.type = 'sine';
+                            melodyOsc.frequency.value = freq;
+                            melodyGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                            melodyGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                            melodyOsc.connect(melodyGain);
+                            melodyGain.connect(audioCtx.destination);
+                            melodyOsc.start();
+                            melodyOsc.stop(audioCtx.currentTime + 0.8);
+                        }, i * 180);
+                    });
+                    return;
+            }
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+        }
+
+        // Game State
+        let clickCount = 0;
+        let orbsRemaining = 10;
+        let gameWon = false;
+
+        const countries = ['Peru', 'Japan', 'Noorwegen', 'Canada', 'China', 'India', 'IJsland', 'Egypte'];
+
+        function createOrbs() {
+            const grid = document.getElementById('orb-grid');
+            grid.innerHTML = '';
+
+            const orbs = [];
+
+            // 8 decoys
+            countries.forEach(country => {
+                orbs.push({ type: 'decoy', label: country });
+            });
+
+            // 1 trap
+            orbs.push({ type: 'trap', label: 'FLAT EARTH THEORY' });
+
+            // 1 target
+            orbs.push({ type: 'target', label: 'NAMIBIË' });
+
+            // Shuffle
+            orbs.sort(() => Math.random() - 0.5);
+
+            // Create buttons
+            orbs.forEach((orb, index) => {
+                const btn = document.createElement('button');
+                btn.className = `orb-button ${orb.type}`;
+                btn.innerHTML = `
+                    <div style="position: relative; z-index: 1;">
+                        <div style="font-size: 20px; margin-bottom: 5px;">🔮</div>
+                        <div>${orb.label}</div>
+                    </div>
+                `;
+                btn.onclick = () => handleOrbClick(orb, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function handleOrbClick(orb, btn) {
+            if (gameWon || btn.disabled) return;
+
+            clickCount++;
+            document.getElementById('clicks-count').textContent = clickCount;
+
+            btn.disabled = true;
+            btn.style.opacity = '0.3';
+            btn.style.cursor = 'not-allowed';
+
+            const feedback = document.getElementById('feedback');
+
+            if (orb.type === 'target') {
+                // WIN!
+                gameWon = true;
+                playSound('success');
+                feedback.className = 'feedback success';
+                feedback.innerHTML = `
+                    <h3 style="color: #00FF00; margin-top: 0;">✓ TARGET GEVONDEN!</h3>
+                    <p><strong>${orb.label}</strong></p>
+                    <p>🎉 Dit is de juiste orb! De schattenjacht kan beginnen!</p>
+                `;
+
+                setTimeout(() => {
+                    document.getElementById('victory-panel').classList.add('show');
+                }, 1000);
+
+            } else if (orb.type === 'trap') {
+                // TRAP!
+                playSound('glitch');
+                feedback.className = 'feedback error';
+                feedback.innerHTML = `
+                    <h3 style="color: #FF0000; margin-top: 0;">⚠️ TRAP GEACTIVEERD!</h3>
+                    <p><strong>${orb.label}</strong></p>
+                    <p>Dit is wetenschappelijk onmogelijk! Probeer een andere orb.</p>
+                `;
+
+            } else {
+                // DECOY
+                playSound('buzzer');
+                feedback.className = 'feedback archive';
+                feedback.innerHTML = `
+                    <h3 style="color: #888888; margin-top: 0;">📁 REEDS ONTDEKT</h3>
+                    <p><strong>${orb.label}</strong></p>
+                    <p>Deze bestemming is al bezocht. Zoek verder!</p>
+                `;
+            }
+
+            orbsRemaining--;
+            document.getElementById('orbs-remaining').textContent = orbsRemaining;
+        }
+
+        function resetGame() {
+            clickCount = 0;
+            orbsRemaining = 10;
+            gameWon = false;
+
+            document.getElementById('clicks-count').textContent = '0';
+            document.getElementById('orbs-remaining').textContent = '10';
+            document.getElementById('victory-panel').classList.remove('show');
+
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback';
+            feedback.innerHTML = `
+                <strong>Wachten op interactie...</strong>
+                <p>Klik op een orb om te beginnen!</p>
+            `;
+
+            createOrbs();
+        }
+
+        // Start game
+        createOrbs();
+
+        // Resume audio on first click
+        document.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>
