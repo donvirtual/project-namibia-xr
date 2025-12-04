@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Namibië - Premium XR Experience</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+        #overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #FFD700;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            z-index: 1000;
+            pointer-events: none;
+        }
+        #instructions {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #FFD700;
+            max-width: 350px;
+        }
+        .title {
+            color: #FF6347;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- DOM Overlay for Enhanced UI -->
+    <div id="overlay">
+        <div id="instructions">
+            <div class="title">🌍 PROJECT NAMIBIË</div>
+            <p>Zoek de juiste herinnering...<br/>
+            <strong>Geiger teller</strong> helpt je!</p>
+            <p id="status">Ontdekken...</p>
+            <p style="font-size: 14px; opacity: 0.7;">Hand tracking actief 👋</p>
+        </div>
+    </div>
+
+    <a-scene
+        webxr="requiredFeatures: hit-test,local-floor;
+               optionalFeatures: hand-tracking,dom-overlay,dom-overlay-for-handheld-ar;
+               overlayElement: #overlay;"
+        renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true; antialias: true;"
+        background="transparent"
+        loading-screen="enabled: false"
+        fog="type: linear; color: #FFA500; near: 10; far: 50">
+
+        <!-- Camera Rig -->
+        <a-entity id="rig" position="0 0 0">
+            <a-camera id="camera" position="0 1.6 0" look-controls="enabled: true" camera-shake>
+            </a-camera>
+
+            <!-- Hand Tracking -->
+            <a-entity
+                id="leftHand"
+                hand-tracking-controls="hand: left; modelColor: #FFD700"
+                hand-collider="hand: left">
+            </a-entity>
+
+            <a-entity
+                id="rightHand"
+                hand-tracking-controls="hand: right; modelColor: #FFD700"
+                hand-collider="hand: right">
+            </a-entity>
+        </a-entity>
+
+        <!-- Game Manager -->
+        <a-entity id="game-manager" game-controller geiger-counter></a-entity>
+
+        <!-- Atmospheric Particle System -->
+        <a-entity id="dust-particles" desert-atmosphere></a-entity>
+
+        <!-- Enhanced Lighting for Premium Feel -->
+        <a-light type="ambient" intensity="0.9" color="#FFF8DC"></a-light>
+        <a-light type="directional" intensity="0.6" position="2 3 1" color="#FFE4B5"></a-light>
+        <a-light type="point" intensity="0.3" position="0 2 0" color="#FF8C00" distance="5"></a-light>
+
+    </a-scene>
+
+    <script>
+        // =====================================================
+        // ENHANCED AUDIO ENGINE
+        // =====================================================
+        class PremiumAudioSynthesizer {
+            constructor() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                this.masterGain = this.context.createGain();
+                this.masterGain.gain.value = 0.35;
+                this.masterGain.connect(this.context.destination);
+            }
+
+            playClick() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                osc.type = 'square';
+                osc.frequency.value = 1300;
+                gain.gain.setValueAtTime(0.15, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.04);
+            }
+
+            // Archive Buzzer (Visited Countries)
+            playBuzzer() {
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.value = 120;
+                gain.gain.setValueAtTime(0.25, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(this.context.currentTime);
+                osc.stop(this.context.currentTime + 0.4);
+            }
+
+            // Error Glitch (Flat Earth)
+            playGlitch() {
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const osc = this.context.createOscillator();
+                        const gain = this.context.createGain();
+                        osc.type = 'square';
+                        osc.frequency.value = 200 + Math.random() * 300;
+                        gain.gain.setValueAtTime(0.2, this.context.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.1);
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start(this.context.currentTime);
+                        osc.stop(this.context.currentTime + 0.1);
+                    }, i * 80);
+                }
+            }
+
+            // Scientific Discovery (Namibië)
+            playDiscovery() {
+                const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50]; // C-D-E-G-A-C
+                melody.forEach((freq, i) => {
+                    setTimeout(() => {
+                        const osc = this.context.createOscillator();
+                        const gain = this.context.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.18, this.context.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.8);
+                        osc.connect(gain);
+                        gain.connect(this.masterGain);
+                        osc.start(this.context.currentTime);
+                        osc.stop(this.context.currentTime + 0.8);
+                    }, i * 180);
+                });
+            }
+
+            resume() {
+                if (this.context.state === 'suspended') {
+                    this.context.resume();
+                }
+            }
+        }
+
+        const audioEngine = new PremiumAudioSynthesizer();
+
+        // =====================================================
+        // GAME DATA: The Traveler's Memory
+        // =====================================================
+        const GAME_DATA = {
+            visitedCountries: ['Peru', 'Japan', 'Noorwegen', 'Canada', 'China', 'India', 'IJsland', 'Egypte'],
+            targetCountry: 'NAMIBIË',
+            trapCountry: 'FLAT EARTH THEORY',
+            clueMessage: 'LOCATIE BEVESTIGD\n\nCOÖRDINATEN:\nDE OVEN'
+        };
+
+        // =====================================================
+        // PREMIUM GAME CONTROLLER
+        // =====================================================
+        AFRAME.registerComponent('game-controller', {
+            init: function() {
+                this.orbs = [];
+                this.targetOrb = null;
+                this.trapOrb = null;
+                this.gameWon = false;
+
+                this.el.sceneEl.addEventListener('loaded', () => {
+                    setTimeout(() => this.spawnMemoryOrbs(), 1000);
+                });
+
+                this.el.sceneEl.addEventListener('enter-vr', () => {
+                    audioEngine.resume();
+                });
+            },
+
+            spawnMemoryOrbs: function() {
+                const scene = this.el.sceneEl;
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position;
+
+                // Spawn 10 Memory Orbs
+                const totalOrbs = 10;
+                const decoyCount = 8;
+
+                // Create orb data
+                const orbData = [];
+
+                // Add decoy orbs (visited countries)
+                for (let i = 0; i < decoyCount; i++) {
+                    orbData.push({
+                        type: 'decoy',
+                        label: GAME_DATA.visitedCountries[i % GAME_DATA.visitedCountries.length],
+                        color: '#87CEEB' // Sky Blue
+                    });
+                }
+
+                // Add trap orb
+                orbData.push({
+                    type: 'trap',
+                    label: GAME_DATA.trapCountry,
+                    color: '#DC143C' // Crimson Red
+                });
+
+                // Add target orb
+                orbData.push({
+                    type: 'target',
+                    label: GAME_DATA.targetCountry,
+                    color: '#FFD700' // Gold
+                });
+
+                // Shuffle array
+                orbData.sort(() => Math.random() - 0.5);
+
+                // Spawn orbs in circle
+                orbData.forEach((data, i) => {
+                    const angle = (Math.PI * 2 / totalOrbs) * i + Math.random() * 0.3;
+                    const radius = 1.8 + Math.random() * 1.2; // 1.8m to 3m
+                    const height = 1.2 + Math.random() * 0.8; // 1.2m to 2m
+
+                    const x = cameraPos.x + Math.cos(angle) * radius;
+                    const y = height;
+                    const z = cameraPos.z + Math.sin(angle) * radius;
+
+                    const orb = this.createMemoryOrb(data, { x, y, z });
+                    scene.appendChild(orb);
+                    this.orbs.push(orb);
+
+                    if (data.type === 'target') {
+                        this.targetOrb = orb;
+                    } else if (data.type === 'trap') {
+                        this.trapOrb = orb;
+                    }
+                });
+
+                console.log('✅ Spawned 10 Memory Orbs (8 Decoys, 1 Trap, 1 Target)');
+            },
+
+            createMemoryOrb: function(data, position) {
+                const orbContainer = document.createElement('a-entity');
+                orbContainer.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+                orbContainer.classList.add('memory-orb');
+                orbContainer.setAttribute('orb-type', data.type);
+                orbContainer.setAttribute('orb-label', data.label);
+
+                // Glass sphere (outer shell)
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('radius', '0.22');
+                sphere.setAttribute('material', {
+                    color: data.color,
+                    transparent: true,
+                    opacity: 0.4,
+                    metalness: 0.1,
+                    roughness: 0.2,
+                    side: 'double'
+                });
+
+                // Pulsating glow animation
+                sphere.setAttribute('animation__pulse', {
+                    property: 'material.opacity',
+                    from: 0.3,
+                    to: 0.6,
+                    dur: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true,
+                    dir: 'alternate'
+                });
+
+                sphere.setAttribute('animation__emissive', {
+                    property: 'material.emissiveIntensity',
+                    from: 0.2,
+                    to: 0.5,
+                    dur: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true,
+                    dir: 'alternate'
+                });
+
+                sphere.setAttribute('material', 'emissive', data.color);
+                sphere.setAttribute('material', 'emissiveIntensity', 0.3);
+
+                // Slow rotation
+                sphere.setAttribute('animation__rotate', {
+                    property: 'rotation',
+                    to: '0 360 0',
+                    dur: 12000,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                orbContainer.appendChild(sphere);
+
+                // Inner text label (always faces camera)
+                const textLabel = document.createElement('a-text');
+                textLabel.setAttribute('value', data.label);
+                textLabel.setAttribute('align', 'center');
+                textLabel.setAttribute('color', '#FFFFFF');
+                textLabel.setAttribute('width', '1.5');
+                textLabel.setAttribute('wrap-count', '15');
+                textLabel.setAttribute('position', '0 0 0');
+                textLabel.setAttribute('scale', '0.8 0.8 0.8');
+                textLabel.setAttribute('look-at', '[camera]'); // Billboard effect
+
+                orbContainer.appendChild(textLabel);
+
+                return orbContainer;
+            },
+
+            handleOrbInteraction: function(orb) {
+                if (this.gameWon) return;
+
+                const orbType = orb.getAttribute('orb-type');
+                const orbLabel = orb.getAttribute('orb-label');
+
+                if (orbType === 'target') {
+                    // WIN STATE
+                    this.gameWon = true;
+                    audioEngine.playDiscovery();
+                    document.getElementById('status').innerHTML = '<strong style="color:#00FF00;">✓ NAMIBIË GEVONDEN!</strong>';
+                    this.createVortexExplosion(orb);
+                    setTimeout(() => this.showFinalReveal(orb), 800);
+                    this.removeOrbWithEffect(orb, 1000);
+
+                } else if (orbType === 'trap') {
+                    // TRAP (Flat Earth)
+                    audioEngine.playGlitch();
+                    document.getElementById('status').innerHTML = '<strong style="color:#FF0000;">⚠ WETENSCHAPPELIJK ONMOGELIJK!</strong>';
+                    this.triggerCameraShake();
+                    this.flashScreen('#FF0000');
+                    this.showFloatingText(orb, 'WETENSCHAPPELIJK\nONMOGELIJK', '#FF0000');
+                    this.removeOrbWithEffect(orb, 1500);
+
+                } else {
+                    // DECOY (Already Visited)
+                    audioEngine.playBuzzer();
+                    this.showFloatingText(orb, 'REEDS ONTDEKT\n(ARCHIEF)', '#888888');
+                    this.removeOrbWithEffect(orb, 800, '#555555');
+                }
+            },
+
+            createVortexExplosion: function(orb) {
+                const pos = orb.object3D.position;
+
+                // Massive gold/orange particle vortex
+                for (let i = 0; i < 80; i++) {
+                    const particle = document.createElement('a-sphere');
+                    particle.setAttribute('radius', 0.03 + Math.random() * 0.05);
+
+                    const colors = ['#FFD700', '#FFA500', '#FF8C00', '#FF6347'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    particle.setAttribute('color', color);
+                    particle.setAttribute('position', pos);
+
+                    // Spiral outward trajectory
+                    const angle = (Math.PI * 2 / 80) * i;
+                    const radius = 1.5 + Math.random() * 1;
+                    const vx = Math.cos(angle) * radius;
+                    const vy = Math.random() * 2 + 0.5;
+                    const vz = Math.sin(angle) * radius;
+
+                    particle.setAttribute('animation__pos', {
+                        property: 'position',
+                        to: `${pos.x + vx} ${pos.y + vy} ${pos.z + vz}`,
+                        dur: 1500,
+                        easing: 'easeOutQuad'
+                    });
+
+                    particle.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 1500,
+                        easing: 'easeInQuad'
+                    });
+
+                    this.el.sceneEl.appendChild(particle);
+                    setTimeout(() => particle.parentNode.removeChild(particle), 1500);
+                }
+            },
+
+            removeOrbWithEffect: function(orb, duration, color = null) {
+                if (color) {
+                    orb.querySelector('a-sphere').setAttribute('material', 'color', color);
+                }
+
+                orb.setAttribute('animation__fadeout', {
+                    property: 'scale',
+                    to: '0 0 0',
+                    dur: duration,
+                    easing: 'easeInCubic'
+                });
+
+                setTimeout(() => {
+                    if (orb.parentNode) orb.parentNode.removeChild(orb);
+                }, duration);
+            },
+
+            showFloatingText: function(orb, message, color) {
+                const pos = orb.object3D.position.clone();
+                pos.y += 0.5;
+
+                const textEntity = document.createElement('a-text');
+                textEntity.setAttribute('value', message);
+                textEntity.setAttribute('align', 'center');
+                textEntity.setAttribute('color', color);
+                textEntity.setAttribute('width', '2');
+                textEntity.setAttribute('position', pos);
+                textEntity.setAttribute('look-at', '[camera]');
+                textEntity.setAttribute('scale', '1.5 1.5 1.5');
+
+                textEntity.setAttribute('animation__float', {
+                    property: 'position',
+                    to: `${pos.x} ${pos.y + 0.8} ${pos.z}`,
+                    dur: 2000,
+                    easing: 'easeOutQuad'
+                });
+
+                textEntity.setAttribute('animation__fade', {
+                    property: 'material.opacity',
+                    from: 1,
+                    to: 0,
+                    dur: 2000,
+                    easing: 'easeInQuad'
+                });
+
+                this.el.sceneEl.appendChild(textEntity);
+                setTimeout(() => textEntity.parentNode.removeChild(textEntity), 2000);
+            },
+
+            triggerCameraShake: function() {
+                const camera = document.querySelector('#camera');
+                camera.emit('shake');
+            },
+
+            flashScreen: function(color) {
+                const flash = document.createElement('a-plane');
+                flash.setAttribute('width', '100');
+                flash.setAttribute('height', '100');
+                flash.setAttribute('color', color);
+                flash.setAttribute('opacity', '0.6');
+                flash.setAttribute('position', '0 1.6 -2');
+                flash.setAttribute('material', 'side', 'double');
+
+                flash.setAttribute('animation__fade', {
+                    property: 'material.opacity',
+                    from: 0.6,
+                    to: 0,
+                    dur: 500
+                });
+
+                this.el.sceneEl.appendChild(flash);
+                setTimeout(() => flash.parentNode.removeChild(flash), 500);
+            },
+
+            showFinalReveal: function(orb) {
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position.clone();
+                const forward = new THREE.Vector3(0, 0, -1.8);
+                forward.applyQuaternion(camera.object3D.quaternion);
+                forward.add(cameraPos);
+
+                // Main panel container
+                const panel = document.createElement('a-entity');
+                panel.setAttribute('position', forward);
+                panel.setAttribute('look-at', '[camera]');
+
+                // Background
+                const bg = document.createElement('a-plane');
+                bg.setAttribute('width', '1.6');
+                bg.setAttribute('height', '1.2');
+                bg.setAttribute('color', '#000000');
+                bg.setAttribute('opacity', '0.9');
+                bg.setAttribute('material', 'side', 'double');
+                panel.appendChild(bg);
+
+                // Border glow
+                const border = document.createElement('a-plane');
+                border.setAttribute('width', '1.65');
+                border.setAttribute('height', '1.25');
+                border.setAttribute('color', '#FFD700');
+                border.setAttribute('opacity', '0.3');
+                border.setAttribute('position', '0 0 -0.01');
+                panel.appendChild(border);
+
+                // Title text
+                const title = document.createElement('a-text');
+                title.setAttribute('value', 'LOCATIE BEVESTIGD');
+                title.setAttribute('align', 'center');
+                title.setAttribute('color', '#00FF00');
+                title.setAttribute('width', '1.4');
+                title.setAttribute('position', '0 0.35 0.02');
+                title.setAttribute('scale', '1.2 1.2 1.2');
+                panel.appendChild(title);
+
+                // Coordinates text
+                const coords = document.createElement('a-text');
+                coords.setAttribute('value', 'COÖRDINATEN:\nDE OVEN');
+                coords.setAttribute('align', 'center');
+                coords.setAttribute('color', '#FFD700');
+                coords.setAttribute('width', '1.3');
+                coords.setAttribute('position', '0 -0.05 0.02');
+                coords.setAttribute('scale', '1.5 1.5 1.5');
+                coords.setAttribute('wrap-count', '20');
+                panel.appendChild(coords);
+
+                // 3D Book Model (Simple primitive)
+                const book = document.createElement('a-box');
+                book.setAttribute('width', '0.3');
+                book.setAttribute('height', '0.4');
+                book.setAttribute('depth', '0.05');
+                book.setAttribute('color', '#8B4513');
+                book.setAttribute('position', '0 -0.5 0.05');
+                book.setAttribute('material', 'roughness', '0.8');
+
+                book.setAttribute('animation__float', {
+                    property: 'position',
+                    to: '0 -0.4 0.05',
+                    dur: 2000,
+                    easing: 'easeInOutSine',
+                    loop: true,
+                    dir: 'alternate'
+                });
+
+                book.setAttribute('animation__rotate', {
+                    property: 'rotation',
+                    to: '0 360 0',
+                    dur: 8000,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                panel.appendChild(book);
+
+                this.el.sceneEl.appendChild(panel);
+            }
+        });
+
+        // =====================================================
+        // GEIGER COUNTER (Enhanced)
+        // =====================================================
+        AFRAME.registerComponent('geiger-counter', {
+            init: function() {
+                this.camera = document.querySelector('#camera');
+                this.lastClickTime = 0;
+                this.clickInterval = 1000;
+                this.enabled = false;
+
+                setTimeout(() => {
+                    this.enabled = true;
+                }, 2500);
+            },
+
+            tick: function(time) {
+                if (!this.enabled) return;
+
+                const gameController = document.querySelector('#game-manager').components['game-controller'];
+                if (!gameController || !gameController.targetOrb || gameController.gameWon) return;
+
+                const cameraPos = this.camera.object3D.position;
+                const targetPos = gameController.targetOrb.object3D.position;
+                const distance = cameraPos.distanceTo(targetPos);
+
+                // Enhanced distance mapping
+                if (distance < 0.6) {
+                    this.clickInterval = 80;
+                } else if (distance < 1.2) {
+                    this.clickInterval = 180;
+                } else if (distance < 2.0) {
+                    this.clickInterval = 350;
+                } else if (distance < 3.0) {
+                    this.clickInterval = 650;
+                } else {
+                    this.clickInterval = 1000;
+                }
+
+                if (time - this.lastClickTime > this.clickInterval) {
+                    audioEngine.playClick();
+                    this.lastClickTime = time;
+                }
+            }
+        });
+
+        // =====================================================
+        // HAND COLLIDER (Enhanced)
+        // =====================================================
+        AFRAME.registerComponent('hand-collider', {
+            schema: {
+                hand: { type: 'string', default: 'right' }
+            },
+
+            init: function() {
+                this.handMesh = null;
+                this.collisionRadius = 0.15;
+                this.collidedOrbs = new Set();
+
+                this.el.addEventListener('model-loaded', () => {
+                    this.handMesh = this.el.object3D;
+                    this.createEnhancedIndicator();
+                });
+            },
+
+            createEnhancedIndicator: function() {
+                const indicator = document.createElement('a-sphere');
+                indicator.setAttribute('radius', '0.025');
+                indicator.setAttribute('color', '#00FF00');
+                indicator.setAttribute('opacity', '0.6');
+                indicator.setAttribute('material', 'emissive', '#00FF00');
+                indicator.setAttribute('material', 'emissiveIntensity', '0.5');
+                this.el.appendChild(indicator);
+            },
+
+            tick: function() {
+                if (!this.handMesh) return;
+
+                const handPos = this.el.object3D.position;
+                const gameController = document.querySelector('#game-manager').components['game-controller'];
+
+                if (!gameController || gameController.gameWon) return;
+
+                const orbs = document.querySelectorAll('.memory-orb');
+                orbs.forEach(orb => {
+                    const orbPos = orb.object3D.position;
+                    const distance = handPos.distanceTo(orbPos);
+
+                    if (distance < this.collisionRadius) {
+                        if (!this.collidedOrbs.has(orb)) {
+                            this.collidedOrbs.add(orb);
+                            gameController.handleOrbInteraction(orb);
+                        }
+                    } else {
+                        this.collidedOrbs.delete(orb);
+                    }
+                });
+            }
+        });
+
+        // =====================================================
+        // CAMERA SHAKE EFFECT
+        // =====================================================
+        AFRAME.registerComponent('camera-shake', {
+            init: function() {
+                this.originalPosition = this.el.object3D.position.clone();
+                this.shaking = false;
+
+                this.el.addEventListener('shake', () => {
+                    this.triggerShake();
+                });
+            },
+
+            triggerShake: function() {
+                this.shaking = true;
+                this.shakeStartTime = Date.now();
+                this.shakeDuration = 500;
+            },
+
+            tick: function() {
+                if (!this.shaking) return;
+
+                const elapsed = Date.now() - this.shakeStartTime;
+                if (elapsed > this.shakeDuration) {
+                    this.shaking = false;
+                    return;
+                }
+
+                const intensity = 0.05 * (1 - elapsed / this.shakeDuration);
+                const offsetX = (Math.random() - 0.5) * intensity;
+                const offsetY = (Math.random() - 0.5) * intensity;
+                const offsetZ = (Math.random() - 0.5) * intensity;
+
+                this.el.object3D.position.set(
+                    this.originalPosition.x + offsetX,
+                    this.originalPosition.y + offsetY,
+                    this.originalPosition.z + offsetZ
+                );
+            }
+        });
+
+        // =====================================================
+        // DESERT ATMOSPHERE PARTICLE SYSTEM
+        // =====================================================
+        AFRAME.registerComponent('desert-atmosphere', {
+            init: function() {
+                this.particles = [];
+                this.maxParticles = 50;
+                this.spawnParticles();
+            },
+
+            spawnParticles: function() {
+                const camera = document.querySelector('#camera');
+                const cameraPos = camera.object3D.position;
+
+                for (let i = 0; i < this.maxParticles; i++) {
+                    const particle = document.createElement('a-sphere');
+                    particle.setAttribute('radius', '0.01');
+                    particle.setAttribute('color', '#FFE4B5');
+                    particle.setAttribute('opacity', '0.3');
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * 4 + 1;
+                    const height = Math.random() * 3 + 0.5;
+
+                    const x = cameraPos.x + Math.cos(angle) * radius;
+                    const y = height;
+                    const z = cameraPos.z + Math.sin(angle) * radius;
+
+                    particle.setAttribute('position', `${x} ${y} ${z}`);
+
+                    // Slow floating animation
+                    particle.setAttribute('animation__float', {
+                        property: 'position',
+                        to: `${x + (Math.random() - 0.5) * 0.5} ${y + 0.3} ${z + (Math.random() - 0.5) * 0.5}`,
+                        dur: 4000 + Math.random() * 2000,
+                        easing: 'easeInOutSine',
+                        loop: true,
+                        dir: 'alternate'
+                    });
+
+                    this.el.sceneEl.appendChild(particle);
+                    this.particles.push(particle);
+                }
+            }
+        });
+
+        // =====================================================
+        // INITIALIZE AUDIO ON INTERACTION
+        // =====================================================
+        document.addEventListener('click', () => audioEngine.resume());
+        document.addEventListener('touchstart', () => audioEngine.resume());
+    </script>
+</body>
+</html>
