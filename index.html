@@ -101,6 +101,13 @@
             <a-asset-item id="rhino-asset" src="assets/rhino.glb" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="hunter-asset" src="assets/hunter.glb" response-type="arraybuffer"></a-asset-item>
 
+            <!-- Grazing Animals (Animated) -->
+            <a-asset-item id="deer-asset" src="assets/deer.gltf" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="stag-asset" src="assets/stag.gltf" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="bull-asset" src="assets/bull.gltf" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="horse-asset" src="assets/horse.gltf" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="fox-asset" src="assets/fox.gltf" response-type="arraybuffer"></a-asset-item>
+
             <!-- Environment -->
             <a-asset-item id="tree-asset" src="assets/tree.glb" response-type="arraybuffer"></a-asset-item>
 
@@ -307,11 +314,11 @@
         const physics = new PhysicsSystem();
 
         // =====================================================
-        // GRAZING ANIMALS COMPONENT
+        // GRAZING ANIMALS COMPONENT (ANIMATED)
         // =====================================================
         AFRAME.registerComponent('grazing-animals', {
             init: function() {
-                console.log('🦏 Spawning grazing animals in background...');
+                console.log('🦌 Spawning ANIMATED grazing animals...');
 
                 setTimeout(() => {
                     this.spawnAnimals();
@@ -319,37 +326,53 @@
             },
 
             spawnAnimals: function() {
-                const hasRhino = !!document.getElementById('rhino-asset');
-                if (!hasRhino) {
-                    console.log('No rhino model, skipping grazing animals');
+                // Check if we have animal assets
+                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox'];
+                const availableAnimals = animalTypes.filter(type =>
+                    !!document.getElementById(`${type}-asset`)
+                );
+
+                if (availableAnimals.length === 0) {
+                    console.log('No animal models found, skipping grazing animals');
                     return;
                 }
 
-                const animalCount = 8;
+                console.log(`Found ${availableAnimals.length} animal types:`, availableAnimals);
+
+                const animalCount = 12; // More animals for variety
 
                 for (let i = 0; i < animalCount; i++) {
-                    const angle = (Math.PI * 2 / animalCount) * i;
-                    const distance = 25 + Math.random() * 20; // 25-45m away
+                    // RANDOM PLACEMENT (NOT CIRCLE!)
+                    // x: -30 to 30
+                    // z: -30 to -10 (behind camera)
+                    const x = -30 + Math.random() * 60;
+                    const z = -30 + Math.random() * 20;
 
-                    const x = Math.cos(angle) * distance;
-                    const z = Math.sin(angle) * distance;
+                    // Pick random animal type
+                    const animalType = availableAnimals[Math.floor(Math.random() * availableAnimals.length)];
 
                     const animal = document.createElement('a-entity');
-                    animal.setAttribute('gltf-model', '#rhino-asset');
+                    animal.setAttribute('gltf-model', `#${animalType}-asset`);
                     animal.setAttribute('position', `${x} 0 ${z}`);
+
+                    // Random rotation (0-360°)
                     animal.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
 
-                    const scale = 0.8 + Math.random() * 0.6; // 0.8 - 1.4
+                    // Smaller scale for realism
+                    const scale = 0.5 + Math.random() * 0.3; // 0.5 - 0.8
                     animal.setAttribute('scale', `${scale} ${scale} ${scale}`);
 
-                    // Slow idle breathing
-                    animal.setAttribute('animation__idle', {
+                    // Enable animation-mixer to play GLTF animations
+                    animal.setAttribute('animation-mixer', 'clip: *; loop: repeat');
+
+                    // Slow wandering animation
+                    animal.setAttribute('animation__wander', {
                         property: 'rotation',
-                        to: `0 ${(Math.random() * 360) + 10} 0`,
-                        dur: 15000 + Math.random() * 10000,
+                        to: `0 ${Math.random() * 360} 0`,
+                        dur: 20000 + Math.random() * 15000,
                         loop: true,
                         dir: 'alternate',
-                        easing: 'linear'
+                        easing: 'easeInOutQuad'
                     });
 
                     animal.setAttribute('shadow', 'cast: true; receive: true');
@@ -357,7 +380,7 @@
                     this.el.sceneEl.appendChild(animal);
                 }
 
-                console.log(`✓ Spawned ${animalCount} grazing animals`);
+                console.log(`✓ Spawned ${animalCount} ANIMATED animals (${availableAnimals.join(', ')})`);
             }
         });
 
