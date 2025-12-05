@@ -226,8 +226,6 @@
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity"
                 position="-0.3 1.4 -0.4">
-                <!-- HUGE DEBUG SPHERE to see where hand collision happens -->
-                <a-sphere radius="0.5" color="#FF0000" opacity="0.3" transparent="true"></a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="left-laser"
@@ -255,8 +253,6 @@
                 hand-tracking-controls="hand: right"
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity">
-                <!-- HUGE DEBUG SPHERE to see where hand collision happens -->
-                <a-sphere radius="0.5" color="#00FF00" opacity="0.3" transparent="true"></a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="right-laser"
@@ -1054,7 +1050,7 @@
                 this.showBriefing(
                     'NIVEAU 2: DE VOORBEREIDING',
                     'Pas op! In de rimboe zoemen\nveel beestjes...\n\nEven oefenen!\nMep 10 vliegen weg\nmet je HANDEN!',
-                    'HOE TE SPELEN:\n- Beweeg je handen naar de vliegen\n- Raak ze aan om te meppen\n- Geen pinch nodig, gewoon AANRAKEN!',
+                    'HOE TE SPELEN:\n- Sla om je heen om de vliegen te verwijderen!\n- Ze verdwijnen vanzelf na een paar seconden',
                     () => this.spawnFlies()
                 );
             },
