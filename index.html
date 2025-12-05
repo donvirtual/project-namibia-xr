@@ -120,22 +120,26 @@
              ENVIRONMENT
              ===================================================== -->
 
-        <!-- Skybox (360° Desert Sky) -->
+        <!-- Skybox (360° Rotating Starry Night) -->
         <a-sky
             src="#sky-asset"
             rotation="0 -90 0"
-            material="shader: flat">
+            material="shader: flat"
+            animation="property: rotation; to: 0 270 0; dur: 240000; easing: linear; loop: true">
         </a-sky>
 
-        <!-- Ground Plane (Enhanced sand texture) -->
+        <!-- Procedural Wavy Terrain (Rolling Dunes) -->
         <a-plane
             id="ground"
             position="0 -0.1 0"
             rotation="-90 0 0"
-            width="200"
-            height="200"
+            width="100"
+            height="100"
+            segments-width="64"
+            segments-height="64"
             material="src: #ground-asset; repeat: 40 40; roughness: 1; metalness: 0.0"
-            shadow="receive: true">
+            shadow="receive: true"
+            terrain-generator>
         </a-plane>
 
         <!-- Sand Fog at Ground Level -->
@@ -225,7 +229,7 @@
              GAME MANAGER
              ===================================================== -->
 
-        <a-entity id="game-manager" final-game-manager grazing-animals></a-entity>
+        <a-entity id="game-manager" final-game-manager grazing-animals nature-populator></a-entity>
 
     </a-scene>
 
@@ -314,6 +318,49 @@
         const physics = new PhysicsSystem();
 
         // =====================================================
+        // PROCEDURAL WAVY TERRAIN (ROLLING DUNES)
+        // =====================================================
+        AFRAME.registerComponent('terrain-generator', {
+            init: function() {
+                console.log('🏜️ Generating wavy terrain (rolling dunes)...');
+
+                // Wait for geometry to be loaded
+                this.el.addEventListener('loaded', () => {
+                    this.generateWaves();
+                });
+            },
+
+            generateWaves: function() {
+                const mesh = this.el.getObject3D('mesh');
+                if (!mesh) {
+                    console.warn('No mesh found for terrain');
+                    return;
+                }
+
+                const geometry = mesh.geometry;
+                const vertices = geometry.attributes.position;
+
+                // Apply sine wave displacement to create rolling dunes
+                for (let i = 0; i < vertices.count; i++) {
+                    const x = vertices.getX(i);
+                    const y = vertices.getY(i);
+
+                    // Math magic: Sine wave formula for gentle dunes
+                    // z = sin(x/5) * cos(y/5) * amplitude
+                    const z = Math.sin(x / 5) * Math.cos(y / 5) * 1.5;
+
+                    vertices.setZ(i, z);
+                }
+
+                // Mark geometry as updated
+                vertices.needsUpdate = true;
+                geometry.computeVertexNormals(); // Recalculate lighting normals
+
+                console.log('✓ Wavy terrain generated with rolling dunes');
+            }
+        });
+
+        // =====================================================
         // GRAZING ANIMALS COMPONENT (ANIMATED)
         // =====================================================
         AFRAME.registerComponent('grazing-animals', {
@@ -358,9 +405,8 @@
                     // Random rotation (0-360°)
                     animal.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
 
-                    // Smaller scale for realism
-                    const scale = 0.5 + Math.random() * 0.3; // 0.5 - 0.8
-                    animal.setAttribute('scale', `${scale} ${scale} ${scale}`);
+                    // Corrected scale for grazing animals
+                    animal.setAttribute('scale', '0.2 0.2 0.2');
 
                     // Enable animation-mixer to play GLTF animations
                     animal.setAttribute('animation-mixer', 'clip: *; loop: repeat');
@@ -381,6 +427,93 @@
                 }
 
                 console.log(`✓ Spawned ${animalCount} ANIMATED animals (${availableAnimals.join(', ')})`);
+            }
+        });
+
+        // =====================================================
+        // NATURE PACK POPULATOR (DUNES DECORATION)
+        // =====================================================
+        AFRAME.registerComponent('nature-populator', {
+            init: function() {
+                console.log('🌿 Populating dunes with nature objects...');
+
+                setTimeout(() => {
+                    this.populateDunes();
+                }, 3000);
+            },
+
+            populateDunes: function() {
+                const scene = this.el.sceneEl;
+
+                // High density grass (200x small green cones)
+                for (let i = 0; i < 200; i++) {
+                    const grass = document.createElement('a-cone');
+                    grass.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
+                    grass.setAttribute('radius-bottom', '0.05');
+                    grass.setAttribute('radius-top', '0.01');
+                    grass.setAttribute('height', '0.3');
+                    grass.setAttribute('color', this.randomGrassColor());
+                    grass.setAttribute('roughness', '1');
+                    scene.appendChild(grass);
+                }
+
+                // Medium rocks (20x flat stones)
+                for (let i = 0; i < 20; i++) {
+                    const rock = document.createElement('a-box');
+                    rock.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
+                    rock.setAttribute('width', `${0.5 + Math.random() * 0.5}`);
+                    rock.setAttribute('height', `${0.2 + Math.random() * 0.3}`);
+                    rock.setAttribute('depth', `${0.4 + Math.random() * 0.4}`);
+                    rock.setAttribute('rotation', `${Math.random() * 15} ${Math.random() * 360} ${Math.random() * 15}`);
+                    rock.setAttribute('color', this.randomRockColor());
+                    rock.setAttribute('roughness', '1');
+                    rock.setAttribute('shadow', 'cast: true; receive: true');
+                    scene.appendChild(rock);
+                }
+
+                // Dead trees (5x using existing tree asset if available)
+                const hasTree = !!document.getElementById('tree-asset');
+                for (let i = 0; i < 5; i++) {
+                    if (hasTree) {
+                        const tree = document.createElement('a-entity');
+                        tree.setAttribute('gltf-model', '#tree-asset');
+                        tree.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
+                        tree.setAttribute('scale', `${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4}`);
+                        tree.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
+                        tree.setAttribute('shadow', 'cast: true');
+                        scene.appendChild(tree);
+                    } else {
+                        // Fallback: procedural dead tree
+                        const trunk = document.createElement('a-cylinder');
+                        trunk.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
+                        trunk.setAttribute('radius', '0.15');
+                        trunk.setAttribute('height', '2.5');
+                        trunk.setAttribute('color', '#3d2f1f');
+                        trunk.setAttribute('roughness', '1');
+                        trunk.setAttribute('shadow', 'cast: true');
+                        scene.appendChild(trunk);
+                    }
+                }
+
+                console.log('✓ Populated dunes: 200 grass, 20 rocks, 5 trees');
+            },
+
+            randomX: function() {
+                return -40 + Math.random() * 80; // -40 to 40
+            },
+
+            randomZ: function() {
+                return -40 + Math.random() * 80; // -40 to 40
+            },
+
+            randomGrassColor: function() {
+                const colors = ['#3a5f0b', '#4a6f1b', '#2d4f08', '#5a8f2b'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            },
+
+            randomRockColor: function() {
+                const colors = ['#6b5a4d', '#8b7a6d', '#5b4a3d', '#7b6a5d'];
+                return colors[Math.floor(Math.random() * colors.length)];
             }
         });
 
@@ -679,12 +812,12 @@
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
 
-                // Hunter model (CORRECTED SCALE - was 5x too big!)
+                // Hunter model (FINAL SCALE CORRECTION)
                 if (this.hasHunter) {
                     const hunter = document.createElement('a-entity');
                     hunter.setAttribute('gltf-model', '#hunter-asset');
                     hunter.setAttribute('position', `${x} ${height} ${z}`);
-                    hunter.setAttribute('scale', '0.04 0.04 0.04'); // FIXED: Realistic human scale
+                    hunter.setAttribute('scale', '0.25 0.25 0.25'); // FINAL: Correct hunter scale
                     hunter.setAttribute('rotation', `0 ${THREE.MathUtils.radToDeg(Math.atan2(z, x)) + 90} 0`);
                     hunter.setAttribute('shadow', 'cast: true');
 
