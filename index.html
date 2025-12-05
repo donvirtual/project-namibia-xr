@@ -15,63 +15,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; overflow: hidden; }
 
-        /* Story Overlay - Black screen with green text */
-        #story-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-
-        #story-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        #story-title {
-            font-size: 3rem;
-            color: #00FF00;
-            text-align: center;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 20px #00FF00;
-        }
-
-        #story-text {
-            font-size: 1.5rem;
-            color: #88FF88;
-            text-align: center;
-            max-width: 80%;
-            line-height: 1.8;
-            margin-bottom: 2rem;
-        }
-
-        #story-button {
-            font-size: 1.8rem;
-            padding: 1rem 3rem;
-            background: #00FF00;
-            color: #000;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 10px;
-            box-shadow: 0 0 30px #00FF00;
-            transition: all 0.3s;
-        }
-
-        #story-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 50px #00FF00;
-        }
-
-        /* HUD Overlay */
+        /* HUD Overlay (Desktop Only) */
         #overlay {
             position: fixed;
             top: 0;
@@ -132,38 +76,36 @@
     </style>
 </head>
 <body>
-    <!-- Story Overlay -->
-    <div id="story-overlay">
-        <div id="story-title"></div>
-        <div id="story-text"></div>
-        <button id="story-button"></button>
-    </div>
-
-    <!-- HUD Overlay -->
+    <!-- HUD Overlay (Desktop fallback) -->
     <div id="overlay">
         <div id="hud">
             <div class="level-title" id="level-title">🌍 VIBEKE'S EXPEDITIE</div>
-            <div class="objective" id="objective">Namibian Steppe wordt geladen...</div>
+            <div class="objective" id="objective">Laden...</div>
             <div class="progress" id="progress"></div>
         </div>
     </div>
 
-    <button id="skip-btn" onclick="window.gameManager.skipLevel()">⏭️ SKIP LEVEL</button>
+    <button id="skip-btn" onclick="window.gameManager && window.gameManager.skipLevel()">⏭️ SKIP</button>
 
     <a-scene
         webxr="requiredFeatures: hand-tracking; optionalFeatures: hit-test; referenceSpaceType: local-floor"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
-        loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a">
+        loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a"
+        vr-mode-ui="enabled: true">
 
         <!-- =====================================================
              ASSET MANAGEMENT
              ===================================================== -->
-        <a-assets>
+        <a-assets timeout="15000">
             <!-- Characters -->
             <a-asset-item id="rhino-asset" src="assets/rhino.glb" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="hunter-asset" src="assets/hunter.glb" response-type="arraybuffer"></a-asset-item>
+
+            <!-- NEW: User-provided assets -->
+            <a-asset-item id="fly-model" src="assets/fly.glb" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="heart-model" src="assets/bottle.glb" response-type="arraybuffer"></a-asset-item>
 
             <!-- Grazing Animals (Animated) -->
             <a-asset-item id="deer-asset" src="assets/deer.gltf" response-type="arraybuffer"></a-asset-item>
@@ -267,6 +209,58 @@
                     animation__fusing="property: scale; startEvents: fusing; dur: 2000; from: 1 1 1; to: 0.2 0.2 0.2; easing: easeInQuad"
                     animation__click="property: scale; startEvents: click; dur: 150; from: 0.2 0.2 0.2; to: 1 1 1; easing: easeOutQuad">
                 </a-cursor>
+
+                <!-- IN-WORLD 3D STORY UI (VR Compatible) -->
+                <a-entity id="story-ui" position="0 0 -2" visible="false">
+                    <!-- Black Background Panel -->
+                    <a-plane
+                        width="3"
+                        height="2"
+                        color="#000000"
+                        opacity="0.95">
+                    </a-plane>
+
+                    <!-- Green Title Text -->
+                    <a-text
+                        id="story-title"
+                        value=""
+                        align="center"
+                        color="#00FF00"
+                        width="2.8"
+                        position="0 0.6 0.01"
+                        wrap-count="30">
+                    </a-text>
+
+                    <!-- Story Text -->
+                    <a-text
+                        id="story-text"
+                        value=""
+                        align="center"
+                        color="#88FF88"
+                        width="2.6"
+                        position="0 0.1 0.01"
+                        wrap-count="40">
+                    </a-text>
+
+                    <!-- START Button (Clickable Plane) -->
+                    <a-plane
+                        id="story-button"
+                        class="clickable"
+                        width="1.5"
+                        height="0.4"
+                        color="#00FF00"
+                        position="0 -0.6 0.01"
+                        opacity="0.9">
+                        <a-text
+                            id="story-button-text"
+                            value="START"
+                            align="center"
+                            color="#000000"
+                            width="3"
+                            position="0 0 0.01">
+                        </a-text>
+                    </a-plane>
+                </a-entity>
             </a-camera>
 
             <!-- LEFT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
@@ -301,37 +295,50 @@
     </a-scene>
 
     <script>
+        console.log('🎮 Script loading...');
+
         // =====================================================
-        // STORY OVERLAY SYSTEM
+        // 3D STORY OVERLAY SYSTEM (VR Compatible)
         // =====================================================
-        class StoryOverlay {
+        class StoryUI {
             constructor() {
-                this.overlay = document.getElementById('story-overlay');
+                this.ui = document.getElementById('story-ui');
                 this.title = document.getElementById('story-title');
                 this.text = document.getElementById('story-text');
                 this.button = document.getElementById('story-button');
+                this.buttonText = document.getElementById('story-button-text');
                 this.callback = null;
 
                 this.button.addEventListener('click', () => {
+                    console.log('📖 Story button clicked');
                     this.hide();
                     if (this.callback) this.callback();
                 });
+
+                console.log('📖 3D Story UI initialized');
             }
 
             show(title, text, buttonText, callback) {
-                this.title.textContent = title;
-                this.text.textContent = text;
-                this.button.textContent = buttonText;
+                console.log('📖 Showing story:', title);
+                this.title.setAttribute('value', title);
+                this.text.setAttribute('value', text);
+                this.buttonText.setAttribute('value', buttonText);
                 this.callback = callback;
-                this.overlay.classList.add('active');
+                this.ui.setAttribute('visible', 'true');
             }
 
             hide() {
-                this.overlay.classList.remove('active');
+                console.log('📖 Hiding story UI');
+                this.ui.setAttribute('visible', 'false');
             }
         }
 
-        const storyOverlay = new StoryOverlay();
+        let storyUI;
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                storyUI = new StoryUI();
+            }, 1000);
+        });
 
         // =====================================================
         // ENHANCED AUDIO ENGINE (with Wind, Buzz, Splat, Poof)
@@ -340,6 +347,7 @@
             constructor() {
                 this.context = new (window.AudioContext || window.webkitAudioContext)();
                 this.windNoise = null;
+                console.log('🔊 Audio engine initialized');
             }
 
             playSuccess() {
@@ -426,6 +434,7 @@
                 noise.start();
 
                 this.windNoise = noise;
+                console.log('💨 Wind started');
             }
 
             stopWind() {
@@ -715,6 +724,15 @@
                 // Asset checks
                 this.hasRhino = !!document.getElementById('rhino-asset');
                 this.hasHunter = !!document.getElementById('hunter-asset');
+                this.hasFly = !!document.getElementById('fly-model');
+                this.hasHeart = !!document.getElementById('heart-model');
+
+                console.log('🦏 Assets loaded:', {
+                    rhino: this.hasRhino,
+                    hunter: this.hasHunter,
+                    fly: this.hasFly,
+                    heart: this.hasHeart
+                });
 
                 // Level 1 (Globes)
                 this.level1Target = 'NAMIBIË';
@@ -737,8 +755,11 @@
                 // Expose for skip button
                 window.gameManager = this;
 
-                // Start game
-                setTimeout(() => this.startIntro(), 2000);
+                // Start game after assets load
+                this.el.sceneEl.addEventListener('loaded', () => {
+                    console.log('✓ Scene loaded, starting game...');
+                    setTimeout(() => this.startIntro(), 2000);
+                });
             },
 
             tick: function(time, deltaTime) {
@@ -756,7 +777,7 @@
                     this.checkShieldCollisions();
                 }
 
-                // Hand collision detection (Level 2 - Flies, Level 4 - Heart)
+                // Hand collision detection (Level 2 - Flies)
                 if (this.currentState === GAME_STATES.LEVEL_2) {
                     this.checkHandFlyCollisions();
                 }
@@ -792,33 +813,45 @@
             // INTRO
             // =====================================================
             startIntro: function() {
+                console.log('🎬 Starting intro...');
                 this.currentState = GAME_STATES.INTRO;
                 this.updateHUD('🌍 VIBEKE\'S GROTE EXPEDITIE', 'Klaar voor vertrek...', '');
 
-                storyOverlay.show(
-                    'VIBEKE\'S GROTE EXPEDITIE',
-                    'Na 85 jaar is het eindelijk zover...',
-                    'START DE REIS',
-                    () => this.startLevel1()
-                );
+                if (storyUI) {
+                    storyUI.show(
+                        'VIBEKE\'S GROTE EXPEDITIE',
+                        'Na 85 jaar is het eindelijk zover...',
+                        'START DE REIS',
+                        () => this.startLevel1()
+                    );
+                } else {
+                    console.warn('StoryUI not ready, skipping to Level 1');
+                    setTimeout(() => this.startLevel1(), 2000);
+                }
             },
 
             // =====================================================
             // LEVEL 1: DE BESTEMMING (Find Namibia)
             // =====================================================
             startLevel1: function() {
+                console.log('🌍 Starting Level 1...');
                 this.currentState = GAME_STATES.LEVEL_1;
                 this.clearAllObjects();
 
-                storyOverlay.show(
-                    'NIVEAU 1: DE BESTEMMING',
-                    'Lieve Vibeke, we gaan met de HELE familie op reis! Maar waarheen? Zoek de juiste bestemming op de kaart...',
-                    'START ZOEKEN',
-                    () => {
-                        this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
-                        this.spawnGlobes();
-                    }
-                );
+                if (storyUI) {
+                    storyUI.show(
+                        'NIVEAU 1: DE BESTEMMING',
+                        'Lieve Vibeke, we gaan met de HELE familie op reis! Maar waarheen? Zoek de juiste bestemming op de kaart...',
+                        'START ZOEKEN',
+                        () => {
+                            this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
+                            this.spawnGlobes();
+                        }
+                    );
+                } else {
+                    this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
+                    this.spawnGlobes();
+                }
             },
 
             spawnGlobes: function() {
@@ -890,6 +923,7 @@
                 const name = globe.getAttribute('data-name');
 
                 if (isTarget) {
+                    console.log('✓ Found Namibia!');
                     audioEngine.playSuccess();
                     this.updateHUD('✈️ NIVEAU 1', `✓ GEVONDEN: ${name}!`, '');
                     this.createExplosion(globe.object3D.position, '#FFD700', 60);
@@ -902,6 +936,7 @@
                     setTimeout(() => this.completeLevel1(), 2000);
                 } else {
                     // Wrong globe - POOF!
+                    console.log('✗ Wrong destination:', name);
                     audioEngine.playPoof();
                     this.createExplosion(globe.object3D.position, '#888888', 20);
 
@@ -913,6 +948,7 @@
             },
 
             completeLevel1: function() {
+                console.log('✓ Level 1 complete!');
                 this.clearAllObjects();
                 audioEngine.playSuccess();
                 this.updateHUD('✓ NIVEAU 1 VOLTOOID!', 'JA! We gaan naar NAMIBIË!', '');
@@ -923,19 +959,25 @@
             // LEVEL 2: DE VOORBEREIDING (Swat Flies)
             // =====================================================
             startLevel2: function() {
+                console.log('🪰 Starting Level 2...');
                 this.currentState = GAME_STATES.LEVEL_2;
                 this.clearAllObjects();
                 this.level2FliesKilled = 0;
 
-                storyOverlay.show(
-                    'NIVEAU 2: DE VOORBEREIDING',
-                    'Maar pas op... in de rimboe zoemen veel beestjes. Even oefenen! Mep die vliegen weg!',
-                    'START MEPPEN',
-                    () => {
-                        this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
-                        this.spawnFlies();
-                    }
-                );
+                if (storyUI) {
+                    storyUI.show(
+                        'NIVEAU 2: DE VOORBEREIDING',
+                        'Maar pas op... in de rimboe zoemen veel beestjes. Even oefenen! Mep die vliegen weg!',
+                        'START MEPPEN',
+                        () => {
+                            this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
+                            this.spawnFlies();
+                        }
+                    );
+                } else {
+                    this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
+                    this.spawnFlies();
+                }
             },
 
             spawnFlies: function() {
@@ -949,10 +991,22 @@
             },
 
             spawnFly: function() {
-                const fly = document.createElement('a-sphere');
-                fly.setAttribute('radius', '0.08');
-                fly.setAttribute('color', '#000000');
-                fly.setAttribute('metalness', '0.8');
+                const fly = document.createElement('a-entity');
+
+                if (this.hasFly) {
+                    // Use actual fly model
+                    fly.setAttribute('gltf-model', '#fly-model');
+                    fly.setAttribute('scale', '0.05 0.05 0.05');
+                    fly.setAttribute('rotation', `0 ${Math.random() * 360} ${Math.random() * 360}`);
+                } else {
+                    // Fallback: black sphere
+                    const sphere = document.createElement('a-sphere');
+                    sphere.setAttribute('radius', '0.08');
+                    sphere.setAttribute('color', '#000000');
+                    sphere.setAttribute('metalness', '0.8');
+                    fly.appendChild(sphere);
+                }
+
                 fly.classList.add('fly', 'clickable');
 
                 // Random position around head
@@ -984,6 +1038,7 @@
             },
 
             handleFlySplat: function(fly) {
+                console.log('💥 Fly splatted!');
                 audioEngine.playSplat();
                 this.level2FliesKilled++;
                 this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep die vliegen!', `${this.level2FliesKilled} / ${this.level2Target}`);
@@ -1020,6 +1075,7 @@
             },
 
             completeLevel2: function() {
+                console.log('✓ Level 2 complete!');
                 this.clearAllObjects();
                 audioEngine.playSuccess();
                 this.updateHUD('✓ NIVEAU 2 VOLTOOID!', 'Perfect! Klaar voor het avontuur!', '');
@@ -1030,39 +1086,46 @@
             // LEVEL 3: DE BESCHERMER (Block Spears)
             // =====================================================
             startLevel3: function() {
+                console.log('🛡️ Starting Level 3...');
                 this.currentState = GAME_STATES.LEVEL_3;
                 this.clearAllObjects();
                 this.level3Score = 0;
 
-                storyOverlay.show(
-                    'NIVEAU 3: DE BESCHERMER',
-                    'Het wordt een wild avontuur. Jij moet de familie beschermen tegen gevaren. Blokkeer alles!',
-                    'START VERDEDIGING',
-                    () => {
-                        this.updateHUD('🛡️ NIVEAU 3: DE BESCHERMER', 'Blokkeer speren met je LINKERHAND!', `${this.level3Score} / ${this.level3Target}`);
+                if (storyUI) {
+                    storyUI.show(
+                        'NIVEAU 3: DE BESCHERMER',
+                        'Het wordt een wild avontuur. Jij moet de familie beschermen tegen gevaren. Blokkeer alles!',
+                        'START VERDEDIGING',
+                        () => this.setupLevel3()
+                    );
+                } else {
+                    this.setupLevel3();
+                }
+            },
 
-                        if (this.shield) {
-                            this.shield.setAttribute('visible', 'true');
-                        }
+            setupLevel3: function() {
+                this.updateHUD('🛡️ NIVEAU 3: DE BESCHERMER', 'Blokkeer speren met je LINKERHAND!', `${this.level3Score} / ${this.level3Target}`);
 
-                        this.spawnAmbushBushes();
+                if (this.shield) {
+                    this.shield.setAttribute('visible', 'true');
+                }
 
-                        let hunterIndex = 0;
-                        for (let bushIndex = 0; bushIndex < 3; bushIndex++) {
-                            for (let row = 0; row < 2; row++) {
-                                const colsInRow = row === 0 ? 2 : 3;
-                                for (let col = 0; col < colsInRow; col++) {
-                                    setTimeout(() => {
-                                        if (this.currentState === GAME_STATES.LEVEL_3) {
-                                            this.spawnHunterWithSpear(bushIndex, row, col);
-                                        }
-                                    }, hunterIndex * 500);
-                                    hunterIndex++;
+                this.spawnAmbushBushes();
+
+                let hunterIndex = 0;
+                for (let bushIndex = 0; bushIndex < 3; bushIndex++) {
+                    for (let row = 0; row < 2; row++) {
+                        const colsInRow = row === 0 ? 2 : 3;
+                        for (let col = 0; col < colsInRow; col++) {
+                            setTimeout(() => {
+                                if (this.currentState === GAME_STATES.LEVEL_3) {
+                                    this.spawnHunterWithSpear(bushIndex, row, col);
                                 }
-                            }
+                            }, hunterIndex * 500);
+                            hunterIndex++;
                         }
                     }
-                );
+                }
             },
 
             spawnAmbushBushes: function() {
@@ -1224,6 +1287,7 @@
             },
 
             completeLevel3: function() {
+                console.log('✓ Level 3 complete!');
                 if (this.shield) {
                     this.shield.setAttribute('visible', 'false');
                 }
@@ -1237,20 +1301,26 @@
             // LEVEL 4: DE ONTMOETING (Rhino Heart)
             // =====================================================
             startLevel4: function() {
+                console.log('🦏 Starting Level 4...');
                 this.currentState = GAME_STATES.LEVEL_4;
                 this.clearAllObjects();
                 this.rhinoTouched = false;
                 this.heartTouched = false;
 
-                storyOverlay.show(
-                    'NIVEAU 4: DE ONTMOETING',
-                    'Kijk! De Big Five! Deze neushoorn heeft iets bijzonders voor je bewaard...',
-                    'ONTMOET DE NEUSHOORN',
-                    () => {
-                        this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
-                        this.spawnRhino();
-                    }
-                );
+                if (storyUI) {
+                    storyUI.show(
+                        'NIVEAU 4: DE ONTMOETING',
+                        'Kijk! De Big Five! Deze neushoorn heeft iets bijzonders voor je bewaard...',
+                        'ONTMOET DE NEUSHOORN',
+                        () => {
+                            this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
+                            this.spawnRhino();
+                        }
+                    );
+                } else {
+                    this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
+                    this.spawnRhino();
+                }
             },
 
             spawnRhino: function() {
@@ -1293,19 +1363,31 @@
                     rhinoContainer.appendChild(body);
                 }
 
-                // Heart (hidden initially)
-                const heart = document.createElement('a-sphere');
+                // Heart (hidden initially) - Using bottle.glb model
+                const heart = document.createElement('a-entity');
                 heart.setAttribute('id', 'rhino-heart');
-                heart.setAttribute('radius', '0.15');
-                heart.setAttribute('color', '#DC143C');
                 heart.setAttribute('position', '0 0.5 0.3');
-                heart.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.5; metalness: 0.8; roughness: 0.2; opacity: 0; transparent: true');
                 heart.classList.add('clickable');
+
+                if (this.hasHeart) {
+                    // Use actual heart/bottle model
+                    heart.setAttribute('gltf-model', '#heart-model');
+                    heart.setAttribute('scale', '0.5 0.5 0.5');
+                    heart.setAttribute('rotation', '0 0 0');
+                    heart.setAttribute('material', 'opacity: 0; transparent: true');
+                } else {
+                    // Fallback: red sphere
+                    const sphere = document.createElement('a-sphere');
+                    sphere.setAttribute('radius', '0.15');
+                    sphere.setAttribute('color', '#DC143C');
+                    sphere.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.5; metalness: 0.8; roughness: 0.2; opacity: 0; transparent: true');
+                    heart.appendChild(sphere);
+                }
 
                 heart.setAttribute('animation__pulse', {
                     property: 'scale',
-                    from: '1 1 1',
-                    to: '1.3 1.3 1.3',
+                    from: '0.5 0.5 0.5',
+                    to: '0.6 0.6 0.6',
                     dur: 800,
                     loop: true,
                     dir: 'alternate',
@@ -1334,6 +1416,7 @@
                 if (this.rhinoTouched) return;
                 this.rhinoTouched = true;
 
+                console.log('🦏 Rhino touched!');
                 audioEngine.playSquish();
                 this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'De neushoorn opent zich...', '');
 
@@ -1372,12 +1455,13 @@
                 if (this.heartTouched) return;
                 this.heartTouched = true;
 
+                console.log('💖 Heart touched!');
                 audioEngine.playMagicalChime();
                 this.updateHUD('💖 NIVEAU 4 VOLTOOID!', 'Het hart van Afrika!', '');
 
                 heart.setAttribute('animation__explode', {
                     property: 'scale',
-                    to: '3 3 3',
+                    to: '2 2 2',
                     dur: 1500,
                     easing: 'easeOutQuad'
                 });
@@ -1393,6 +1477,7 @@
             },
 
             completeLevel4: function() {
+                console.log('✓ Level 4 complete!');
                 this.clearAllObjects();
                 this.startVictory();
             },
@@ -1401,6 +1486,7 @@
             // VICTORY SEQUENCE
             // =====================================================
             startVictory: function() {
+                console.log('🏆 VICTORY!');
                 this.currentState = GAME_STATES.VICTORY;
                 audioEngine.playVictory();
                 this.updateHUD('🏆 MISSIE VOLTOOID!', 'Alle levels uitgespeeld!', '');
@@ -1420,6 +1506,7 @@
             },
 
             showFinalReward: function() {
+                console.log('🎁 Showing final reward...');
                 audioEngine.playMagicalChime();
                 this.createGroundParticles();
 
@@ -1540,6 +1627,8 @@
                 }
             }
         });
+
+        console.log('✓ All scripts loaded');
     </script>
 
 </body>
