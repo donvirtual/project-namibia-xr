@@ -137,7 +137,7 @@
             height="100"
             segments-width="64"
             segments-height="64"
-            material="src: #ground-asset; repeat: 40 40; roughness: 1; metalness: 0.0"
+            material="src: #ground-asset; color: #d2b48c; repeat: 40 40; roughness: 1; metalness: 0.0"
             shadow="receive: true"
             terrain-generator>
         </a-plane>
@@ -161,6 +161,7 @@
                    color: #AADDEE;
                    intensity: 0.8;
                    castShadow: true;
+                   shadowBias: -0.001;
                    shadowMapWidth: 2048;
                    shadowMapHeight: 2048;
                    shadowCameraFar: 100;
@@ -171,11 +172,11 @@
             position="-20 25 10">
         </a-entity>
 
-        <!-- Ambient (Cool night sky) -->
+        <!-- Ambient (Warm night atmosphere) -->
         <a-entity
             light="type: ambient;
-                   color: #223344;
-                   intensity: 0.4">
+                   color: #443333;
+                   intensity: 0.6">
         </a-entity>
 
         <!-- Campfire/Torch Light (Warm orange glow) -->
@@ -445,24 +446,24 @@
             populateDunes: function() {
                 const scene = this.el.sceneEl;
 
-                // High density grass (200x small green cones)
+                // High density grass (200x - scale was perfect!)
                 for (let i = 0; i < 200; i++) {
                     const grass = document.createElement('a-cone');
                     grass.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    grass.setAttribute('radius-bottom', '0.5');  // 10x bigger (was 0.05)
-                    grass.setAttribute('radius-top', '0.1');      // 10x bigger (was 0.01)
-                    grass.setAttribute('height', '3');            // 10x bigger (was 0.3)
+                    grass.setAttribute('radius-bottom', '0.5');
+                    grass.setAttribute('radius-top', '0.1');
+                    grass.setAttribute('height', '3');
                     grass.setAttribute('color', this.randomGrassColor());
                     grass.setAttribute('roughness', '1');
                     scene.appendChild(grass);
                 }
 
-                // Medium rocks (20x flat stones)
+                // Medium rocks (20x - scale was perfect!)
                 for (let i = 0; i < 20; i++) {
                     const rock = document.createElement('a-box');
                     rock.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    rock.setAttribute('width', `${5 + Math.random() * 5}`);   // 10x bigger (was 0.5-1.0)
-                    rock.setAttribute('height', `${2 + Math.random() * 3}`);  // 10x bigger (was 0.2-0.5)
+                    rock.setAttribute('width', `${5 + Math.random() * 5}`);
+                    rock.setAttribute('height', `${2 + Math.random() * 3}`);
                     rock.setAttribute('depth', `${4 + Math.random() * 4}`);
                     rock.setAttribute('rotation', `${Math.random() * 15} ${Math.random() * 360} ${Math.random() * 15}`);
                     rock.setAttribute('color', this.randomRockColor());
@@ -845,6 +846,21 @@
                     hunter.setAttribute('rotation', `0 ${rotationY} 0`);  // Face camera!
                     hunter.setAttribute('shadow', 'cast: true');
 
+                    // WALK SLOWLY TOWARDS CAMERA (as a group)
+                    const targetDistance = 5;  // Stop at 5m from camera
+                    const walkDuration = 30000;  // 30 seconds slow walk
+                    const directionToCamera = Math.sqrt(x*x + z*z);  // Current distance
+                    const walkRatio = targetDistance / directionToCamera;
+                    const targetX = x * walkRatio;
+                    const targetZ = z * walkRatio;
+
+                    hunter.setAttribute('animation', {
+                        property: 'position',
+                        to: `${targetX} ${height} ${targetZ}`,
+                        dur: walkDuration,
+                        easing: 'linear'
+                    });
+
                     this.el.sceneEl.appendChild(hunter);
                     this.activeObjects.push(hunter);
                 }
@@ -871,7 +887,7 @@
                 shaft.setAttribute('radius', '0.05');
                 shaft.setAttribute('height', '2.5');
                 shaft.setAttribute('color', '#8B4513');
-                shaft.setAttribute('rotation', '0 0 90');
+                shaft.setAttribute('rotation', '0 0 210');  // 90 + 120 = 210 degrees
                 shaft.setAttribute('metalness', '0.2');
                 shaft.setAttribute('roughness', '0.8');
                 spear.appendChild(shaft);
@@ -898,9 +914,9 @@
 
                 spear.userData = {
                     velocity: {
-                        x: direction.x * 5,
-                        y: direction.y * 5 + 1.5,
-                        z: direction.z * 5
+                        x: direction.x * 15,  // 3x faster/farther (was 5)
+                        y: direction.y * 15 + 1.5,
+                        z: direction.z * 15
                     },
                     isSpear: true
                 };
