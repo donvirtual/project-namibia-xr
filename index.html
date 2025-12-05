@@ -947,14 +947,21 @@
                 hitbox.classList.add('clickable'); // Also clickable
                 globe.appendChild(hitbox);
 
+                // Label OUTSIDE globe container so it doesn't rotate with globe
+                const labelContainer = document.createElement('a-entity');
+                labelContainer.setAttribute('position', `${x} ${height + 0.9} ${z}`);
+                labelContainer.setAttribute('look-at', '[camera]');
+
                 const label = document.createElement('a-text');
                 label.setAttribute('value', destination.name);
                 label.setAttribute('align', 'center');
                 label.setAttribute('color', destination.isTarget ? '#FF6347' : '#FFFFFF');
                 label.setAttribute('width', '4');
-                label.setAttribute('position', '0 0.9 0');
-                label.setAttribute('look-at', '[camera]');
-                globe.appendChild(label);
+                label.setAttribute('position', '0 0 0');
+                labelContainer.appendChild(label);
+
+                this.el.sceneEl.appendChild(labelContainer);
+                this.activeObjects.push(labelContainer); // Track for cleanup
 
                 globe.setAttribute('animation', {
                     property: 'rotation',
@@ -1002,6 +1009,14 @@
             completeLevel1: function() {
                 console.log('✓ Level 1 complete!');
                 this.clearAllObjects();
+
+                // HIDE LASER POINTERS after Level 1
+                const leftLaser = document.getElementById('left-laser');
+                const rightLaser = document.getElementById('right-laser');
+                if (leftLaser) leftLaser.setAttribute('visible', 'false');
+                if (rightLaser) rightLaser.setAttribute('visible', 'false');
+                console.log('🔫 Laser pointers hidden');
+
                 audioEngine.playSuccess();
                 this.updateHUD('✓ NIVEAU 1 VOLTOOID!', 'JA! We gaan naar NAMIBIË!', '');
                 setTimeout(() => this.startLevel2(), 2500);
@@ -1055,9 +1070,9 @@
                     fly.appendChild(sphere);
                 }
 
-                // Add LARGE INVISIBLE HITBOX (basketball size) for easier swatting
+                // Add HUGE INVISIBLE HITBOX for MUCH easier swatting
                 const hitbox = document.createElement('a-sphere');
-                hitbox.setAttribute('radius', '0.4'); // Big hitbox!
+                hitbox.setAttribute('radius', '0.6'); // VEEL groter! (was 0.4)
                 hitbox.setAttribute('opacity', '0');
                 hitbox.setAttribute('transparent', 'true');
                 hitbox.classList.add('fly-hitbox');
@@ -1065,21 +1080,21 @@
 
                 fly.classList.add('fly', 'clickable');
 
-                // Random position ALL AROUND (360°) at varying heights (0.5m to 2.0m)
+                // MUCH CLOSER spawn distance!
                 const angle = Math.random() * Math.PI * 2; // Full 360 degrees
-                const distance = 0.8 + Math.random() * 0.7; // 0.8 to 1.5 meters away
+                const distance = 0.4 + Math.random() * 0.4; // 0.4 to 0.8 meters away (was 0.8-1.5)
                 const x = Math.cos(angle) * distance;
-                const y = 0.5 + Math.random() * 1.5; // Height: 0.5m to 2.0m
+                const y = 1.0 + Math.random() * 0.8; // Height: 1.0m to 1.8m (around head/chest level)
                 const z = Math.sin(angle) * distance;
 
                 fly.setAttribute('position', `${x} ${y} ${z}`);
 
-                // FASTER, more erratic flying animation
-                const moveRange = 0.8; // Bigger movement range
+                // Slower, smaller movement so easier to track
+                const moveRange = 0.3; // Smaller movement (was 0.8)
                 fly.setAttribute('animation__buzz', {
                     property: 'position',
                     to: `${x + (Math.random() - 0.5) * moveRange} ${y + (Math.random() - 0.5) * moveRange} ${z + (Math.random() - 0.5) * moveRange}`,
-                    dur: 300 + Math.random() * 400, // Faster!
+                    dur: 600 + Math.random() * 400, // Slower! (was 300-700)
                     loop: true,
                     dir: 'alternate',
                     easing: 'linear'
@@ -1127,8 +1142,8 @@
                         const distLeft = leftPos.distanceTo(flyPos);
                         const distRight = rightPos.distanceTo(flyPos);
 
-                        // VEEL GROTER: 0.8m radius for easy swatting!
-                        if (distLeft < 0.8 || distRight < 0.8) {
+                        // VEEL GROTER: 1.0m radius for VERY easy swatting!
+                        if (distLeft < 1.0 || distRight < 1.0) {
                             fliesHit.push(obj);
                         }
                     }
