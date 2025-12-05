@@ -86,7 +86,7 @@
     <button id="skip-btn" onclick="window.gameManager.skipLevel()">⏭️ SKIP LEVEL</button>
 
     <a-scene
-        webxr="optionalFeatures: hit-test, hand-tracking;"
+        webxr="requiredFeatures: hand-tracking; optionalFeatures: hit-test;"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
@@ -190,39 +190,47 @@
                 position="0 1.6 5"
                 look-controls
                 wasd-controls="acceleration: 20">
+                <!-- GAZE CURSOR: Kijken om te selecteren (FUSE mode: 2 seconden kijken = klik) -->
                 <a-cursor
+                    id="gaze-cursor"
                     color="#FFD700"
-                    opacity="0.9"
+                    opacity="0.8"
                     raycaster="objects: .clickable; far: 150"
-                    fuse="false"
-                    animation__click="property: scale; startEvents: click; dur: 120; from: 0.1 0.1 0.1; to: 1 1 1">
+                    fuse="true"
+                    fuse-timeout="2000"
+                    animation__fusing="property: scale; startEvents: fusing; dur: 2000; from: 1 1 1; to: 0.2 0.2 0.2; easing: easeInQuad"
+                    animation__click="property: scale; startEvents: click; dur: 150; from: 0.2 0.2 0.2; to: 1 1 1; easing: easeOutQuad">
                 </a-cursor>
             </a-camera>
 
-            <!-- LEFT HAND SHIELD (Level 2) -->
+            <!-- LEFT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
             <a-entity
                 id="left-hand"
-                hand-controls="hand: left"
+                hand-tracking-controls="hand: left"
                 position="-0.3 1.4 -0.4">
+                <!-- Shield voor Level 2 (volgt hand positie exact) -->
                 <a-entity
                     id="shield"
                     visible="false"
-                    geometry="primitive: cylinder; radius: 0.4; height: 0.05"
-                    material="color: #4169E1; metalness: 0.8; roughness: 0.2; emissive: #1E90FF; emissiveIntensity: 0.3"
+                    geometry="primitive: cylinder; radius: 0.5; height: 0.05"
+                    material="color: #4169E1; metalness: 0.8; roughness: 0.2; emissive: #1E90FF; emissiveIntensity: 0.5; opacity: 0.9; transparent: true"
                     rotation="90 0 0"
                     shadow="cast: true">
                 </a-entity>
             </a-entity>
 
-            <!-- RIGHT HAND -->
-            <a-entity hand-controls="hand: right"></a-entity>
+            <!-- RIGHT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
+            <a-entity
+                id="right-hand"
+                hand-tracking-controls="hand: right">
+            </a-entity>
         </a-entity>
 
         <!-- =====================================================
              GAME MANAGER
              ===================================================== -->
 
-        <a-entity id="game-manager" final-game-manager grazing-animals nature-populator></a-entity>
+        <a-entity id="game-manager" final-game-manager grazing-animals nature-populator hand-shield-sync></a-entity>
 
     </a-scene>
 
@@ -309,6 +317,29 @@
         }
 
         const physics = new PhysicsSystem();
+
+        // =====================================================
+        // HAND TRACKING SHIELD SYNC
+        // =====================================================
+        AFRAME.registerComponent('hand-shield-sync', {
+            init: function() {
+                this.shield = document.getElementById('shield');
+                this.leftHand = document.getElementById('left-hand');
+                console.log('🤚 Hand-shield sync initialized');
+            },
+
+            tick: function() {
+                // Sync shield position with left hand real-time
+                if (this.leftHand && this.shield && this.shield.getAttribute('visible')) {
+                    const handPos = this.leftHand.object3D.position;
+                    const handRot = this.leftHand.object3D.rotation;
+
+                    // Update shield to exactly follow hand
+                    this.shield.object3D.position.copy(handPos);
+                    this.shield.object3D.rotation.copy(handRot);
+                }
+            }
+        });
 
         // =====================================================
         // PROCEDURAL WAVY TERRAIN (ROLLING DUNES)
