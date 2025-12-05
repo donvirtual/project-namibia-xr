@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dr. Oma's Expeditie - FINALE</title>
+    <title>Vibeke's Expeditie - FINALE</title>
 
     <!-- A-Frame Core -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
@@ -77,7 +77,7 @@
 <body>
     <div id="overlay">
         <div id="hud">
-            <div class="level-title" id="level-title">🌍 DR. OMA'S EXPEDITIE</div>
+            <div class="level-title" id="level-title">🌍 VIBEKE'S EXPEDITIE</div>
             <div class="objective" id="objective">Namibian Steppe wordt geladen...</div>
             <div class="progress" id="progress"></div>
         </div>
@@ -645,18 +645,20 @@
 
             startIntro: function() {
                 this.currentState = GAME_STATES.INTRO;
-                this.updateHUD('🌍 DR. OMA\'S EXPEDITIE', 'KLIK OM TE STARTEN', '');
+                this.updateHUD('🌍 VIBEKE\'S EXPEDITIE', 'KLIK OM TE STARTEN', '');
 
                 const panel = this.createClickablePanel(
-                    'MISSIE BRIEFING\n\nWelkom Dokter!\n\n' +
+                    'MISSIE BRIEFING: VIBEKE\n\n' +
+                    'Status: Klaar voor vertrek.\n' +
+                    'Doel: Medische Expeditie Namibië.\n\n' +
                     '3D Assets Status:\n' +
                     (this.hasRhino ? '✓' : '✗') + ' Neushoorn\n' +
                     (this.hasHunter ? '✓' : '✗') + ' Jagers\n\n' +
-                    'Niveau 1: Vind Namibië!\n' +
-                    'Niveau 2: Blokkeer Speren\n' +
-                    'Niveau 3: Rectaal Onderzoek\n\n' +
-                    '>>> KLIK HIER OM TE STARTEN <<<',
-                    '#00FF00',
+                    'Niveau 1: Filter de Reisgeschiedenis.\n' +
+                    'Niveau 2: Overleef de Hinderlaag.\n' +
+                    'Niveau 3: Spoedoperatie (Rectaal).\n\n' +
+                    '>>> START EXPEDITIE <<<',
+                    '#FFD700',
                     5,
                     () => this.startLevel1()
                 );
