@@ -205,15 +205,15 @@
                 position="0 1.6 5"
                 look-controls
                 wasd-controls="acceleration: 20">
-                <!-- GAZE CURSOR: Kijken om te selecteren (FUSE mode: 2 seconden kijken = klik) -->
+                <!-- GAZE CURSOR: Kijken om te selecteren (FUSE mode: 1 seconde kijken = klik) -->
                 <a-cursor
                     id="gaze-cursor"
                     color="#FFD700"
                     opacity="0.8"
                     raycaster="objects: .clickable; far: 150"
                     fuse="true"
-                    fuse-timeout="2000"
-                    animation__fusing="property: scale; startEvents: fusing; dur: 2000; from: 1 1 1; to: 0.2 0.2 0.2; easing: easeInQuad"
+                    fuse-timeout="1000"
+                    animation__fusing="property: scale; startEvents: fusing; dur: 1000; from: 1 1 1; to: 0.2 0.2 0.2; easing: easeInQuad"
                     animation__click="property: scale; startEvents: click; dur: 150; from: 0.2 0.2 0.2; to: 1 1 1; easing: easeOutQuad">
                 </a-cursor>
 
@@ -722,8 +722,24 @@
                 this.rhinoTouched = false;
                 this.heartTouched = false;
 
-                // Start wind ambient
-                audioEngine.startWind();
+                // Audio activation flag
+                this.audioActivated = false;
+
+                // Try to activate audio on ANY user interaction
+                const activateAudio = () => {
+                    if (!this.audioActivated) {
+                        console.log('🔊 Activating audio...');
+                        audioEngine.startWind();
+                        this.audioActivated = true;
+                    }
+                };
+
+                // Listen for VR session start
+                this.el.sceneEl.addEventListener('enter-vr', activateAudio);
+                // Listen for any click
+                document.addEventListener('click', activateAudio, { once: true });
+                // Listen for any touch
+                document.addEventListener('touchstart', activateAudio, { once: true });
 
                 // Expose for skip button
                 window.gameManager = this;
@@ -889,7 +905,7 @@
                 this.showBriefing(
                     'NIVEAU 1: DE BESTEMMING',
                     'Lieve Vibeke,\n\nWe gaan met de HELE familie op reis!\nMaar waarheen?\n\nZoek de juiste bestemming...',
-                    'HOE TE SPELEN:\n- Wijs met je hand naar een bol\n- Knijp duim+wijsvinger (pinch) om te klikken\n- Soms een paar keer proberen tot hij goed pakt!\n- Zoek NAMIBIË!',
+                    'HOE TE SPELEN:\n- MAKKELIJKST: Kijk 1 seconde naar een bol (gouden cursor)\n- OF: Wijs met je hand + knijp duim+wijsvinger\n- Zoek NAMIBIË!',
                     () => this.spawnGlobes()
                 );
             },
