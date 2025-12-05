@@ -226,8 +226,15 @@
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity"
                 position="-0.3 1.4 -0.4">
-                <!-- Visual debug sphere to see hand position -->
-                <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
+                <!-- LARGE visual debug sphere to see EXACT hand collision position -->
+                <a-sphere
+                    id="left-hand-debug"
+                    radius="0.3"
+                    color="#FF0000"
+                    opacity="0.4"
+                    transparent="true"
+                    material="wireframe: true">
+                </a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="left-laser"
@@ -255,8 +262,15 @@
                 hand-tracking-controls="hand: right"
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity">
-                <!-- Visual debug sphere to see hand position -->
-                <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
+                <!-- LARGE visual debug sphere to see EXACT hand collision position -->
+                <a-sphere
+                    id="right-hand-debug"
+                    radius="0.3"
+                    color="#00FF00"
+                    opacity="0.4"
+                    transparent="true"
+                    material="wireframe: true">
+                </a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="right-laser"
@@ -1158,11 +1172,11 @@
                     this.debugFrameCount++;
                     if (this.debugFrameCount % 60 === 0 && flies.length > 0) {
                         const minDist = Math.min(distLeft, distRight);
-                        console.log(`👋 Closest fly distance: ${minDist.toFixed(2)}m (need < 1.0m)`);
+                        console.log(`👋 Closest fly distance: ${minDist.toFixed(2)}m (need < 2.0m)`);
                     }
 
-                    // VEEL GROTER: 1.0m radius for VERY easy swatting!
-                    if (distLeft < 1.0 || distRight < 1.0) {
+                    // ENORM GROOT: 2.0m radius for SUPER easy swatting!
+                    if (distLeft < 2.0 || distRight < 2.0) {
                         console.log(`💥 HIT! Distance: L=${distLeft.toFixed(2)}m R=${distRight.toFixed(2)}m`);
                         fliesHit.push(obj);
                     }
