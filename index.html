@@ -88,12 +88,13 @@
     <button id="skip-btn" onclick="window.gameManager && window.gameManager.skipLevel()">⏭️ SKIP</button>
 
     <a-scene
-        webxr="requiredFeatures: hand-tracking; optionalFeatures: hit-test; referenceSpaceType: local-floor"
+        webxr="referenceSpaceType: local-floor"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
         loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a"
-        vr-mode-ui="enabled: true">
+        vr-mode-ui="enabled: true"
+        timeout="10000">
 
         <!-- =====================================================
              ASSET MANAGEMENT
