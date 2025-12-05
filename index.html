@@ -112,8 +112,8 @@
             <a-asset-item id="tree-asset" src="assets/Acacia.glb?v=2" response-type="arraybuffer"></a-asset-item>
 
             <!-- Textures -->
-            <img id="sky-asset" src="assets/sky.jpg?v=2" crossorigin="anonymous">
-            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg?v=2" crossorigin="anonymous">
+            <img id="sky-asset" src="assets/sky.jpg?v=3" crossorigin="anonymous">
+            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg?v=3" crossorigin="anonymous">
         </a-assets>
 
         <!-- =====================================================
@@ -446,31 +446,7 @@
             populateDunes: function() {
                 const scene = this.el.sceneEl;
 
-                // High density grass (200x - scale was perfect!)
-                for (let i = 0; i < 200; i++) {
-                    const grass = document.createElement('a-cone');
-                    grass.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    grass.setAttribute('radius-bottom', '0.5');
-                    grass.setAttribute('radius-top', '0.1');
-                    grass.setAttribute('height', '3');
-                    grass.setAttribute('color', this.randomGrassColor());
-                    grass.setAttribute('roughness', '1');
-                    scene.appendChild(grass);
-                }
-
-                // Medium rocks (20x - scale was perfect!)
-                for (let i = 0; i < 20; i++) {
-                    const rock = document.createElement('a-box');
-                    rock.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    rock.setAttribute('width', `${5 + Math.random() * 5}`);
-                    rock.setAttribute('height', `${2 + Math.random() * 3}`);
-                    rock.setAttribute('depth', `${4 + Math.random() * 4}`);
-                    rock.setAttribute('rotation', `${Math.random() * 15} ${Math.random() * 360} ${Math.random() * 15}`);
-                    rock.setAttribute('color', this.randomRockColor());
-                    rock.setAttribute('roughness', '1');
-                    rock.setAttribute('shadow', 'cast: true; receive: true');
-                    scene.appendChild(rock);
-                }
+                // GRASS & ROCKS DELETED PER USER REQUEST
 
                 // Dead trees (5x using existing tree asset if available)
                 const hasTree = !!document.getElementById('tree-asset');
