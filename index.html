@@ -109,11 +109,11 @@
             <a-asset-item id="fox-asset" src="assets/fox.gltf" response-type="arraybuffer"></a-asset-item>
 
             <!-- Environment -->
-            <a-asset-item id="tree-asset" src="assets/Acacia.glb" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="tree-asset" src="assets/Acacia.glb?v=2" response-type="arraybuffer"></a-asset-item>
 
             <!-- Textures -->
-            <img id="sky-asset" src="assets/sky.jpg" crossorigin="anonymous">
-            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg" crossorigin="anonymous">
+            <img id="sky-asset" src="assets/sky.jpg?v=2" crossorigin="anonymous">
+            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg?v=2" crossorigin="anonymous">
         </a-assets>
 
         <!-- =====================================================
@@ -449,9 +449,9 @@
                 for (let i = 0; i < 200; i++) {
                     const grass = document.createElement('a-cone');
                     grass.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    grass.setAttribute('radius-bottom', '0.05');
-                    grass.setAttribute('radius-top', '0.01');
-                    grass.setAttribute('height', '0.3');
+                    grass.setAttribute('radius-bottom', '0.5');  // 10x bigger (was 0.05)
+                    grass.setAttribute('radius-top', '0.1');      // 10x bigger (was 0.01)
+                    grass.setAttribute('height', '3');            // 10x bigger (was 0.3)
                     grass.setAttribute('color', this.randomGrassColor());
                     grass.setAttribute('roughness', '1');
                     scene.appendChild(grass);
@@ -461,9 +461,9 @@
                 for (let i = 0; i < 20; i++) {
                     const rock = document.createElement('a-box');
                     rock.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                    rock.setAttribute('width', `${0.5 + Math.random() * 0.5}`);
-                    rock.setAttribute('height', `${0.2 + Math.random() * 0.3}`);
-                    rock.setAttribute('depth', `${0.4 + Math.random() * 0.4}`);
+                    rock.setAttribute('width', `${5 + Math.random() * 5}`);   // 10x bigger (was 0.5-1.0)
+                    rock.setAttribute('height', `${2 + Math.random() * 3}`);  // 10x bigger (was 0.2-0.5)
+                    rock.setAttribute('depth', `${4 + Math.random() * 4}`);
                     rock.setAttribute('rotation', `${Math.random() * 15} ${Math.random() * 360} ${Math.random() * 15}`);
                     rock.setAttribute('color', this.randomRockColor());
                     rock.setAttribute('roughness', '1');
@@ -742,13 +742,21 @@
                 // Spawn 3 bushes at 15m radius for ambush
                 this.spawnAmbushBushes();
 
-                // Spawn hunters and spears (they emerge from bushes)
-                for (let i = 0; i < 10; i++) {
-                    setTimeout(() => {
-                        if (this.currentState === GAME_STATES.LEVEL_2) {
-                            this.spawnHunterWithSpear((Math.PI * 2 / 10) * i);
+                // Spawn hunters in 2-3 formation next to each bush (9 total hunters)
+                // 3 bushes × 2 rows × 3 cols = 18 hunters (maar we doen 2 rijen, laatste rij heeft 3)
+                let hunterIndex = 0;
+                for (let bushIndex = 0; bushIndex < 3; bushIndex++) {
+                    for (let row = 0; row < 2; row++) {
+                        const colsInRow = row === 0 ? 2 : 3;  // Front row: 2, back row: 3
+                        for (let col = 0; col < colsInRow; col++) {
+                            setTimeout(() => {
+                                if (this.currentState === GAME_STATES.LEVEL_2) {
+                                    this.spawnHunterWithSpear(bushIndex, row, col);
+                                }
+                            }, hunterIndex * 500);  // Stagger spawns by 0.5s
+                            hunterIndex++;
                         }
-                    }, i * 2000);
+                    }
                 }
             },
 
@@ -806,31 +814,49 @@
                 console.log(`✓ Spawned ${bushCount} ambush bushes at ${bushRadius}m radius`);
             },
 
-            spawnHunterWithSpear: function(angle) {
-                const radius = 8;
-                const height = 0;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
+            spawnHunterWithSpear: function(bushIndex, row, col) {
+                // Bush positions (same as spawnAmbushBushes)
+                const bushRadius = 15;
+                const bushAngle = (Math.PI * 2 / 3) * bushIndex;
+                const bushX = Math.cos(bushAngle) * bushRadius;
+                const bushZ = Math.sin(bushAngle) * bushRadius;
 
-                // Hunter model (FINAL SCALE CORRECTION)
+                // Position hunters 1m to the right of bush, in 2x3 grid
+                // Calculate right vector (perpendicular to bush-to-center)
+                const rightX = -Math.sin(bushAngle);  // Perpendicular vector
+                const rightZ = Math.cos(bushAngle);
+
+                // Grid formation: 2 rows, 3 cols (spaced 1.5m apart)
+                const spacing = 1.5;
+                const x = bushX + rightX * 1 + (col - 1) * spacing * rightX;
+                const z = bushZ + rightZ * 1 + (col - 1) * spacing * rightZ - (row * spacing);
+                const height = 0;
+
+                // Calculate rotation to face camera (at 0,0,0)
+                const angleToCamera = Math.atan2(-x, -z);  // Look at center
+                const rotationY = THREE.MathUtils.radToDeg(angleToCamera);
+
+                // Hunter model
                 if (this.hasHunter) {
                     const hunter = document.createElement('a-entity');
                     hunter.setAttribute('gltf-model', '#hunter-asset');
                     hunter.setAttribute('position', `${x} ${height} ${z}`);
-                    hunter.setAttribute('scale', '0.25 0.25 0.25'); // FINAL: Correct hunter scale
-                    hunter.setAttribute('rotation', `0 ${THREE.MathUtils.radToDeg(Math.atan2(z, x)) + 90} 0`);
+                    hunter.setAttribute('scale', '0.25 0.25 0.25');
+                    hunter.setAttribute('rotation', `0 ${rotationY} 0`);  // Face camera!
                     hunter.setAttribute('shadow', 'cast: true');
 
                     this.el.sceneEl.appendChild(hunter);
                     this.activeObjects.push(hunter);
                 }
 
-                // Launch spear after 1 second
-                setTimeout(() => {
+                // Launch spear continuously (every 3 seconds)
+                const spearInterval = setInterval(() => {
                     if (this.currentState === GAME_STATES.LEVEL_2) {
                         this.launchSpear(x, height + 1.5, z);
+                    } else {
+                        clearInterval(spearInterval);
                     }
-                }, 1000);
+                }, 3000 + Math.random() * 2000);  // 3-5 seconds between throws
             },
 
             launchSpear: function(startX, startY, startZ) {
