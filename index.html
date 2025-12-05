@@ -210,57 +210,6 @@
                     animation__click="property: scale; startEvents: click; dur: 150; from: 0.2 0.2 0.2; to: 1 1 1; easing: easeOutQuad">
                 </a-cursor>
 
-                <!-- IN-WORLD 3D STORY UI (VR Compatible) -->
-                <a-entity id="story-ui" position="0 0 -2" visible="false">
-                    <!-- Black Background Panel -->
-                    <a-plane
-                        width="3"
-                        height="2"
-                        color="#000000"
-                        opacity="0.95">
-                    </a-plane>
-
-                    <!-- Green Title Text -->
-                    <a-text
-                        id="story-title"
-                        value=""
-                        align="center"
-                        color="#00FF00"
-                        width="2.8"
-                        position="0 0.6 0.01"
-                        wrap-count="30">
-                    </a-text>
-
-                    <!-- Story Text -->
-                    <a-text
-                        id="story-text"
-                        value=""
-                        align="center"
-                        color="#88FF88"
-                        width="2.6"
-                        position="0 0.1 0.01"
-                        wrap-count="40">
-                    </a-text>
-
-                    <!-- START Button (Clickable Plane) -->
-                    <a-plane
-                        id="story-button"
-                        class="clickable"
-                        width="1.5"
-                        height="0.4"
-                        color="#00FF00"
-                        position="0 -0.6 0.01"
-                        opacity="0.9">
-                        <a-text
-                            id="story-button-text"
-                            value="START"
-                            align="center"
-                            color="#000000"
-                            width="3"
-                            position="0 0 0.01">
-                        </a-text>
-                    </a-plane>
-                </a-entity>
             </a-camera>
 
             <!-- LEFT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
@@ -300,45 +249,6 @@
         // =====================================================
         // 3D STORY OVERLAY SYSTEM (VR Compatible)
         // =====================================================
-        class StoryUI {
-            constructor() {
-                this.ui = document.getElementById('story-ui');
-                this.title = document.getElementById('story-title');
-                this.text = document.getElementById('story-text');
-                this.button = document.getElementById('story-button');
-                this.buttonText = document.getElementById('story-button-text');
-                this.callback = null;
-
-                this.button.addEventListener('click', () => {
-                    console.log('📖 Story button clicked');
-                    this.hide();
-                    if (this.callback) this.callback();
-                });
-
-                console.log('📖 3D Story UI initialized');
-            }
-
-            show(title, text, buttonText, callback) {
-                console.log('📖 Showing story:', title);
-                this.title.setAttribute('value', title);
-                this.text.setAttribute('value', text);
-                this.buttonText.setAttribute('value', buttonText);
-                this.callback = callback;
-                this.ui.setAttribute('visible', 'true');
-            }
-
-            hide() {
-                console.log('📖 Hiding story UI');
-                this.ui.setAttribute('visible', 'false');
-            }
-        }
-
-        let storyUI;
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                storyUI = new StoryUI();
-            }, 1000);
-        });
 
         // =====================================================
         // ENHANCED AUDIO ENGINE (with Wind, Buzz, Splat, Poof)
@@ -816,18 +726,7 @@
                 console.log('🎬 Starting intro...');
                 this.currentState = GAME_STATES.INTRO;
                 this.updateHUD('🌍 VIBEKE\'S GROTE EXPEDITIE', 'Klaar voor vertrek...', '');
-
-                if (storyUI) {
-                    storyUI.show(
-                        'VIBEKE\'S GROTE EXPEDITIE',
-                        'Na 85 jaar is het eindelijk zover...',
-                        'START DE REIS',
-                        () => this.startLevel1()
-                    );
-                } else {
-                    console.warn('StoryUI not ready, skipping to Level 1');
-                    setTimeout(() => this.startLevel1(), 2000);
-                }
+                setTimeout(() => this.startLevel1(), 2000);
             },
 
             // =====================================================
@@ -837,31 +736,17 @@
                 console.log('🌍 Starting Level 1...');
                 this.currentState = GAME_STATES.LEVEL_1;
                 this.clearAllObjects();
-
-                if (storyUI) {
-                    storyUI.show(
-                        'NIVEAU 1: DE BESTEMMING',
-                        'Lieve Vibeke, we gaan met de HELE familie op reis! Maar waarheen? Zoek de juiste bestemming op de kaart...',
-                        'START ZOEKEN',
-                        () => {
-                            this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
-                            this.spawnGlobes();
-                        }
-                    );
-                } else {
-                    this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
-                    this.spawnGlobes();
-                }
+                this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
+                setTimeout(() => this.spawnGlobes(), 500);
             },
 
             spawnGlobes: function() {
                 const destinations = [
-                    { name: 'Portugal', isTarget: false },
-                    { name: 'Spanje', isTarget: false },
-                    { name: 'Griekenland', isTarget: false },
-                    { name: 'Hongarije', isTarget: false },
-                    { name: 'Denemarken', isTarget: false },
+                    { name: 'Xian', isTarget: false },
                     { name: 'Texel', isTarget: false },
+                    { name: 'Jeruzalem', isTarget: false },
+                    { name: 'Denemarken', isTarget: false },
+                    { name: 'Hongarije', isTarget: false },
                     { name: 'NAMIBIË', isTarget: true },
                 ];
 
@@ -922,28 +807,28 @@
                 const isTarget = globe.getAttribute('data-is-target') === 'true';
                 const name = globe.getAttribute('data-name');
 
+                console.log('🌍 Globe clicked:', name, 'isTarget:', isTarget);
+
                 if (isTarget) {
                     console.log('✓ Found Namibia!');
                     audioEngine.playSuccess();
                     this.updateHUD('✈️ NIVEAU 1', `✓ GEVONDEN: ${name}!`, '');
                     this.createExplosion(globe.object3D.position, '#FFD700', 60);
 
-                    if (globe.parentNode) {
-                        globe.parentNode.removeChild(globe);
-                        this.activeObjects = this.activeObjects.filter(o => o !== globe);
-                    }
+                    // Remove globe immediately
+                    globe.parentNode.removeChild(globe);
+                    this.activeObjects = this.activeObjects.filter(o => o !== globe);
 
                     setTimeout(() => this.completeLevel1(), 2000);
                 } else {
                     // Wrong globe - POOF!
-                    console.log('✗ Wrong destination:', name);
+                    console.log('✗ Wrong destination:', name, '- removing globe');
                     audioEngine.playPoof();
                     this.createExplosion(globe.object3D.position, '#888888', 20);
 
-                    if (globe.parentNode) {
-                        globe.parentNode.removeChild(globe);
-                        this.activeObjects = this.activeObjects.filter(o => o !== globe);
-                    }
+                    // Remove globe immediately
+                    globe.parentNode.removeChild(globe);
+                    this.activeObjects = this.activeObjects.filter(o => o !== globe);
                 }
             },
 
@@ -963,30 +848,19 @@
                 this.currentState = GAME_STATES.LEVEL_2;
                 this.clearAllObjects();
                 this.level2FliesKilled = 0;
-
-                if (storyUI) {
-                    storyUI.show(
-                        'NIVEAU 2: DE VOORBEREIDING',
-                        'Maar pas op... in de rimboe zoemen veel beestjes. Even oefenen! Mep die vliegen weg!',
-                        'START MEPPEN',
-                        () => {
-                            this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
-                            this.spawnFlies();
-                        }
-                    );
-                } else {
-                    this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
-                    this.spawnFlies();
-                }
+                this.level2TotalFlies = 18; // Total flies to spawn
+                this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
+                setTimeout(() => this.spawnFlies(), 500);
             },
 
             spawnFlies: function() {
-                for (let i = 0; i < this.level2Target; i++) {
+                // Spawn 18 flies total, but only need to kill 10
+                for (let i = 0; i < this.level2TotalFlies; i++) {
                     setTimeout(() => {
                         if (this.currentState === GAME_STATES.LEVEL_2) {
                             this.spawnFly();
                         }
-                    }, i * 800);
+                    }, i * 500); // Faster spawn rate
                 }
             },
 
@@ -1009,11 +883,11 @@
 
                 fly.classList.add('fly', 'clickable');
 
-                // Random position around head
-                const angle = Math.random() * Math.PI * 2;
-                const distance = 0.8 + Math.random() * 0.5;
+                // Random position ALL AROUND (360°) at varying heights (0.5m to 2.0m)
+                const angle = Math.random() * Math.PI * 2; // Full 360 degrees
+                const distance = 0.8 + Math.random() * 0.7; // 0.8 to 1.5 meters away
                 const x = Math.cos(angle) * distance;
-                const y = 1.4 + (Math.random() - 0.5) * 0.6;
+                const y = 0.5 + Math.random() * 1.5; // Height: 0.5m to 2.0m
                 const z = Math.sin(angle) * distance;
 
                 fly.setAttribute('position', `${x} ${y} ${z}`);
@@ -1090,17 +964,7 @@
                 this.currentState = GAME_STATES.LEVEL_3;
                 this.clearAllObjects();
                 this.level3Score = 0;
-
-                if (storyUI) {
-                    storyUI.show(
-                        'NIVEAU 3: DE BESCHERMER',
-                        'Het wordt een wild avontuur. Jij moet de familie beschermen tegen gevaren. Blokkeer alles!',
-                        'START VERDEDIGING',
-                        () => this.setupLevel3()
-                    );
-                } else {
-                    this.setupLevel3();
-                }
+                setTimeout(() => this.setupLevel3(), 500);
             },
 
             setupLevel3: function() {
@@ -1306,27 +1170,14 @@
                 this.clearAllObjects();
                 this.rhinoTouched = false;
                 this.heartTouched = false;
-
-                if (storyUI) {
-                    storyUI.show(
-                        'NIVEAU 4: DE ONTMOETING',
-                        'Kijk! De Big Five! Deze neushoorn heeft iets bijzonders voor je bewaard...',
-                        'ONTMOET DE NEUSHOORN',
-                        () => {
-                            this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
-                            this.spawnRhino();
-                        }
-                    );
-                } else {
-                    this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
-                    this.spawnRhino();
-                }
+                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
+                setTimeout(() => this.spawnRhino(), 500);
             },
 
             spawnRhino: function() {
                 const rhinoContainer = document.createElement('a-entity');
                 rhinoContainer.setAttribute('id', 'rhino-boss');
-                rhinoContainer.setAttribute('position', '0 0 -0.5');
+                rhinoContainer.setAttribute('position', '0 0.3 -0.45'); // Closer and higher - face to face!
                 rhinoContainer.setAttribute('shadow', 'cast: true; receive: true');
 
                 if (this.hasRhino) {
@@ -1363,22 +1214,22 @@
                     rhinoContainer.appendChild(body);
                 }
 
-                // Heart (hidden initially) - Using bottle.glb model
+                // Heart (hidden initially) - Using bottle.glb model - LOWER in belly, SMALLER
                 const heart = document.createElement('a-entity');
                 heart.setAttribute('id', 'rhino-heart');
-                heart.setAttribute('position', '0 0.5 0.3');
+                heart.setAttribute('position', '0 -0.3 0'); // Lower - in the belly
                 heart.classList.add('clickable');
 
                 if (this.hasHeart) {
-                    // Use actual heart/bottle model
+                    // Use actual heart/bottle model - MUCH SMALLER
                     heart.setAttribute('gltf-model', '#heart-model');
-                    heart.setAttribute('scale', '0.5 0.5 0.5');
+                    heart.setAttribute('scale', '0.02 0.02 0.02'); // Tiny!
                     heart.setAttribute('rotation', '0 0 0');
                     heart.setAttribute('material', 'opacity: 0; transparent: true');
                 } else {
-                    // Fallback: red sphere
+                    // Fallback: red sphere - SMALLER
                     const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('radius', '0.15');
+                    sphere.setAttribute('radius', '0.04'); // Small radius
                     sphere.setAttribute('color', '#DC143C');
                     sphere.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.5; metalness: 0.8; roughness: 0.2; opacity: 0; transparent: true');
                     heart.appendChild(sphere);
@@ -1386,8 +1237,8 @@
 
                 heart.setAttribute('animation__pulse', {
                     property: 'scale',
-                    from: '0.5 0.5 0.5',
-                    to: '0.6 0.6 0.6',
+                    from: '0.02 0.02 0.02',
+                    to: '0.025 0.025 0.025',
                     dur: 800,
                     loop: true,
                     dir: 'alternate',
