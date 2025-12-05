@@ -226,6 +226,8 @@
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity"
                 position="-0.3 1.4 -0.4">
+                <!-- HUGE DEBUG SPHERE to see where hand collision happens -->
+                <a-sphere radius="0.5" color="#FF0000" opacity="0.3" transparent="true"></a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="left-laser"
@@ -253,6 +255,8 @@
                 hand-tracking-controls="hand: right"
                 raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity">
+                <!-- HUGE DEBUG SPHERE to see where hand collision happens -->
+                <a-sphere radius="0.5" color="#00FF00" opacity="0.3" transparent="true"></a-sphere>
                 <!-- MANUAL LASER LINE (cylinder) -->
                 <a-cylinder
                     id="right-laser"
@@ -1114,6 +1118,14 @@
                 });
 
                 fly.addEventListener('click', () => this.handleFlySplat(fly));
+
+                // AUTO-REMOVE after 8 seconds as BACKUP (in case hand tracking doesn't work)
+                setTimeout(() => {
+                    if (fly.parentNode && !fly.dataset.splatted) {
+                        console.log('⏱️ Fly auto-removed (timeout)');
+                        this.handleFlySplat(fly);
+                    }
+                }, 8000);
 
                 // Play buzz sound
                 audioEngine.playBuzz();
