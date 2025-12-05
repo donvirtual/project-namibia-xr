@@ -86,7 +86,7 @@
     <button id="skip-btn" onclick="window.gameManager.skipLevel()">⏭️ SKIP LEVEL</button>
 
     <a-scene
-        webxr="requiredFeatures: hand-tracking; optionalFeatures: hit-test;"
+        webxr="requiredFeatures: hand-tracking; optionalFeatures: hit-test; referenceSpaceType: local-floor"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
@@ -260,6 +260,12 @@
             playVictory() {
                 const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
                 this.playMelody(melody, 220);
+            }
+
+            playMagicalChime() {
+                // Magical discovery chime (C major arpeggio with sparkle)
+                const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1568.00];  // C E G C E G
+                this.playMelody(melody, 150);
             }
 
             playTone(type, freq, gain, duration) {
@@ -902,7 +908,7 @@
                     const hunter = document.createElement('a-entity');
                     hunter.setAttribute('gltf-model', '#hunter-asset');
                     hunter.setAttribute('position', `${x} ${height} ${z}`);
-                    hunter.setAttribute('scale', '0.25 0.25 0.25');
+                    hunter.setAttribute('scale', '0.1625 0.1625 0.1625');  // 65% of 0.25
                     hunter.setAttribute('rotation', `0 ${rotationY} 0`);  // Face camera!
                     hunter.setAttribute('shadow', 'cast: true');
 
@@ -947,7 +953,7 @@
                 shaft.setAttribute('radius', '0.05');
                 shaft.setAttribute('height', '2.5');
                 shaft.setAttribute('color', '#8B4513');
-                shaft.setAttribute('rotation', '0 0 210');  // 90 + 120 = 210 degrees
+                shaft.setAttribute('rotation', '0 0 90');  // Horizontal alignment with tip
                 shaft.setAttribute('metalness', '0.2');
                 shaft.setAttribute('roughness', '0.8');
                 spear.appendChild(shaft);
@@ -1040,7 +1046,7 @@
             spawnRhino: function() {
                 const rhinoContainer = document.createElement('a-entity');
                 rhinoContainer.setAttribute('id', 'rhino-boss');
-                rhinoContainer.setAttribute('position', '0 0 -4');
+                rhinoContainer.setAttribute('position', '0 0 -0.5');  // Moved much closer!
                 rhinoContainer.setAttribute('shadow', 'cast: true; receive: true');
 
                 if (this.hasRhino) {
@@ -1048,6 +1054,7 @@
                     rhino.setAttribute('gltf-model', '#rhino-asset');
                     rhino.setAttribute('scale', '2 2 2');
                     rhino.setAttribute('rotation', '0 200 0'); // REAR END PROPERLY FACING USER (20° offset)!
+                    rhino.setAttribute('material', 'opacity: 0.5; transparent: true');  // X-RAY MODE!
 
                     // Breathing animation
                     rhino.setAttribute('animation__breath', {
@@ -1074,11 +1081,11 @@
                     rhinoContainer.appendChild(body);
                 }
 
-                // Tumor (at the REAR)
+                // Tumor (INSIDE rhino body, much smaller)
                 const tumor = document.createElement('a-sphere');
-                tumor.setAttribute('radius', '0.3');
+                tumor.setAttribute('radius', '0.05');  // MUCH SMALLER!
                 tumor.setAttribute('color', '#DC143C');
-                tumor.setAttribute('position', '0 0.5 1.2'); // Rear position
+                tumor.setAttribute('position', '0 0.3 0.6');  // Inside body, visible through x-ray
                 tumor.setAttribute('id', 'tumor');
                 tumor.classList.add('tumor', 'clickable');
                 tumor.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.0; metalness: 0.6; roughness: 0.2');
@@ -1097,18 +1104,18 @@
                 tumor.addEventListener('click', () => this.handleTumorGrab(tumor));
                 rhinoContainer.appendChild(tumor);
 
-                // ARROW pointing at tumor
+                // ARROW pointing at tumor (updated position for inside body)
                 const arrow = document.createElement('a-cone');
                 arrow.setAttribute('radius-bottom', '0.2');
                 arrow.setAttribute('height', '0.6');
                 arrow.setAttribute('color', '#FFD700');
-                arrow.setAttribute('position', '0 1.5 1.2');
+                arrow.setAttribute('position', '0 0.9 0.6');  // Point to inside body
                 arrow.setAttribute('rotation', '180 0 0');
                 arrow.setAttribute('material', 'emissive: #FFD700; emissiveIntensity: 0.8');
 
                 arrow.setAttribute('animation__bounce', {
                     property: 'position',
-                    to: '0 1.8 1.2',
+                    to: '0 1.2 0.6',
                     dur: 800,
                     loop: true,
                     dir: 'alternate',
@@ -1119,11 +1126,11 @@
 
                 // LABEL
                 const label = document.createElement('a-text');
-                label.setAttribute('value', 'RECTAAL\nONDERZOEK\nSTARTEN');
+                label.setAttribute('value', 'Steek je hand in de neushoorn\nvoor het rectale onderzoek.');
                 label.setAttribute('align', 'center');
                 label.setAttribute('color', '#FFD700');
                 label.setAttribute('width', '3');
-                label.setAttribute('position', '1.5 1.5 1.2');
+                label.setAttribute('position', '0 1.5 0.6');
                 label.setAttribute('look-at', '[camera]');
                 rhinoContainer.appendChild(label);
 
@@ -1184,6 +1191,12 @@
             },
 
             showFinalReward: function() {
+                // MAGICAL CHIME for physical gift reveal!
+                audioEngine.playMagicalChime();
+
+                // Spawn particle effect on ground to guide hand digging
+                this.createGroundParticles();
+
                 const panel = document.createElement('a-entity');
                 panel.setAttribute('position', '0 1.6 -5');
                 panel.setAttribute('look-at', '[camera]');
@@ -1213,7 +1226,7 @@
                 panel.appendChild(title);
 
                 const reward = document.createElement('a-text');
-                reward.setAttribute('value', 'LOCATIE CADEAU:\n\n✨ IN DE ZANDBAK ✨\n\n(Graaien maar, Oma!)');
+                reward.setAttribute('value', 'Graai nu met je handen naar onder\nin het zand om je schat te vinden.\n\n✨ GRAAIEN MAAR! ✨');
                 reward.setAttribute('align', 'center');
                 reward.setAttribute('color', '#FFD700');
                 reward.setAttribute('width', '4');
@@ -1322,6 +1335,50 @@
                     setTimeout(() => {
                         if (particle.parentNode) particle.parentNode.removeChild(particle);
                     }, 1800);
+                }
+            },
+
+            createGroundParticles: function() {
+                // Golden sparkles on ground (0, 0, 0.5) to guide "digging"
+                const center = new THREE.Vector3(0, 0, 0.5);
+
+                for (let i = 0; i < 80; i++) {
+                    setTimeout(() => {
+                        const particle = document.createElement('a-sphere');
+                        particle.setAttribute('radius', 0.03 + Math.random() * 0.05);
+                        particle.setAttribute('color', '#FFD700');
+                        particle.setAttribute('material', 'emissive: #FFD700; emissiveIntensity: 0.8; metalness: 0.8');
+
+                        // Spawn in circle on ground
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = Math.random() * 0.8;
+                        const x = center.x + Math.cos(angle) * radius;
+                        const z = center.z + Math.sin(angle) * radius;
+
+                        particle.setAttribute('position', `${x} 0.05 ${z}`);
+
+                        // Float up and fade
+                        particle.setAttribute('animation__float', {
+                            property: 'position',
+                            to: `${x} ${0.5 + Math.random() * 0.3} ${z}`,
+                            dur: 2000,
+                            easing: 'easeOutQuad',
+                            loop: false
+                        });
+
+                        particle.setAttribute('animation__fade', {
+                            property: 'scale',
+                            to: '0 0 0',
+                            dur: 2000,
+                            easing: 'easeInQuad',
+                            loop: false
+                        });
+
+                        this.el.sceneEl.appendChild(particle);
+                        setTimeout(() => {
+                            if (particle.parentNode) particle.parentNode.removeChild(particle);
+                        }, 2000);
+                    }, i * 50);  // Staggered appearance
                 }
             },
 
