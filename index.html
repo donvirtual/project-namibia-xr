@@ -771,7 +771,7 @@
                 document.getElementById('progress').textContent = progress;
             },
 
-            showBriefing: function(title, text, callback) {
+            showBriefing: function(title, text, instructions, callback) {
                 // EXECUTE CALLBACK IMMEDIATELY (don't wait for dismiss!)
                 console.log('⚡ Executing callback immediately');
                 if (callback) callback();
@@ -782,10 +782,10 @@
                 briefing.setAttribute('position', '0 1.6 -1.5'); // Closer for easier clicking
                 briefing.setAttribute('look-at', '[camera]'); // ALWAYS face camera!
 
-                // Black background (BIGGER)
+                // Black background (BIGGER & TALLER for instructions)
                 const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '3');
-                bg.setAttribute('height', '2.2');
+                bg.setAttribute('width', '3.5');
+                bg.setAttribute('height', '2.8');
                 bg.setAttribute('color', '#000000');
                 bg.setAttribute('opacity', '0.95');
                 briefing.appendChild(bg);
@@ -795,8 +795,8 @@
                 titleText.setAttribute('value', title);
                 titleText.setAttribute('align', 'center');
                 titleText.setAttribute('color', '#00FF00');
-                titleText.setAttribute('width', '2.8');
-                titleText.setAttribute('position', '0 0.7 0.01');
+                titleText.setAttribute('width', '3.2');
+                titleText.setAttribute('position', '0 1 0.01');
                 briefing.appendChild(titleText);
 
                 // Message
@@ -804,38 +804,47 @@
                 msgText.setAttribute('value', text);
                 msgText.setAttribute('align', 'center');
                 msgText.setAttribute('color', '#FFFFFF');
-                msgText.setAttribute('width', '2.6');
-                msgText.setAttribute('position', '0 0.1 0.01');
-                msgText.setAttribute('wrap-count', '35');
+                msgText.setAttribute('width', '3');
+                msgText.setAttribute('position', '0 0.4 0.01');
+                msgText.setAttribute('wrap-count', '40');
                 briefing.appendChild(msgText);
+
+                // Instructions (HOW TO INTERACT)
+                const instructText = document.createElement('a-text');
+                instructText.setAttribute('value', instructions);
+                instructText.setAttribute('align', 'center');
+                instructText.setAttribute('color', '#FFD700');
+                instructText.setAttribute('width', '3');
+                instructText.setAttribute('position', '0 -0.2 0.01');
+                instructText.setAttribute('wrap-count', '40');
+                briefing.appendChild(instructText);
 
                 // Continue button (BIGGER clickable plane)
                 const button = document.createElement('a-plane');
-                button.setAttribute('width', '2'); // MUCH bigger
-                button.setAttribute('height', '0.5');
+                button.setAttribute('width', '2.5'); // Even bigger
+                button.setAttribute('height', '0.6');
                 button.setAttribute('color', '#00FF00');
-                button.setAttribute('position', '0 -0.7 0.01');
+                button.setAttribute('position', '0 -0.95 0.01');
                 button.classList.add('clickable');
 
                 const buttonText = document.createElement('a-text');
-                buttonText.setAttribute('value', 'DOORGAAN (wacht 3 sec)');
+                buttonText.setAttribute('value', 'DOORGAAN\n(Knijp duim+wijsvinger)');
                 buttonText.setAttribute('align', 'center');
                 buttonText.setAttribute('color', '#000000');
-                buttonText.setAttribute('width', '3.5');
+                buttonText.setAttribute('width', '4');
                 buttonText.setAttribute('position', '0 0 0.01');
                 button.appendChild(buttonText);
 
                 // Click handler
                 const dismiss = () => {
-                    console.log('✓ Briefing dismissed');
+                    console.log('✓ Briefing dismissed by user');
                     if (briefing.parentNode) briefing.parentNode.removeChild(briefing);
                 };
 
                 button.addEventListener('click', dismiss);
 
-                // AUTO-DISMISS after 3 seconds (FASTER!)
-                console.log('⏱️ Briefing will auto-dismiss in 3 seconds');
-                setTimeout(dismiss, 3000);
+                // NO AUTO-DISMISS - only manual click!
+                console.log('⏱️ Briefing will stay until user clicks DOORGAAN');
 
                 briefing.appendChild(button);
                 this.el.sceneEl.appendChild(briefing);
@@ -884,6 +893,7 @@
                 this.showBriefing(
                     'NIVEAU 1: DE BESTEMMING',
                     'Lieve Vibeke,\n\nWe gaan met de HELE familie op reis!\nMaar waarheen?\n\nZoek de juiste bestemming...',
+                    'HOE TE SPELEN:\n- Wijs met je hand naar een bol\n- Knijp duim+wijsvinger (pinch) om te klikken\n- Zoek NAMIBIË!',
                     () => this.spawnGlobes()
                 );
             },
@@ -1003,6 +1013,7 @@
                 this.showBriefing(
                     'NIVEAU 2: DE VOORBEREIDING',
                     'Pas op! In de rimboe zoemen\nveel beestjes...\n\nEven oefenen!\nMep 10 vliegen weg\nmet je HANDEN!',
+                    'HOE TE SPELEN:\n- Beweeg je handen naar de vliegen\n- Raak ze aan om te meppen\n- Geen pinch nodig, gewoon AANRAKEN!',
                     () => this.spawnFlies()
                 );
             },
@@ -1139,6 +1150,7 @@
                 this.showBriefing(
                     'NIVEAU 3: DE BESCHERMER',
                     'Het wordt een wild avontuur!\n\nJij moet de familie beschermen.\n\nBlokkeer 15 speren met\nje LINKERHAND!',
+                    'HOE TE SPELEN:\n- Beweeg je LINKERHAND voor de speren\n- Een blauw schild verschijnt op je hand\n- Blokkeer de speren voordat ze je raken!',
                     () => this.setupLevel3()
                 );
             },
@@ -1353,6 +1365,7 @@
                 this.showBriefing(
                     'NIVEAU 4: DE ONTMOETING',
                     'Kijk! De Big Five!\n\nDeze neushoorn heeft\niets bijzonders voor je...\n\nSteek je hand erin\nom het hart te vinden!',
+                    'HOE TE SPELEN:\n- Beweeg je hand NAAR de neushoorn\n- Steek je hand DOOR hem heen\n- Vind het hart in zijn buik!',
                     () => this.spawnRhino()
                 );
             },
