@@ -362,12 +362,13 @@
 
                 setTimeout(() => {
                     this.spawnAnimals();
+                    this.spawnRunningGiraffe();
                 }, 2000);
             },
 
             spawnAnimals: function() {
-                // Check if we have animal assets
-                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox', 'giraffe'];
+                // Check if we have animal assets (EXCLUDE giraffe - he gets special treatment)
+                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox'];
                 const availableAnimals = animalTypes.filter(type =>
                     !!document.getElementById(`${type}-asset`)
                 );
@@ -420,6 +421,64 @@
                 }
 
                 console.log(`✓ Spawned ${animalCount} ANIMATED animals (${availableAnimals.join(', ')})`);
+            },
+
+            spawnRunningGiraffe: function() {
+                // Check if giraffe exists
+                if (!document.getElementById('giraffe-asset')) {
+                    console.log('No giraffe asset found');
+                    return;
+                }
+
+                // Spawn giraffe VERY far away on the left
+                const giraffe = document.createElement('a-entity');
+                giraffe.setAttribute('gltf-model', '#giraffe-asset');
+
+                // Start position: Far left (-60m) and far back (-50m)
+                const startX = -60;
+                const startZ = -50;
+
+                // End position: Far right (60m) and in front (20m)
+                const endX = 60;
+                const endZ = 20;
+
+                giraffe.setAttribute('position', `${startX} 0 ${startZ}`);
+                giraffe.setAttribute('scale', '0.3 0.3 0.3');  // Slightly bigger than other animals
+
+                // Rotation to face running direction
+                const angle = Math.atan2(endZ - startZ, endX - startX);
+                const rotationY = THREE.MathUtils.radToDeg(angle) - 90;
+                giraffe.setAttribute('rotation', `0 ${rotationY} 0`);
+
+                // Enable animation-mixer for running animation
+                giraffe.setAttribute('animation-mixer', 'clip: *; loop: repeat');
+
+                // RUNNING ANIMATION: Fast sprint across the scene (8 seconds)
+                giraffe.setAttribute('animation', {
+                    property: 'position',
+                    to: `${endX} 0 ${endZ}`,
+                    dur: 8000,  // 8 seconds = fast gallop
+                    easing: 'linear',
+                    loop: false
+                });
+
+                giraffe.setAttribute('shadow', 'cast: true; receive: true');
+
+                this.el.sceneEl.appendChild(giraffe);
+
+                console.log('✓ Spawned running giraffe (sprinting from left to right)');
+
+                // Respawn after it runs off screen (every 30 seconds)
+                setInterval(() => {
+                    giraffe.setAttribute('position', `${startX} 0 ${startZ}`);
+                    giraffe.setAttribute('animation', {
+                        property: 'position',
+                        to: `${endX} 0 ${endZ}`,
+                        dur: 8000,
+                        easing: 'linear',
+                        loop: false
+                    });
+                }, 30000);
             }
         });
 
