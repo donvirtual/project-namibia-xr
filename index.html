@@ -88,7 +88,7 @@
     <button id="skip-btn" onclick="window.gameManager && window.gameManager.skipLevel()">⏭️ SKIP</button>
 
     <a-scene
-        webxr="referenceSpaceType: local-floor"
+        webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
@@ -226,6 +226,8 @@
                 raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold"
                 cursor="rayOrigin: entity"
                 position="-0.3 1.4 -0.4">
+                <!-- Visual debug sphere to see hand position -->
+                <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
                 <!-- Shield voor Level 3 (volgt hand positie exact) -->
                 <a-entity
                     id="shield"
@@ -243,6 +245,8 @@
                 hand-tracking-controls="hand: right"
                 raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold"
                 cursor="rayOrigin: entity">
+                <!-- Visual debug sphere to see hand position -->
+                <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
             </a-entity>
         </a-entity>
 
@@ -751,14 +755,14 @@
                 // Create 3D briefing panel in VR
                 const briefing = document.createElement('a-entity');
                 briefing.setAttribute('id', 'briefing-panel');
-                briefing.setAttribute('position', '0 1.6 -2');
+                briefing.setAttribute('position', '0 1.6 -1.5'); // Closer for easier clicking
 
-                // Black background
+                // Black background (BIGGER)
                 const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '2.5');
-                bg.setAttribute('height', '1.8');
+                bg.setAttribute('width', '3');
+                bg.setAttribute('height', '2.2');
                 bg.setAttribute('color', '#000000');
-                bg.setAttribute('opacity', '0.9');
+                bg.setAttribute('opacity', '0.95');
                 briefing.appendChild(bg);
 
                 // Title
@@ -766,8 +770,8 @@
                 titleText.setAttribute('value', title);
                 titleText.setAttribute('align', 'center');
                 titleText.setAttribute('color', '#00FF00');
-                titleText.setAttribute('width', '2.3');
-                titleText.setAttribute('position', '0 0.6 0.01');
+                titleText.setAttribute('width', '2.8');
+                titleText.setAttribute('position', '0 0.7 0.01');
                 briefing.appendChild(titleText);
 
                 // Message
@@ -775,32 +779,39 @@
                 msgText.setAttribute('value', text);
                 msgText.setAttribute('align', 'center');
                 msgText.setAttribute('color', '#FFFFFF');
-                msgText.setAttribute('width', '2.2');
-                msgText.setAttribute('position', '0 0 0.01');
-                msgText.setAttribute('wrap-count', '30');
+                msgText.setAttribute('width', '2.6');
+                msgText.setAttribute('position', '0 0.1 0.01');
+                msgText.setAttribute('wrap-count', '35');
                 briefing.appendChild(msgText);
 
-                // Continue button (clickable plane)
+                // Continue button (BIGGER clickable plane)
                 const button = document.createElement('a-plane');
-                button.setAttribute('width', '1.2');
-                button.setAttribute('height', '0.35');
+                button.setAttribute('width', '2'); // MUCH bigger
+                button.setAttribute('height', '0.5');
                 button.setAttribute('color', '#00FF00');
-                button.setAttribute('position', '0 -0.65 0.01');
+                button.setAttribute('position', '0 -0.7 0.01');
                 button.classList.add('clickable');
 
                 const buttonText = document.createElement('a-text');
-                buttonText.setAttribute('value', 'DOORGAAN');
+                buttonText.setAttribute('value', 'DOORGAAN (of kijk 5 seconden)');
                 buttonText.setAttribute('align', 'center');
                 buttonText.setAttribute('color', '#000000');
-                buttonText.setAttribute('width', '2.5');
+                buttonText.setAttribute('width', '3.5');
                 buttonText.setAttribute('position', '0 0 0.01');
                 button.appendChild(buttonText);
 
-                button.addEventListener('click', () => {
+                // Click handler
+                const dismiss = () => {
                     console.log('✓ Briefing dismissed');
                     if (briefing.parentNode) briefing.parentNode.removeChild(briefing);
                     if (callback) callback();
-                });
+                };
+
+                button.addEventListener('click', dismiss);
+
+                // AUTO-DISMISS after 5 seconds as fallback
+                console.log('⏱️ Briefing will auto-dismiss in 5 seconds if not clicked');
+                setTimeout(dismiss, 5000);
 
                 briefing.appendChild(button);
                 this.el.sceneEl.appendChild(briefing);
