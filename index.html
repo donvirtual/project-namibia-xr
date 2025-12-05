@@ -1110,17 +1110,27 @@
             },
 
             handleFlySplat: function(fly) {
-                console.log('💥 Fly splatted!');
+                // Prevent double-splat
+                if (fly.dataset.splatted) return;
+                fly.dataset.splatted = 'true';
+
+                console.log('💥 Fly splatted! Total:', this.level2FliesKilled + 1);
+
+                // Visual explosion effect at fly position
+                this.createExplosion(fly.object3D.position, '#000000', 20);
+
                 audioEngine.playSplat();
                 this.level2FliesKilled++;
                 this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep die vliegen!', `${this.level2FliesKilled} / ${this.level2Target}`);
 
+                // Remove fly immediately
                 if (fly.parentNode) {
                     fly.parentNode.removeChild(fly);
-                    this.activeObjects = this.activeObjects.filter(o => o !== fly);
                 }
+                this.activeObjects = this.activeObjects.filter(o => o !== fly);
 
                 if (this.level2FliesKilled >= this.level2Target) {
+                    console.log('✓ Level 2 target reached!');
                     setTimeout(() => this.completeLevel2(), 1000);
                 }
             },
@@ -1134,18 +1144,27 @@
                 this.rightHand.object3D.getWorldPosition(rightPos);
 
                 const fliesHit = [];
-                this.activeObjects.forEach(obj => {
-                    if (obj.classList && obj.classList.contains('fly')) {
-                        const flyPos = new THREE.Vector3();
-                        obj.object3D.getWorldPosition(flyPos);
+                const flies = this.activeObjects.filter(obj => obj.classList && obj.classList.contains('fly'));
 
-                        const distLeft = leftPos.distanceTo(flyPos);
-                        const distRight = rightPos.distanceTo(flyPos);
+                flies.forEach(obj => {
+                    const flyPos = new THREE.Vector3();
+                    obj.object3D.getWorldPosition(flyPos);
 
-                        // VEEL GROTER: 1.0m radius for VERY easy swatting!
-                        if (distLeft < 1.0 || distRight < 1.0) {
-                            fliesHit.push(obj);
-                        }
+                    const distLeft = leftPos.distanceTo(flyPos);
+                    const distRight = rightPos.distanceTo(flyPos);
+
+                    // Debug: Log closest distance every 60 frames
+                    if (this.debugFrameCount === undefined) this.debugFrameCount = 0;
+                    this.debugFrameCount++;
+                    if (this.debugFrameCount % 60 === 0 && flies.length > 0) {
+                        const minDist = Math.min(distLeft, distRight);
+                        console.log(`👋 Closest fly distance: ${minDist.toFixed(2)}m (need < 1.0m)`);
+                    }
+
+                    // VEEL GROTER: 1.0m radius for VERY easy swatting!
+                    if (distLeft < 1.0 || distRight < 1.0) {
+                        console.log(`💥 HIT! Distance: L=${distLeft.toFixed(2)}m R=${distRight.toFixed(2)}m`);
+                        fliesHit.push(obj);
                     }
                 });
 
