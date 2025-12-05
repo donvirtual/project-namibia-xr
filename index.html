@@ -779,7 +779,7 @@
                 // Create 3D briefing panel in VR
                 const briefing = document.createElement('a-entity');
                 briefing.setAttribute('id', 'briefing-panel');
-                briefing.setAttribute('position', '0 1.6 -1.5'); // Closer for easier clicking
+                briefing.setAttribute('position', '0 1.6 -2.5'); // Further away for better view
                 briefing.setAttribute('look-at', '[camera]'); // ALWAYS face camera!
 
                 // Black background (BIGGER & TALLER for instructions)
@@ -930,6 +930,7 @@
                 globe.setAttribute('data-name', destination.name);
                 globe.setAttribute('data-is-target', destination.isTarget);
 
+                // Visual sphere (0.5 radius)
                 const sphere = document.createElement('a-sphere');
                 sphere.setAttribute('radius', '0.5');
                 sphere.setAttribute('color', destination.isTarget ? '#FFD700' : '#4169E1');
@@ -937,6 +938,14 @@
                 sphere.setAttribute('roughness', '0.4');
                 sphere.setAttribute('shadow', 'cast: true');
                 globe.appendChild(sphere);
+
+                // LARGER INVISIBLE HITBOX for easier clicking with raycaster!
+                const hitbox = document.createElement('a-sphere');
+                hitbox.setAttribute('radius', '1.5'); // 3x bigger!
+                hitbox.setAttribute('opacity', '0');
+                hitbox.setAttribute('transparent', 'true');
+                hitbox.classList.add('clickable'); // Also clickable
+                globe.appendChild(hitbox);
 
                 const label = document.createElement('a-text');
                 label.setAttribute('value', destination.name);
