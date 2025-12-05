@@ -106,6 +106,7 @@
             <a-asset-item id="bull-asset" src="assets/bull.gltf" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="horse-asset" src="assets/horse.gltf" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="fox-asset" src="assets/fox.gltf" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="giraffe-asset" src="assets/giraffe.glb" response-type="arraybuffer"></a-asset-item>
 
             <!-- Environment -->
             <a-asset-item id="tree-asset" src="assets/Acacia.glb?v=2" response-type="arraybuffer"></a-asset-item>
@@ -366,7 +367,7 @@
 
             spawnAnimals: function() {
                 // Check if we have animal assets
-                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox'];
+                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox', 'giraffe'];
                 const availableAnimals = animalTypes.filter(type =>
                     !!document.getElementById(`${type}-asset`)
                 );
