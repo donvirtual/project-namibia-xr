@@ -113,7 +113,7 @@
 
             <!-- Textures -->
             <img id="sky-asset" src="assets/sky_night.jpg" crossorigin="anonymous">
-            <img id="ground-asset" src="assets/ground.jpg" crossorigin="anonymous">
+            <img id="ground-asset" src="assets/grass.jpg" crossorigin="anonymous">
         </a-assets>
 
         <!-- =====================================================
@@ -478,7 +478,7 @@
                         const tree = document.createElement('a-entity');
                         tree.setAttribute('gltf-model', '#tree-asset');
                         tree.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                        tree.setAttribute('scale', `${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4}`);
+                        tree.setAttribute('scale', `${8 + Math.random() * 4} ${8 + Math.random() * 4} ${8 + Math.random() * 4}`);
                         tree.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
                         tree.setAttribute('shadow', 'cast: true');
                         scene.appendChild(tree);
