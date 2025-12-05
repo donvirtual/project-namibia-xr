@@ -108,6 +108,12 @@
             <a-asset-item id="fly-model" src="assets/Fly.glb" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="heart-model" src="assets/bottle.glb" response-type="arraybuffer"></a-asset-item>
 
+            <!-- AUDIO FILES -->
+            <audio id="wind-loop" src="assets/desert-wind-1-350398.mp3" preload="auto"></audio>
+            <audio id="insects-loop" src="assets/desert-insects-52089.mp3" preload="auto"></audio>
+            <audio id="fart-sound" src="assets/wet-fart-6139.mp3" preload="auto"></audio>
+            <audio id="squishy-loop" src="assets/wet-squishy-sound-34303.mp3" preload="auto" loop></audio>
+
             <!-- Grazing Animals (Animated) -->
             <a-asset-item id="deer-asset" src="assets/deer.gltf" response-type="arraybuffer"></a-asset-item>
             <a-asset-item id="stag-asset" src="assets/stag.gltf" response-type="arraybuffer"></a-asset-item>
@@ -217,6 +223,7 @@
             <a-entity
                 id="left-hand"
                 hand-tracking-controls="hand: left"
+                raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold"
                 position="-0.3 1.4 -0.4">
                 <!-- Shield voor Level 3 (volgt hand positie exact) -->
                 <a-entity
@@ -232,7 +239,8 @@
             <!-- RIGHT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
             <a-entity
                 id="right-hand"
-                hand-tracking-controls="hand: right">
+                hand-tracking-controls="hand: right"
+                raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold">
             </a-entity>
         </a-entity>
 
@@ -320,38 +328,70 @@
             }
 
             startWind() {
-                // Continuous desert wind ambient
-                if (this.windNoise) return;
-
-                const noise = this.context.createBufferSource();
-                const buffer = this.context.createBuffer(1, this.context.sampleRate * 2, this.context.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = Math.random() * 2 - 1;
+                // Background wind loop from audio file
+                if (this.windAudio) return;
+                this.windAudio = document.getElementById('wind-loop');
+                if (this.windAudio) {
+                    this.windAudio.volume = 0.4;
+                    this.windAudio.loop = true;
+                    this.windAudio.play().catch(e => console.log('Wind audio play failed:', e));
+                    console.log('💨 Wind loop started');
                 }
-                noise.buffer = buffer;
-                noise.loop = true;
-
-                const filter = this.context.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 300;
-
-                const gain = this.context.createGain();
-                gain.gain.value = 0.05;
-
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.context.destination);
-                noise.start();
-
-                this.windNoise = noise;
-                console.log('💨 Wind started');
             }
 
             stopWind() {
-                if (this.windNoise) {
-                    this.windNoise.stop();
-                    this.windNoise = null;
+                if (this.windAudio) {
+                    this.windAudio.pause();
+                    this.windAudio.currentTime = 0;
+                }
+            }
+
+            startInsects() {
+                // Level 2 insects loop
+                if (this.insectsAudio) return;
+                this.insectsAudio = document.getElementById('insects-loop');
+                if (this.insectsAudio) {
+                    this.insectsAudio.volume = 0.5;
+                    this.insectsAudio.loop = true;
+                    this.insectsAudio.play().catch(e => console.log('Insects audio play failed:', e));
+                    console.log('🪰 Insects loop started');
+                }
+            }
+
+            stopInsects() {
+                if (this.insectsAudio) {
+                    this.insectsAudio.pause();
+                    this.insectsAudio.currentTime = 0;
+                }
+            }
+
+            playFart() {
+                // One-shot fart when hand enters rhino
+                const fart = document.getElementById('fart-sound');
+                if (fart) {
+                    fart.currentTime = 0;
+                    fart.volume = 0.7;
+                    fart.play().catch(e => console.log('Fart audio play failed:', e));
+                    console.log('💨 Fart sound played');
+                }
+            }
+
+            startSquishyLoop() {
+                // Squishy loop while hand is inside rhino
+                if (this.squishyAudio) return;
+                this.squishyAudio = document.getElementById('squishy-loop');
+                if (this.squishyAudio) {
+                    this.squishyAudio.volume = 0.6;
+                    this.squishyAudio.loop = true;
+                    this.squishyAudio.play().catch(e => console.log('Squishy audio play failed:', e));
+                    console.log('💦 Squishy loop started');
+                }
+            }
+
+            stopSquishyLoop() {
+                if (this.squishyAudio) {
+                    this.squishyAudio.pause();
+                    this.squishyAudio.currentTime = 0;
                 }
             }
 
@@ -692,6 +732,11 @@
                 if (this.currentState === GAME_STATES.LEVEL_2) {
                     this.checkHandFlyCollisions();
                 }
+
+                // Hand collision detection (Level 4 - Rhino)
+                if (this.currentState === GAME_STATES.LEVEL_4 && !this.rhinoTouched) {
+                    this.checkHandRhinoCollision();
+                }
             },
 
             updateHUD: function(title, objective, progress) {
@@ -850,6 +895,7 @@
                 this.clearAllObjects();
                 this.level2FliesKilled = 0;
                 this.level2TotalFlies = 18; // Total flies to spawn
+                audioEngine.startInsects(); // Start insects loop
                 this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
                 setTimeout(() => this.spawnFlies(), 500);
             },
@@ -882,6 +928,14 @@
                     fly.appendChild(sphere);
                 }
 
+                // Add LARGE INVISIBLE HITBOX (basketball size) for easier swatting
+                const hitbox = document.createElement('a-sphere');
+                hitbox.setAttribute('radius', '0.4'); // Big hitbox!
+                hitbox.setAttribute('opacity', '0');
+                hitbox.setAttribute('transparent', 'true');
+                hitbox.classList.add('fly-hitbox');
+                fly.appendChild(hitbox);
+
                 fly.classList.add('fly', 'clickable');
 
                 // Random position ALL AROUND (360°) at varying heights (0.5m to 2.0m)
@@ -893,11 +947,12 @@
 
                 fly.setAttribute('position', `${x} ${y} ${z}`);
 
-                // Erratic flying animation
+                // FASTER, more erratic flying animation
+                const moveRange = 0.8; // Bigger movement range
                 fly.setAttribute('animation__buzz', {
                     property: 'position',
-                    to: `${x + (Math.random() - 0.5) * 0.4} ${y + (Math.random() - 0.5) * 0.3} ${z + (Math.random() - 0.5) * 0.4}`,
-                    dur: 500 + Math.random() * 500,
+                    to: `${x + (Math.random() - 0.5) * moveRange} ${y + (Math.random() - 0.5) * moveRange} ${z + (Math.random() - 0.5) * moveRange}`,
+                    dur: 300 + Math.random() * 400, // Faster!
                     loop: true,
                     dir: 'alternate',
                     easing: 'linear'
@@ -942,7 +997,8 @@
                         const distLeft = leftPos.distanceTo(flyPos);
                         const distRight = rightPos.distanceTo(flyPos);
 
-                        if (distLeft < 0.2 || distRight < 0.2) {
+                        // Larger hitbox: 0.4 radius + hand size
+                        if (distLeft < 0.5 || distRight < 0.5) {
                             this.handleFlySplat(obj);
                         }
                     }
@@ -952,6 +1008,7 @@
             completeLevel2: function() {
                 console.log('✓ Level 2 complete!');
                 this.clearAllObjects();
+                audioEngine.stopInsects(); // Stop insects loop
                 audioEngine.playSuccess();
                 this.updateHUD('✓ NIVEAU 2 VOLTOOID!', 'Perfect! Klaar voor het avontuur!', '');
                 setTimeout(() => this.startLevel3(), 2500);
@@ -1102,18 +1159,20 @@
 
                 spear.setAttribute('look-at', '[camera]');
 
-                const cameraPos = this.camera.object3D.position;
+                // Target CHEST HEIGHT (1.5m) not feet!
+                const targetPos = new THREE.Vector3(0, 1.5, 0);
                 const direction = new THREE.Vector3(
-                    cameraPos.x - startX,
-                    cameraPos.y - startY + 2,
-                    cameraPos.z - startZ
+                    targetPos.x - startX,
+                    targetPos.y - startY,
+                    targetPos.z - startZ
                 ).normalize();
 
+                // FASTER velocity for straighter trajectory
                 spear.userData = {
                     velocity: {
-                        x: direction.x * 15,
-                        y: direction.y * 15 + 1.5,
-                        z: direction.z * 15
+                        x: direction.x * 25, // Increased from 15
+                        y: direction.y * 25, // Straighter flight
+                        z: direction.z * 25
                     },
                     isSpear: true
                 };
@@ -1178,8 +1237,11 @@
             spawnRhino: function() {
                 const rhinoContainer = document.createElement('a-entity');
                 rhinoContainer.setAttribute('id', 'rhino-boss');
-                rhinoContainer.setAttribute('position', '0 0.3 -0.45'); // Closer and higher - face to face!
+                rhinoContainer.setAttribute('position', '0 0.5 -2.5'); // Further back and higher!
                 rhinoContainer.setAttribute('shadow', 'cast: true; receive: true');
+
+                // Flag to track if hand entered rhino
+                this.handInsideRhino = false;
 
                 if (this.hasRhino) {
                     const rhino = document.createElement('a-entity');
@@ -1264,13 +1326,43 @@
                 this.activeObjects.push(rhinoContainer);
             },
 
+            checkHandRhinoCollision: function() {
+                if (!this.leftHand || !this.rightHand) return;
+
+                const rhinoContainer = document.getElementById('rhino-boss');
+                if (!rhinoContainer) return;
+
+                const leftPos = new THREE.Vector3();
+                const rightPos = new THREE.Vector3();
+                this.leftHand.object3D.getWorldPosition(leftPos);
+                this.rightHand.object3D.getWorldPosition(rightPos);
+
+                const rhinoPos = rhinoContainer.object3D.position;
+                const distLeft = leftPos.distanceTo(rhinoPos);
+                const distRight = rightPos.distanceTo(rhinoPos);
+
+                // Check if hand is inside rhino (within 1.5m radius)
+                if ((distLeft < 1.5 || distRight < 1.5) && !this.handInsideRhino) {
+                    this.handInsideRhino = true;
+                    console.log('👋 Hand entered rhino!');
+
+                    // Play FART sound once
+                    audioEngine.playFart();
+
+                    // Start SQUISHY loop
+                    audioEngine.startSquishyLoop();
+
+                    // Make rhino transparent
+                    this.handleRhinoTouch(rhinoContainer);
+                }
+            },
+
             handleRhinoTouch: function(rhino) {
                 if (this.rhinoTouched) return;
                 this.rhinoTouched = true;
 
-                console.log('🦏 Rhino touched!');
-                audioEngine.playSquish();
-                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'De neushoorn opent zich...', '');
+                console.log('🦏 Rhino becoming transparent!');
+                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Zoek het hart...', '');
 
                 // Make rhino transparent (X-ray)
                 rhino.setAttribute('material', 'opacity: 0.3; transparent: true');
@@ -1308,6 +1400,7 @@
                 this.heartTouched = true;
 
                 console.log('💖 Heart touched!');
+                audioEngine.stopSquishyLoop(); // Stop squishy loop
                 audioEngine.playMagicalChime();
                 this.updateHUD('💖 NIVEAU 4 VOLTOOID!', 'Het hart van Afrika!', '');
 
