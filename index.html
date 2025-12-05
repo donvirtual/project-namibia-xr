@@ -223,11 +223,21 @@
             <a-entity
                 id="left-hand"
                 hand-tracking-controls="hand: left"
-                raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold"
+                raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity"
                 position="-0.3 1.4 -0.4">
                 <!-- Visual debug sphere to see hand position -->
                 <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
+                <!-- MANUAL LASER LINE (cylinder) -->
+                <a-cylinder
+                    id="left-laser"
+                    radius="0.005"
+                    height="20"
+                    color="#FFD700"
+                    opacity="0.8"
+                    position="0 0 -10"
+                    rotation="90 0 0">
+                </a-cylinder>
                 <!-- Shield voor Level 3 (volgt hand positie exact) -->
                 <a-entity
                     id="shield"
@@ -243,10 +253,20 @@
             <a-entity
                 id="right-hand"
                 hand-tracking-controls="hand: right"
-                raycaster="objects: .clickable; far: 20; showLine: true; lineColor: gold"
+                raycaster="objects: .clickable; far: 20; showLine: false"
                 cursor="rayOrigin: entity">
                 <!-- Visual debug sphere to see hand position -->
                 <a-sphere radius="0.05" color="#FFD700" opacity="0.7" transparent="true"></a-sphere>
+                <!-- MANUAL LASER LINE (cylinder) -->
+                <a-cylinder
+                    id="right-laser"
+                    radius="0.005"
+                    height="20"
+                    color="#FFD700"
+                    opacity="0.8"
+                    position="0 0 -10"
+                    rotation="90 0 0">
+                </a-cylinder>
             </a-entity>
         </a-entity>
 
