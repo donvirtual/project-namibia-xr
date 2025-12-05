@@ -90,7 +90,6 @@
         cursor="rayOrigin: mouse"
         renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
         shadow="type: pcf; autoUpdate: true"
-        fog="type: exponential; color: #D4C4A8; density: 0.008"
         loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a">
 
         <!-- =====================================================
@@ -112,7 +111,7 @@
             <a-asset-item id="tree-asset" src="assets/Acacia.glb?v=2" response-type="arraybuffer"></a-asset-item>
 
             <!-- Textures -->
-            <img id="sky-asset" src="assets/sky.jpg?v=3" crossorigin="anonymous">
+            <img id="sky-asset" src="assets/sky_night.jpg?v=4" crossorigin="anonymous">
             <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg?v=3" crossorigin="anonymous">
         </a-assets>
 
@@ -124,7 +123,6 @@
         <a-sky
             src="#sky-asset"
             rotation="0 -90 0"
-            material="shader: flat"
             animation="property: rotation; to: 0 270 0; dur: 240000; easing: linear; loop: true">
         </a-sky>
 
