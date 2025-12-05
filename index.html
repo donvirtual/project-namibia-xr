@@ -907,7 +907,7 @@
                 this.showBriefing(
                     'NIVEAU 1: DE BESTEMMING',
                     'Lieve Vibeke,\n\nWe gaan met de HELE familie op reis!\nMaar waarheen?\n\nZoek de juiste bestemming...',
-                    'HOE TE SPELEN:\n- Wijs met je hand naar een bol\n- Knijp duim+wijsvinger (pinch) om te klikken\n- Zoek NAMIBIË!',
+                    'HOE TE SPELEN:\n- Wijs met je hand naar een bol\n- Knijp duim+wijsvinger (pinch) om te klikken\n- Soms een paar keer proberen tot hij goed pakt!\n- Zoek NAMIBIË!',
                     () => this.spawnGlobes()
                 );
             },
@@ -925,7 +925,8 @@
                 destinations.forEach((dest, i) => {
                     setTimeout(() => {
                         if (this.currentState === GAME_STATES.LEVEL_1) {
-                            this.spawnGlobe(dest, (Math.PI * 2 / destinations.length) * i);
+                            // Add 180 degrees (Math.PI) to rotate all globes so Namibia is at the back
+                            this.spawnGlobe(dest, (Math.PI * 2 / destinations.length) * i + Math.PI);
                         }
                     }, i * 600);
                 });
@@ -1084,9 +1085,9 @@
                     fly.appendChild(sphere);
                 }
 
-                // Add HUGE INVISIBLE HITBOX for MUCH easier swatting
+                // Medium size hitbox
                 const hitbox = document.createElement('a-sphere');
-                hitbox.setAttribute('radius', '0.6'); // VEEL groter! (was 0.4)
+                hitbox.setAttribute('radius', '0.3'); // Smaller (was 0.6)
                 hitbox.setAttribute('opacity', '0');
                 hitbox.setAttribute('transparent', 'true');
                 hitbox.classList.add('fly-hitbox');
@@ -1094,11 +1095,11 @@
 
                 fly.classList.add('fly', 'clickable');
 
-                // MUCH CLOSER spawn distance!
+                // Medium distance spawn
                 const angle = Math.random() * Math.PI * 2; // Full 360 degrees
-                const distance = 0.4 + Math.random() * 0.4; // 0.4 to 0.8 meters away (was 0.8-1.5)
+                const distance = 0.8 + Math.random() * 0.5; // 0.8 to 1.3 meters away
                 const x = Math.cos(angle) * distance;
-                const y = 1.0 + Math.random() * 0.8; // Height: 1.0m to 1.8m (around head/chest level)
+                const y = 1.2 + Math.random() * 0.6; // Height: 1.2m to 1.8m (head level)
                 const z = Math.sin(angle) * distance;
 
                 fly.setAttribute('position', `${x} ${y} ${z}`);
@@ -1175,8 +1176,8 @@
                         console.log(`👋 Closest fly distance: ${minDist.toFixed(2)}m (need < 2.0m)`);
                     }
 
-                    // ENORM GROOT: 2.0m radius for SUPER easy swatting!
-                    if (distLeft < 2.0 || distRight < 2.0) {
+                    // Medium: 0.6m radius for balanced swatting
+                    if (distLeft < 0.6 || distRight < 0.6) {
                         console.log(`💥 HIT! Distance: L=${distLeft.toFixed(2)}m R=${distRight.toFixed(2)}m`);
                         fliesHit.push(obj);
                     }
