@@ -918,6 +918,11 @@
             },
 
             tickLevel2: function(dt) {
+                // Only check hand collisions if at least one hand is ACTUALLY tracking
+                if (!HandTracker.leftHand.active && !HandTracker.rightHand.active) {
+                    return; // No hands tracking, skip collision checks
+                }
+
                 const flies = this.objects.filter(o => o.classList && o.classList.contains('fly') && o.dataset.splatted === 'false');
 
                 // Check hand collisions
@@ -926,9 +931,9 @@
                     fly.object3D.getWorldPosition(flyPos);
 
                     let hit = false;
-                    const hitRadius = 0.35; // 35cm
+                    const hitRadius = 0.30; // 30cm - slightly smaller
 
-                    // Check left hand
+                    // Check left hand - require meaningful speed
                     if (HandTracker.leftHand.active) {
                         const dist = HandTracker.leftHand.position.distanceTo(flyPos);
                         const speed = HandTracker.getSwipeSpeed('left');
@@ -1018,14 +1023,14 @@
                     this.objects.push(bush);
                 }
 
-                // Start spawning spears
+                // Start spawning spears - one every 1.5 seconds
                 this.spearInterval = setInterval(() => {
                     if (this.state === STATES.LEVEL_3) {
                         this.launchSpear();
                     } else {
                         clearInterval(this.spearInterval);
                     }
-                }, 800);
+                }, 1500);
             },
 
             launchSpear: function() {
@@ -1184,14 +1189,16 @@
                 container.setAttribute('id', 'rhino-boss');
                 container.setAttribute('position', '0 0.5 -3');
 
+                // Rhino body (clickable for desktop)
+                let rhinoBody;
                 if (document.getElementById('rhino-asset')) {
-                    const rhino = document.createElement('a-entity');
-                    rhino.setAttribute('gltf-model', '#rhino-asset');
-                    rhino.setAttribute('scale', '2.5 2.5 2.5');
-                    rhino.setAttribute('rotation', '0 200 0');
-                    rhino.classList.add('rhino-body');
+                    rhinoBody = document.createElement('a-entity');
+                    rhinoBody.setAttribute('gltf-model', '#rhino-asset');
+                    rhinoBody.setAttribute('scale', '2.5 2.5 2.5');
+                    rhinoBody.setAttribute('rotation', '0 200 0');
+                    rhinoBody.classList.add('rhino-body', 'clickable');
 
-                    rhino.setAttribute('animation__breath', {
+                    rhinoBody.setAttribute('animation__breath', {
                         property: 'scale',
                         from: '2.5 2.5 2.5',
                         to: '2.55 2.55 2.55',
@@ -1200,30 +1207,39 @@
                         dir: 'alternate'
                     });
 
-                    container.appendChild(rhino);
+                    container.appendChild(rhinoBody);
                 } else {
                     // Fallback box
-                    const body = document.createElement('a-box');
-                    body.setAttribute('width', '2.5');
-                    body.setAttribute('height', '1.5');
-                    body.setAttribute('depth', '1.2');
-                    body.setAttribute('color', '#696969');
-                    body.setAttribute('position', '0 0.75 0');
-                    container.appendChild(body);
+                    rhinoBody = document.createElement('a-box');
+                    rhinoBody.setAttribute('width', '2.5');
+                    rhinoBody.setAttribute('height', '1.5');
+                    rhinoBody.setAttribute('depth', '1.2');
+                    rhinoBody.setAttribute('color', '#696969');
+                    rhinoBody.setAttribute('position', '0 0.75 0');
+                    rhinoBody.classList.add('rhino-body', 'clickable');
+                    container.appendChild(rhinoBody);
                 }
 
-                // Heart (hidden initially)
+                // Click handler for desktop/gaze cursor
+                rhinoBody.addEventListener('click', () => {
+                    if (!this.rhinoTouched) {
+                        this.activateRhinoXRay();
+                    }
+                });
+
+                // Heart (hidden initially, clickable)
                 const heart = document.createElement('a-entity');
                 heart.setAttribute('id', 'rhino-heart');
                 heart.setAttribute('position', '0 0.5 0');
                 heart.setAttribute('visible', 'false');
+                heart.classList.add('clickable');
 
                 if (document.getElementById('heart-model')) {
                     heart.setAttribute('gltf-model', '#heart-model');
-                    heart.setAttribute('scale', '0.05 0.05 0.05');
+                    heart.setAttribute('scale', '0.08 0.08 0.08'); // Bigger for visibility
                 } else {
                     const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('radius', '0.15');
+                    sphere.setAttribute('radius', '0.2'); // Bigger
                     sphere.setAttribute('color', '#DC143C');
                     sphere.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1');
                     heart.appendChild(sphere);
@@ -1231,11 +1247,18 @@
 
                 heart.setAttribute('animation__pulse', {
                     property: 'scale',
-                    from: '0.05 0.05 0.05',
-                    to: '0.06 0.06 0.06',
+                    from: '0.08 0.08 0.08',
+                    to: '0.1 0.1 0.1',
                     dur: 600,
                     loop: true,
                     dir: 'alternate'
+                });
+
+                // Click handler for heart (desktop/gaze)
+                heart.addEventListener('click', () => {
+                    if (this.rhinoTouched && !this.heartTouched) {
+                        this.touchHeart();
+                    }
                 });
 
                 container.appendChild(heart);
@@ -1255,7 +1278,66 @@
                 this.objects.push(container);
             },
 
+            // Activate rhino X-ray mode (called by click or hand touch)
+            activateRhinoXRay: function() {
+                if (this.rhinoTouched) return;
+                this.rhinoTouched = true;
+                console.log('🦏 Rhino X-ray activated!');
+
+                AudioEngine.playFart();
+                AudioEngine.startSquishy();
+
+                const rhino = document.getElementById('rhino-boss');
+                if (!rhino) return;
+
+                // Make rhino semi-transparent
+                const rhinoBody = rhino.querySelector('.rhino-body');
+                if (rhinoBody) {
+                    rhinoBody.setAttribute('material', 'opacity: 0.3; transparent: true');
+                }
+
+                // Show heart
+                const heart = document.getElementById('rhino-heart');
+                if (heart) heart.setAttribute('visible', 'true');
+
+                // Update label
+                const label = document.getElementById('rhino-label');
+                if (label) label.setAttribute('value', 'Raak het hart aan!');
+
+                this.updateHUD('🦏 NIVEAU 4', 'Klik op het hart!', '');
+
+                // Start heartbeat
+                this.heartbeatInterval = setInterval(() => {
+                    if (!this.heartTouched) AudioEngine.playHeartbeat();
+                }, 700);
+            },
+
+            // Touch heart (called by click or hand touch)
+            touchHeart: function() {
+                if (this.heartTouched) return;
+                this.heartTouched = true;
+                console.log('💖 Heart touched!');
+
+                clearInterval(this.heartbeatInterval);
+                AudioEngine.stopSquishy();
+                AudioEngine.playSuccess();
+
+                const heart = document.getElementById('rhino-heart');
+                if (heart) {
+                    const heartPos = new THREE.Vector3();
+                    heart.object3D.getWorldPosition(heartPos);
+                    this.createExplosion(heartPos, '#FF0000', 50);
+                }
+
+                setTimeout(() => this.completeLevel4(), 1500);
+            },
+
             tickLevel4: function(dt) {
+                // Only check hand collisions if hands are tracking
+                if (!HandTracker.leftHand.active && !HandTracker.rightHand.active) {
+                    return; // Rely on click handlers for desktop
+                }
+
                 const rhino = document.getElementById('rhino-boss');
                 if (!rhino) return;
 
@@ -1263,8 +1345,8 @@
                 rhino.object3D.getWorldPosition(rhinoPos);
 
                 // Check for hand entering rhino
-                let handInRhino = false;
                 const touchRadius = 1.5;
+                let handInRhino = false;
 
                 if (HandTracker.leftHand.active) {
                     const dist = HandTracker.leftHand.position.distanceTo(rhinoPos);
@@ -1276,35 +1358,10 @@
                 }
 
                 if (handInRhino && !this.rhinoTouched) {
-                    this.rhinoTouched = true;
-                    console.log('👋 Hand entered rhino!');
-
-                    AudioEngine.playFart();
-                    AudioEngine.startSquishy();
-
-                    // Make rhino semi-transparent
-                    const rhinoBody = rhino.querySelector('.rhino-body');
-                    if (rhinoBody) {
-                        rhinoBody.setAttribute('material', 'opacity: 0.4; transparent: true');
-                    }
-
-                    // Show heart
-                    const heart = document.getElementById('rhino-heart');
-                    if (heart) heart.setAttribute('visible', 'true');
-
-                    // Update label
-                    const label = document.getElementById('rhino-label');
-                    if (label) label.setAttribute('value', 'Raak het hart aan!');
-
-                    this.updateHUD('🦏 NIVEAU 4', 'Zoek het hart...', '');
-
-                    // Start heartbeat
-                    this.heartbeatInterval = setInterval(() => {
-                        if (!this.heartTouched) AudioEngine.playHeartbeat();
-                    }, 700);
+                    this.activateRhinoXRay();
                 }
 
-                // Check for heart touch
+                // Check for heart touch (VR hand tracking)
                 if (this.rhinoTouched && !this.heartTouched) {
                     const heart = document.getElementById('rhino-heart');
                     if (heart) {
@@ -1321,14 +1378,7 @@
                         }
 
                         if (touched) {
-                            this.heartTouched = true;
-                            console.log('💖 Heart touched!');
-                            clearInterval(this.heartbeatInterval);
-                            AudioEngine.stopSquishy();
-                            AudioEngine.playSuccess();
-
-                            this.createExplosion(heartPos, '#FF0000', 50);
-                            setTimeout(() => this.completeLevel4(), 1500);
+                            this.touchHeart();
                         }
                     }
                 }
