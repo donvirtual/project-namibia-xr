@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibeke's Grote Expeditie - FINALE</title>
+    <title>Vibeke's Grote Expeditie - ROBUUST</title>
 
     <!-- A-Frame Core -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
@@ -15,7 +15,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Courier New', monospace; overflow: hidden; }
 
-        /* HUD Overlay (Desktop Only) */
         #overlay {
             position: fixed;
             top: 0;
@@ -36,22 +35,9 @@
             text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
         }
 
-        .level-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        .objective {
-            font-size: 1.2rem;
-            color: #FFF;
-        }
-
-        .progress {
-            font-size: 1.5rem;
-            color: #FF6347;
-            margin-top: 0.5rem;
-        }
+        .level-title { font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .objective { font-size: 1.2rem; color: #FFF; }
+        .progress { font-size: 1.5rem; color: #FF6347; margin-top: 0.5rem; }
 
         #skip-btn {
             position: fixed;
@@ -66,17 +52,23 @@
             font-size: 1.2rem;
             z-index: 200;
             pointer-events: all;
-            transition: all 0.3s;
         }
 
-        #skip-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 40px rgba(255,99,71,0.9);
+        #debug-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 200;
+            max-width: 300px;
         }
     </style>
 </head>
 <body>
-    <!-- HUD Overlay (Desktop fallback) -->
     <div id="overlay">
         <div id="hud">
             <div class="level-title" id="level-title">🌍 VIBEKE'S EXPEDITIE</div>
@@ -87,693 +79,412 @@
 
     <button id="skip-btn" onclick="window.gameManager && window.gameManager.skipLevel()">⏭️ SKIP</button>
 
+    <div id="debug-panel">
+        <div id="debug-hands">Handen: Wachten op VR...</div>
+        <div id="debug-level">Level: -</div>
+    </div>
+
     <a-scene
         webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
         cursor="rayOrigin: mouse"
-        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; shadows: true"
-        shadow="type: pcf; autoUpdate: true"
+        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
         loading-screen="dotsColor: #FFD700; backgroundColor: #1a1a1a"
-        vr-mode-ui="enabled: true"
-        timeout="10000">
+        vr-mode-ui="enabled: true">
 
-        <!-- =====================================================
-             ASSET MANAGEMENT
-             ===================================================== -->
+        <!-- ASSETS -->
         <a-assets timeout="15000">
-            <!-- Characters -->
-            <a-asset-item id="rhino-asset" src="assets/rhino.glb" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="hunter-asset" src="assets/hunter.glb" response-type="arraybuffer"></a-asset-item>
+            <a-asset-item id="rhino-asset" src="assets/rhino.glb"></a-asset-item>
+            <a-asset-item id="hunter-asset" src="assets/hunter.glb"></a-asset-item>
+            <a-asset-item id="fly-model" src="assets/Fly.glb"></a-asset-item>
+            <a-asset-item id="heart-model" src="assets/bottle.glb"></a-asset-item>
+            <a-asset-item id="deer-asset" src="assets/deer.gltf"></a-asset-item>
+            <a-asset-item id="stag-asset" src="assets/stag.gltf"></a-asset-item>
+            <a-asset-item id="bull-asset" src="assets/bull.gltf"></a-asset-item>
+            <a-asset-item id="horse-asset" src="assets/horse.gltf"></a-asset-item>
+            <a-asset-item id="fox-asset" src="assets/fox.gltf"></a-asset-item>
+            <a-asset-item id="giraffe-asset" src="assets/giraffe.glb"></a-asset-item>
+            <a-asset-item id="tree-asset" src="assets/Acacia.glb"></a-asset-item>
 
-            <!-- NEW: User-provided assets -->
-            <a-asset-item id="fly-model" src="assets/Fly.glb" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="heart-model" src="assets/bottle.glb" response-type="arraybuffer"></a-asset-item>
+            <img id="sky-asset" src="assets/pexels-francesco-ungaro-998641.jpg" crossorigin="anonymous">
+            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg" crossorigin="anonymous">
 
-            <!-- AUDIO FILES -->
             <audio id="wind-loop" src="assets/desert-wind-1-350398.mp3" preload="auto"></audio>
             <audio id="insects-loop" src="assets/desert-insects-52089.mp3" preload="auto"></audio>
             <audio id="fart-sound" src="assets/wet-fart-6139.mp3" preload="auto"></audio>
             <audio id="squishy-loop" src="assets/wet-squishy-sound-34303.mp3" preload="auto" loop></audio>
-
-            <!-- Grazing Animals (Animated) -->
-            <a-asset-item id="deer-asset" src="assets/deer.gltf" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="stag-asset" src="assets/stag.gltf" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="bull-asset" src="assets/bull.gltf" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="horse-asset" src="assets/horse.gltf" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="fox-asset" src="assets/fox.gltf" response-type="arraybuffer"></a-asset-item>
-            <a-asset-item id="giraffe-asset" src="assets/giraffe.glb" response-type="arraybuffer"></a-asset-item>
-
-            <!-- Environment -->
-            <a-asset-item id="tree-asset" src="assets/Acacia.glb?v=2" response-type="arraybuffer"></a-asset-item>
-
-            <!-- Textures -->
-            <img id="sky-asset" src="assets/pexels-francesco-ungaro-998641.jpg?v=5" crossorigin="anonymous">
-            <img id="ground-asset" src="assets/Ground096B_1K-JPG/Ground096B_1K-JPG_Color.jpg?v=3" crossorigin="anonymous">
         </a-assets>
 
-        <!-- =====================================================
-             ENVIRONMENT
-             ===================================================== -->
-
-        <!-- Skybox (360° Rotating Starry Night) -->
-        <a-sky
-            src="#sky-asset"
-            rotation="0 -90 0"
+        <!-- ENVIRONMENT -->
+        <a-sky src="#sky-asset" rotation="0 -90 0"
             animation="property: rotation; to: 0 270 0; dur: 240000; easing: linear; loop: true">
         </a-sky>
 
-        <!-- Procedural Wavy Terrain (Rolling Dunes) -->
-        <a-plane
-            id="ground"
-            position="0 -0.1 0"
-            rotation="-90 0 0"
-            width="100"
-            height="100"
-            segments-width="64"
-            segments-height="64"
-            material="src: #ground-asset; color: #d2b48c; repeat: 40 40; roughness: 1; metalness: 0.0"
-            shadow="receive: true"
-            terrain-generator>
+        <a-plane id="ground" position="0 -0.1 0" rotation="-90 0 0" width="100" height="100"
+            material="src: #ground-asset; color: #d2b48c; repeat: 40 40; roughness: 1">
         </a-plane>
 
-        <!-- Floating Dust Particles -->
-        <a-entity id="dust-particles" dust-system></a-entity>
+        <!-- LIGHTING -->
+        <a-entity light="type: directional; color: #AADDEE; intensity: 0.8" position="-20 25 10"></a-entity>
+        <a-entity light="type: ambient; color: #443333; intensity: 0.6"></a-entity>
+        <a-entity light="type: point; color: #FFaa00; intensity: 1.2; distance: 5" position="2 1 -1"></a-entity>
 
-        <!-- =====================================================
-             LIGHTING (NIGHT MODE - Namibian Starlight)
-             ===================================================== -->
-
-        <!-- Moon Light (Directional - casts shadows) -->
-        <a-entity
-            light="type: directional;
-                   color: #AADDEE;
-                   intensity: 0.8;
-                   castShadow: true;
-                   shadowBias: -0.001;
-                   shadowMapWidth: 2048;
-                   shadowMapHeight: 2048;
-                   shadowCameraFar: 100;
-                   shadowCameraLeft: -40;
-                   shadowCameraRight: 40;
-                   shadowCameraTop: 40;
-                   shadowCameraBottom: -40"
-            position="-20 25 10">
-        </a-entity>
-
-        <!-- Ambient (Warm night atmosphere) -->
-        <a-entity
-            light="type: ambient;
-                   color: #443333;
-                   intensity: 0.6">
-        </a-entity>
-
-        <!-- Campfire/Torch Light (Warm orange glow) -->
-        <a-entity
-            light="type: point;
-                   color: #FFaa00;
-                   intensity: 1.2;
-                   distance: 5"
-            position="2 1 -1">
-        </a-entity>
-
-        <!-- =====================================================
-             CAMERA & CONTROLS
-             ===================================================== -->
-
+        <!-- CAMERA RIG -->
         <a-entity id="rig" position="0 0 0">
-            <a-camera
-                id="camera"
-                position="0 1.6 5"
-                look-controls
-                wasd-controls="acceleration: 20">
-                <!-- GAZE CURSOR: Kijken om te selecteren (FUSE mode: 1 seconde kijken = klik) -->
-                <a-cursor
-                    id="gaze-cursor"
-                    color="#FFD700"
-                    opacity="0.8"
+            <a-camera id="camera" position="0 1.6 5" look-controls wasd-controls="acceleration: 20">
+                <!-- Gaze cursor for Level 1 ONLY -->
+                <a-cursor id="gaze-cursor" color="#FFD700" opacity="0.8"
                     raycaster="objects: .clickable; far: 150"
-                    fuse="true"
-                    fuse-timeout="1000"
-                    animation__fusing="property: scale; startEvents: fusing; dur: 1000; from: 1 1 1; to: 0.2 0.2 0.2; easing: easeInQuad"
-                    animation__click="property: scale; startEvents: click; dur: 150; from: 0.2 0.2 0.2; to: 1 1 1; easing: easeOutQuad">
+                    fuse="true" fuse-timeout="1000">
                 </a-cursor>
-
             </a-camera>
 
-            <!-- LEFT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
-            <a-entity
-                id="left-hand"
-                hand-tracking-controls="hand: left"
-                raycaster="objects: .clickable; far: 20; showLine: false"
-                cursor="rayOrigin: entity"
-                position="-0.3 1.4 -0.4">
-                <!-- MANUAL LASER LINE (cylinder) -->
-                <a-cylinder
-                    id="left-laser"
-                    radius="0.005"
-                    height="20"
-                    color="#FFD700"
-                    opacity="0.8"
-                    position="0 0 -10"
-                    rotation="90 0 0">
-                </a-cylinder>
-                <!-- Shield voor Level 3 (volgt hand positie exact) -->
-                <a-entity
-                    id="shield"
-                    visible="false"
-                    geometry="primitive: cylinder; radius: 0.5; height: 0.05"
-                    material="color: #4169E1; metalness: 0.8; roughness: 0.2; emissive: #1E90FF; emissiveIntensity: 0.5; opacity: 0.9; transparent: true"
-                    rotation="90 0 0"
-                    shadow="cast: true">
-                </a-entity>
-            </a-entity>
+            <!-- HAND VISUAL INDICATORS (DEBUG) -->
+            <a-sphere id="left-hand-indicator" radius="0.08" color="#FF0000" opacity="0.7" visible="false"></a-sphere>
+            <a-sphere id="right-hand-indicator" radius="0.08" color="#00FF00" opacity="0.7" visible="false"></a-sphere>
 
-            <!-- RIGHT HAND (NATIVE HAND TRACKING - NO CONTROLLERS) -->
-            <a-entity
-                id="right-hand"
-                hand-tracking-controls="hand: right"
-                raycaster="objects: .clickable; far: 20; showLine: false"
-                cursor="rayOrigin: entity">
-                <!-- MANUAL LASER LINE (cylinder) -->
-                <a-cylinder
-                    id="right-laser"
-                    radius="0.005"
-                    height="20"
-                    color="#FFD700"
-                    opacity="0.8"
-                    position="0 0 -10"
-                    rotation="90 0 0">
-                </a-cylinder>
+            <!-- SHIELD (for Level 3) -->
+            <a-entity id="shield" visible="false" position="0 1.4 -0.5"
+                geometry="primitive: cylinder; radius: 0.5; height: 0.05"
+                material="color: #4169E1; metalness: 0.8; emissive: #1E90FF; emissiveIntensity: 0.5; opacity: 0.9; transparent: true"
+                rotation="90 0 0">
             </a-entity>
         </a-entity>
 
-        <!-- =====================================================
-             GAME MANAGER
-             ===================================================== -->
-
-        <a-entity id="game-manager" final-game-manager grazing-animals nature-populator hand-shield-sync></a-entity>
+        <!-- GAME MANAGER -->
+        <a-entity id="game-manager" robust-game-manager></a-entity>
 
     </a-scene>
 
     <script>
-        console.log('🎮 Script loading...');
+        console.log('🎮 ROBUUSTE GAME VERSIE - LOADING...');
 
         // =====================================================
-        // 3D STORY OVERLAY SYSTEM (VR Compatible)
+        // GLOBAL HAND TRACKING STATE
         // =====================================================
+        const HandTracker = {
+            leftHand: { position: new THREE.Vector3(), active: false, velocity: new THREE.Vector3() },
+            rightHand: { position: new THREE.Vector3(), active: false, velocity: new THREE.Vector3() },
+            lastLeftPos: new THREE.Vector3(),
+            lastRightPos: new THREE.Vector3(),
+            xrSession: null,
+            xrRefSpace: null,
 
-        // =====================================================
-        // ENHANCED AUDIO ENGINE (with Wind, Buzz, Splat, Poof)
-        // =====================================================
-        class EnhancedAudioEngine {
-            constructor() {
-                this.context = new (window.AudioContext || window.webkitAudioContext)();
-                this.windNoise = null;
-                console.log('🔊 Audio engine initialized');
-            }
+            init: function(scene) {
+                console.log('🖐️ HandTracker initializing...');
 
-            playSuccess() {
-                const melody = [523.25, 659.25, 783.99, 1046.50];
-                this.playMelody(melody, 180);
-            }
-
-            playVictory() {
-                const melody = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51];
-                this.playMelody(melody, 220);
-            }
-
-            playMagicalChime() {
-                // Grand finale arpeggio
-                const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1568.00];
-                this.playMelody(melody, 150);
-            }
-
-            playDamage() { this.playTone('sawtooth', 120, 0.35, 0.5); }
-            playDrumBeat() { this.playTone('sawtooth', 50, 0.3, 0.18); }
-
-            playPoof() {
-                // Soft "poof" sound for wrong globe disappearing
-                const noise = this.context.createBufferSource();
-                const buffer = this.context.createBuffer(1, this.context.sampleRate * 0.3, this.context.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < data.length; i++) {
-                    data[i] = Math.random() * 2 - 1;
-                }
-                noise.buffer = buffer;
-
-                const filter = this.context.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 200;
-
-                const gain = this.context.createGain();
-                gain.gain.setValueAtTime(0.3, this.context.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.3);
-
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.context.destination);
-                noise.start();
-            }
-
-            playSplat() {
-                // Fly splat sound
-                this.playTone('sine', 80, 0.4, 0.1);
-            }
-
-            playSquish() {
-                // Rhino touch sound
-                this.playTone('triangle', 150, 0.5, 0.2);
-            }
-
-            playHeartbeat() {
-                // Heart pulse
-                this.playTone('sine', 60, 0.6, 0.15);
-            }
-
-            startWind() {
-                // Background wind loop from audio file
-                if (this.windAudio) return;
-                this.windAudio = document.getElementById('wind-loop');
-                if (this.windAudio) {
-                    this.windAudio.volume = 0.4;
-                    this.windAudio.loop = true;
-                    this.windAudio.play().catch(e => console.log('Wind audio play failed:', e));
-                    console.log('💨 Wind loop started');
-                }
-            }
-
-            stopWind() {
-                if (this.windAudio) {
-                    this.windAudio.pause();
-                    this.windAudio.currentTime = 0;
-                }
-            }
-
-            startInsects() {
-                // Level 2 insects loop
-                if (this.insectsAudio) return;
-                this.insectsAudio = document.getElementById('insects-loop');
-                if (this.insectsAudio) {
-                    this.insectsAudio.volume = 0.5;
-                    this.insectsAudio.loop = true;
-                    this.insectsAudio.play().catch(e => console.log('Insects audio play failed:', e));
-                    console.log('🪰 Insects loop started');
-                }
-            }
-
-            stopInsects() {
-                if (this.insectsAudio) {
-                    this.insectsAudio.pause();
-                    this.insectsAudio.currentTime = 0;
-                }
-            }
-
-            playFart() {
-                // One-shot fart when hand enters rhino
-                const fart = document.getElementById('fart-sound');
-                if (fart) {
-                    fart.currentTime = 0;
-                    fart.volume = 0.7;
-                    fart.play().catch(e => console.log('Fart audio play failed:', e));
-                    console.log('💨 Fart sound played');
-                }
-            }
-
-            startSquishyLoop() {
-                // Squishy loop while hand is inside rhino
-                if (this.squishyAudio) return;
-                this.squishyAudio = document.getElementById('squishy-loop');
-                if (this.squishyAudio) {
-                    this.squishyAudio.volume = 0.6;
-                    this.squishyAudio.loop = true;
-                    this.squishyAudio.play().catch(e => console.log('Squishy audio play failed:', e));
-                    console.log('💦 Squishy loop started');
-                }
-            }
-
-            stopSquishyLoop() {
-                if (this.squishyAudio) {
-                    this.squishyAudio.pause();
-                    this.squishyAudio.currentTime = 0;
-                }
-            }
-
-            playBuzz() {
-                // Fly buzzing
-                const osc = this.context.createOscillator();
-                osc.type = 'sawtooth';
-                osc.frequency.value = 220 + Math.random() * 100;
-
-                const gain = this.context.createGain();
-                gain.gain.setValueAtTime(0.15, this.context.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + 0.3);
-
-                osc.connect(gain);
-                gain.connect(this.context.destination);
-                osc.start();
-                osc.stop(this.context.currentTime + 0.3);
-            }
-
-            playTone(type, freq, gain, duration) {
-                const osc = this.context.createOscillator();
-                const gainNode = this.context.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gainNode.gain.setValueAtTime(gain, this.context.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + duration);
-                osc.connect(gainNode);
-                gainNode.connect(this.context.destination);
-                osc.start();
-                osc.stop(this.context.currentTime + duration);
-            }
-
-            playMelody(notes, interval) {
-                notes.forEach((freq, i) => {
-                    setTimeout(() => this.playTone('sine', freq, 0.3, 0.25), i * interval);
-                });
-            }
-        }
-
-        const audioEngine = new EnhancedAudioEngine();
-
-        // =====================================================
-        // PHYSICS SYSTEM
-        // =====================================================
-        class PhysicsSystem {
-            applyGravity(entity, deltaTime) {
-                if (!entity.userData || !entity.userData.velocity) return;
-
-                const vel = entity.userData.velocity;
-                vel.y += -9.8 * deltaTime;
-
-                const pos = entity.object3D.position;
-                pos.x += vel.x * deltaTime;
-                pos.y += vel.y * deltaTime;
-                pos.z += vel.z * deltaTime;
-
-                return pos.y <= 0;
-            }
-        }
-
-        const physics = new PhysicsSystem();
-
-        // =====================================================
-        // DUST PARTICLE SYSTEM
-        // =====================================================
-        AFRAME.registerComponent('dust-system', {
-            init: function() {
-                console.log('💨 Spawning floating dust particles...');
-                this.spawnDust();
-            },
-
-            spawnDust: function() {
-                for (let i = 0; i < 30; i++) {
-                    const dust = document.createElement('a-sphere');
-                    dust.setAttribute('radius', 0.02 + Math.random() * 0.03);
-                    dust.setAttribute('color', '#D2B48C');
-                    dust.setAttribute('opacity', 0.3 + Math.random() * 0.2);
-                    dust.setAttribute('material', 'transparent: true');
-
-                    const x = (Math.random() - 0.5) * 40;
-                    const y = Math.random() * 3 + 0.5;
-                    const z = (Math.random() - 0.5) * 40;
-
-                    dust.setAttribute('position', `${x} ${y} ${z}`);
-
-                    dust.setAttribute('animation', {
-                        property: 'position',
-                        to: `${x + (Math.random() - 0.5) * 10} ${y + Math.random() * 2} ${z + (Math.random() - 0.5) * 10}`,
-                        dur: 15000 + Math.random() * 10000,
-                        easing: 'linear',
-                        loop: true,
-                        dir: 'alternate'
-                    });
-
-                    this.el.appendChild(dust);
-                }
-            }
-        });
-
-        // =====================================================
-        // HAND TRACKING SHIELD SYNC
-        // =====================================================
-        AFRAME.registerComponent('hand-shield-sync', {
-            init: function() {
-                this.shield = document.getElementById('shield');
-                this.leftHand = document.getElementById('left-hand');
-                console.log('🤚 Hand-shield sync initialized');
-            },
-
-            tick: function() {
-                if (this.leftHand && this.shield && this.shield.getAttribute('visible')) {
-                    const handPos = this.leftHand.object3D.position;
-                    const handRot = this.leftHand.object3D.rotation;
-                    this.shield.object3D.position.copy(handPos);
-                    this.shield.object3D.rotation.copy(handRot);
-                }
-            }
-        });
-
-        // =====================================================
-        // PROCEDURAL WAVY TERRAIN
-        // =====================================================
-        AFRAME.registerComponent('terrain-generator', {
-            init: function() {
-                console.log('🏜️ Generating wavy terrain...');
-                this.el.addEventListener('loaded', () => this.generateWaves());
-            },
-
-            generateWaves: function() {
-                const mesh = this.el.getObject3D('mesh');
-                if (!mesh) return;
-
-                const geometry = mesh.geometry;
-                const vertices = geometry.attributes.position;
-
-                for (let i = 0; i < vertices.count; i++) {
-                    const x = vertices.getX(i);
-                    const y = vertices.getY(i);
-                    const z = Math.sin(x / 5) * Math.cos(y / 5) * 1.5;
-                    vertices.setZ(i, z);
-                }
-
-                vertices.needsUpdate = true;
-                geometry.computeVertexNormals();
-                console.log('✓ Wavy terrain generated');
-            }
-        });
-
-        // =====================================================
-        // GRAZING ANIMALS
-        // =====================================================
-        AFRAME.registerComponent('grazing-animals', {
-            init: function() {
-                console.log('🦌 Spawning ANIMATED grazing animals...');
-                setTimeout(() => {
-                    this.spawnAnimals();
-                    this.spawnRunningGiraffe();
-                }, 2000);
-            },
-
-            spawnAnimals: function() {
-                const animalTypes = ['deer', 'stag', 'bull', 'horse', 'fox'];
-                const availableAnimals = animalTypes.filter(type =>
-                    !!document.getElementById(`${type}-asset`)
-                );
-
-                if (availableAnimals.length === 0) return;
-
-                for (let i = 0; i < 12; i++) {
-                    const x = -30 + Math.random() * 60;
-                    const z = -30 + Math.random() * 20;
-                    const animalType = availableAnimals[Math.floor(Math.random() * availableAnimals.length)];
-
-                    const animal = document.createElement('a-entity');
-                    animal.setAttribute('gltf-model', `#${animalType}-asset`);
-                    animal.setAttribute('position', `${x} 0 ${z}`);
-                    animal.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
-                    animal.setAttribute('scale', '0.2 0.2 0.2');
-                    animal.setAttribute('animation-mixer', 'clip: *; loop: repeat');
-                    animal.setAttribute('shadow', 'cast: true; receive: true');
-                    this.el.sceneEl.appendChild(animal);
-                }
-            },
-
-            spawnRunningGiraffe: function() {
-                if (!document.getElementById('giraffe-asset')) return;
-
-                const giraffe = document.createElement('a-entity');
-                giraffe.setAttribute('gltf-model', '#giraffe-asset');
-
-                const startX = -60, startZ = -50;
-                const endX = 60, endZ = 20;
-
-                giraffe.setAttribute('position', `${startX} 0 ${startZ}`);
-                giraffe.setAttribute('scale', '0.3 0.3 0.3');
-
-                const angle = Math.atan2(endZ - startZ, endX - startX);
-                const rotationY = THREE.MathUtils.radToDeg(angle) - 90;
-                giraffe.setAttribute('rotation', `0 ${rotationY} 0`);
-
-                giraffe.setAttribute('animation-mixer', 'clip: *; loop: repeat');
-                giraffe.setAttribute('animation', {
-                    property: 'position',
-                    to: `${endX} 0 ${endZ}`,
-                    dur: 8000,
-                    easing: 'linear',
-                    loop: false
+                scene.addEventListener('enter-vr', () => {
+                    console.log('🥽 Entered VR, setting up hand tracking...');
+                    this.setupXRHandTracking(scene);
                 });
 
-                this.el.sceneEl.appendChild(giraffe);
-
-                setInterval(() => {
-                    giraffe.setAttribute('position', `${startX} 0 ${startZ}`);
-                    giraffe.setAttribute('animation', {
-                        property: 'position',
-                        to: `${endX} 0 ${endZ}`,
-                        dur: 8000,
-                        easing: 'linear',
-                        loop: false
-                    });
-                }, 30000);
-            }
-        });
-
-        // =====================================================
-        // NATURE PACK POPULATOR
-        // =====================================================
-        AFRAME.registerComponent('nature-populator', {
-            init: function() {
-                console.log('🌿 Populating dunes...');
-                setTimeout(() => this.populateDunes(), 3000);
+                scene.addEventListener('exit-vr', () => {
+                    console.log('👋 Exited VR');
+                    this.leftHand.active = false;
+                    this.rightHand.active = false;
+                });
             },
 
-            populateDunes: function() {
-                const hasTree = !!document.getElementById('tree-asset');
-                for (let i = 0; i < 5; i++) {
-                    if (hasTree) {
-                        const tree = document.createElement('a-entity');
-                        tree.setAttribute('gltf-model', '#tree-asset');
-                        tree.setAttribute('position', `${this.randomX()} -0.5 ${this.randomZ()}`);
-                        tree.setAttribute('scale', `${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4} ${0.8 + Math.random() * 0.4}`);
-                        tree.setAttribute('rotation', `0 ${Math.random() * 360} 0`);
-                        tree.setAttribute('shadow', 'cast: true');
-                        this.el.sceneEl.appendChild(tree);
+            setupXRHandTracking: function(scene) {
+                const renderer = scene.renderer;
+                const xrManager = renderer.xr;
+
+                if (!xrManager) {
+                    console.warn('⚠️ No XR manager available');
+                    return;
+                }
+
+                this.xrSession = xrManager.getSession();
+
+                if (this.xrSession) {
+                    console.log('✅ XR Session found, checking for hand input...');
+
+                    // Get reference space
+                    xrManager.getReferenceSpace().then(refSpace => {
+                        this.xrRefSpace = refSpace;
+                        console.log('✅ XR Reference space obtained');
+                    });
+                }
+            },
+
+            update: function(frame, refSpace) {
+                if (!frame || !refSpace) return;
+
+                const session = frame.session;
+                if (!session) return;
+
+                // Check for hand input sources
+                for (const inputSource of session.inputSources) {
+                    if (inputSource.hand) {
+                        const hand = inputSource.hand;
+                        const handedness = inputSource.handedness;
+
+                        // Get wrist joint for hand position
+                        const wristJoint = hand.get('wrist');
+                        if (wristJoint) {
+                            const pose = frame.getJointPose(wristJoint, refSpace);
+                            if (pose) {
+                                const pos = pose.transform.position;
+                                const handData = handedness === 'left' ? this.leftHand : this.rightHand;
+                                const lastPos = handedness === 'left' ? this.lastLeftPos : this.lastRightPos;
+
+                                // Calculate velocity (for slap detection)
+                                handData.velocity.subVectors(
+                                    new THREE.Vector3(pos.x, pos.y, pos.z),
+                                    lastPos
+                                );
+
+                                // Update position
+                                lastPos.copy(handData.position);
+                                handData.position.set(pos.x, pos.y, pos.z);
+                                handData.active = true;
+                            }
+                        }
                     }
                 }
             },
 
-            randomX: function() { return -40 + Math.random() * 80; },
-            randomZ: function() { return -40 + Math.random() * 80; }
-        });
+            // Fallback: Use A-Frame hand entity positions
+            updateFromEntities: function(leftHandEl, rightHandEl) {
+                if (leftHandEl && leftHandEl.object3D) {
+                    const pos = new THREE.Vector3();
+                    leftHandEl.object3D.getWorldPosition(pos);
+
+                    // Only update if not at origin
+                    if (pos.lengthSq() > 0.1) {
+                        this.leftHand.velocity.subVectors(pos, this.leftHand.position);
+                        this.leftHand.position.copy(pos);
+                        this.leftHand.active = true;
+                    }
+                }
+
+                if (rightHandEl && rightHandEl.object3D) {
+                    const pos = new THREE.Vector3();
+                    rightHandEl.object3D.getWorldPosition(pos);
+
+                    if (pos.lengthSq() > 0.1) {
+                        this.rightHand.velocity.subVectors(pos, this.rightHand.position);
+                        this.rightHand.position.copy(pos);
+                        this.rightHand.active = true;
+                    }
+                }
+            },
+
+            getSwipeSpeed: function(hand) {
+                const data = hand === 'left' ? this.leftHand : this.rightHand;
+                return data.velocity.length() * 60; // Convert to m/s (assuming 60fps)
+            },
+
+            isHandActive: function(hand) {
+                return hand === 'left' ? this.leftHand.active : this.rightHand.active;
+            },
+
+            getPosition: function(hand) {
+                return hand === 'left' ? this.leftHand.position : this.rightHand.position;
+            }
+        };
+
+        // =====================================================
+        // AUDIO ENGINE
+        // =====================================================
+        const AudioEngine = {
+            context: null,
+            windAudio: null,
+            insectsAudio: null,
+            squishyAudio: null,
+
+            init: function() {
+                this.context = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('🔊 Audio engine ready');
+            },
+
+            resume: function() {
+                if (this.context && this.context.state === 'suspended') {
+                    this.context.resume();
+                }
+            },
+
+            playTone: function(type, freq, volume, duration) {
+                this.resume();
+                const osc = this.context.createOscillator();
+                const gain = this.context.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(volume, this.context.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.context.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.context.destination);
+                osc.start();
+                osc.stop(this.context.currentTime + duration);
+            },
+
+            playSuccess: function() {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    setTimeout(() => this.playTone('sine', freq, 0.3, 0.25), i * 150);
+                });
+            },
+
+            playVictory: function() {
+                [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50, 1174.66, 1318.51].forEach((freq, i) => {
+                    setTimeout(() => this.playTone('sine', freq, 0.3, 0.25), i * 180);
+                });
+            },
+
+            playSplat: function() { this.playTone('sine', 80, 0.4, 0.1); },
+            playBuzz: function() { this.playTone('sawtooth', 220 + Math.random() * 80, 0.15, 0.2); },
+            playPoof: function() { this.playTone('triangle', 100, 0.2, 0.3); },
+            playBlock: function() { this.playTone('square', 200, 0.3, 0.15); },
+            playHeartbeat: function() { this.playTone('sine', 60, 0.4, 0.2); },
+
+            startWind: function() {
+                this.windAudio = document.getElementById('wind-loop');
+                if (this.windAudio) {
+                    this.windAudio.volume = 0.3;
+                    this.windAudio.loop = true;
+                    this.windAudio.play().catch(e => console.log('Wind play failed:', e));
+                }
+            },
+
+            stopWind: function() {
+                if (this.windAudio) { this.windAudio.pause(); this.windAudio.currentTime = 0; }
+            },
+
+            startInsects: function() {
+                this.insectsAudio = document.getElementById('insects-loop');
+                if (this.insectsAudio) {
+                    this.insectsAudio.volume = 0.4;
+                    this.insectsAudio.loop = true;
+                    this.insectsAudio.play().catch(e => console.log('Insects play failed:', e));
+                }
+            },
+
+            stopInsects: function() {
+                if (this.insectsAudio) { this.insectsAudio.pause(); this.insectsAudio.currentTime = 0; }
+            },
+
+            playFart: function() {
+                const fart = document.getElementById('fart-sound');
+                if (fart) { fart.currentTime = 0; fart.volume = 0.6; fart.play().catch(e => {}); }
+            },
+
+            startSquishy: function() {
+                this.squishyAudio = document.getElementById('squishy-loop');
+                if (this.squishyAudio) {
+                    this.squishyAudio.volume = 0.5;
+                    this.squishyAudio.loop = true;
+                    this.squishyAudio.play().catch(e => {});
+                }
+            },
+
+            stopSquishy: function() {
+                if (this.squishyAudio) { this.squishyAudio.pause(); this.squishyAudio.currentTime = 0; }
+            }
+        };
+
+        AudioEngine.init();
 
         // =====================================================
         // GAME STATES
         // =====================================================
-        const GAME_STATES = {
+        const STATES = {
             INTRO: 'intro',
-            LEVEL_1: 'level_1',      // Find Namibia
-            LEVEL_2: 'level_2',      // Swat Flies
-            LEVEL_3: 'level_3',      // Block Spears
-            LEVEL_4: 'level_4',      // Rhino Heart
+            LEVEL_1: 'level_1',  // Find Namibia (gaze cursor)
+            LEVEL_2: 'level_2',  // Swat flies (hand collision)
+            LEVEL_3: 'level_3',  // Block spears (shield/hand)
+            LEVEL_4: 'level_4',  // Touch rhino heart (hand collision)
             VICTORY: 'victory'
         };
 
         // =====================================================
-        // FINAL GAME MANAGER
+        // ROBUST GAME MANAGER COMPONENT
         // =====================================================
-        AFRAME.registerComponent('final-game-manager', {
+        AFRAME.registerComponent('robust-game-manager', {
             init: function() {
-                console.log('🎮 FINAL GAME MANAGER INITIALIZED');
+                console.log('🎮 ROBUST GAME MANAGER INIT');
 
-                this.currentState = null;
-                this.activeObjects = [];
-                this.physicsObjects = [];
+                this.state = null;
+                this.objects = [];
+                this.spears = [];
+                this.score = 0;
+                this.target = 0;
 
+                // Cache elements
                 this.camera = document.getElementById('camera');
                 this.shield = document.getElementById('shield');
-                this.leftHand = document.getElementById('left-hand');
-                this.rightHand = document.getElementById('right-hand');
+                this.leftIndicator = document.getElementById('left-hand-indicator');
+                this.rightIndicator = document.getElementById('right-hand-indicator');
 
-                // Asset checks
-                this.hasRhino = !!document.getElementById('rhino-asset');
-                this.hasHunter = !!document.getElementById('hunter-asset');
-                this.hasFly = !!document.getElementById('fly-model');
-                this.hasHeart = !!document.getElementById('heart-model');
+                // Initialize hand tracker
+                HandTracker.init(this.el.sceneEl);
 
-                console.log('🦏 Assets loaded:', {
-                    rhino: this.hasRhino,
-                    hunter: this.hasHunter,
-                    fly: this.hasFly,
-                    heart: this.hasHeart
-                });
-
-                // Level 1 (Globes)
-                this.level1Target = 'NAMIBIË';
-
-                // Level 2 (Flies)
-                this.level2FliesKilled = 0;
-                this.level2Target = 10;
-
-                // Level 3 (Spears)
-                this.level3Score = 0;
-                this.level3Target = 15;
-
-                // Level 4 (Rhino)
-                this.rhinoTouched = false;
-                this.heartTouched = false;
-
-                // Audio activation flag
-                this.audioActivated = false;
-
-                // Try to activate audio on ANY user interaction
-                const activateAudio = () => {
-                    if (!this.audioActivated) {
-                        console.log('🔊 Activating audio...');
-                        audioEngine.startWind();
-                        this.audioActivated = true;
-                    }
-                };
-
-                // Listen for VR session start
-                this.el.sceneEl.addEventListener('enter-vr', activateAudio);
-                // Listen for any click
-                document.addEventListener('click', activateAudio, { once: true });
-                // Listen for any touch
-                document.addEventListener('touchstart', activateAudio, { once: true });
+                // Debug update interval
+                this.debugInterval = setInterval(() => this.updateDebug(), 200);
 
                 // Expose for skip button
                 window.gameManager = this;
 
-                // Start game after assets load
+                // Start game when scene is loaded
                 this.el.sceneEl.addEventListener('loaded', () => {
-                    console.log('✓ Scene loaded, starting game...');
-                    setTimeout(() => this.startIntro(), 2000);
+                    console.log('✅ Scene loaded');
+                    setTimeout(() => this.startIntro(), 1500);
+                });
+
+                // Audio activation on VR enter
+                this.el.sceneEl.addEventListener('enter-vr', () => {
+                    AudioEngine.resume();
+                    AudioEngine.startWind();
                 });
             },
 
-            tick: function(time, deltaTime) {
-                const dt = deltaTime / 1000;
+            tick: function(time, delta) {
+                const dt = delta / 1000;
 
-                // Physics for spears
-                this.physicsObjects.forEach(obj => {
-                    if (physics.applyGravity(obj, dt)) {
-                        if (obj.parentNode) obj.parentNode.removeChild(obj);
-                    }
-                });
+                // Update hand tracking from A-Frame entities (fallback method)
+                // In VR, A-Frame creates hand entities automatically
+                const leftHand = document.querySelector('[hand-tracking-controls="hand: left"]');
+                const rightHand = document.querySelector('[hand-tracking-controls="hand: right"]');
+                HandTracker.updateFromEntities(leftHand, rightHand);
 
-                // Shield collision detection (Level 3)
-                if (this.currentState === GAME_STATES.LEVEL_3) {
-                    this.checkShieldCollisions();
+                // Update hand indicators
+                this.updateHandIndicators();
+
+                // Level-specific tick logic
+                switch (this.state) {
+                    case STATES.LEVEL_2:
+                        this.tickLevel2(dt);
+                        break;
+                    case STATES.LEVEL_3:
+                        this.tickLevel3(dt);
+                        break;
+                    case STATES.LEVEL_4:
+                        this.tickLevel4(dt);
+                        break;
+                }
+            },
+
+            updateHandIndicators: function() {
+                // Show hand position indicators when tracking is active
+                if (HandTracker.leftHand.active && this.leftIndicator) {
+                    this.leftIndicator.setAttribute('visible', 'true');
+                    this.leftIndicator.object3D.position.copy(HandTracker.leftHand.position);
+                }
+                if (HandTracker.rightHand.active && this.rightIndicator) {
+                    this.rightIndicator.setAttribute('visible', 'true');
+                    this.rightIndicator.object3D.position.copy(HandTracker.rightHand.position);
+                }
+            },
+
+            updateDebug: function() {
+                const handsEl = document.getElementById('debug-hands');
+                const levelEl = document.getElementById('debug-level');
+
+                if (handsEl) {
+                    const l = HandTracker.leftHand;
+                    const r = HandTracker.rightHand;
+                    handsEl.textContent = `L: ${l.active ? l.position.toArray().map(v => v.toFixed(2)).join(',') : 'inactive'} | R: ${r.active ? r.position.toArray().map(v => v.toFixed(2)).join(',') : 'inactive'}`;
                 }
 
-                // Hand collision detection (Level 2 - Flies)
-                if (this.currentState === GAME_STATES.LEVEL_2) {
-                    this.checkHandFlyCollisions();
-                }
-
-                // Hand collision detection (Level 4 - Rhino)
-                if (this.currentState === GAME_STATES.LEVEL_4 && !this.rhinoTouched) {
-                    this.checkHandRhinoCollision();
+                if (levelEl) {
+                    levelEl.textContent = `Level: ${this.state || 'none'} | Score: ${this.score}/${this.target}`;
                 }
             },
 
@@ -783,102 +494,115 @@
                 document.getElementById('progress').textContent = progress;
             },
 
-            showBriefing: function(title, text, instructions, callback) {
-                // EXECUTE CALLBACK IMMEDIATELY (don't wait for dismiss!)
-                console.log('⚡ Executing callback immediately');
-                if (callback) callback();
-
-                // Create 3D briefing panel in VR
-                const briefing = document.createElement('a-entity');
-                briefing.setAttribute('id', 'briefing-panel');
-                briefing.setAttribute('position', '0 1.6 -2.5'); // Further away for better view
-                briefing.setAttribute('look-at', '[camera]'); // ALWAYS face camera!
-
-                // Black background (BIGGER & TALLER for instructions)
-                const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '3.5');
-                bg.setAttribute('height', '2.8');
-                bg.setAttribute('color', '#000000');
-                bg.setAttribute('opacity', '0.95');
-                briefing.appendChild(bg);
-
-                // Title
-                const titleText = document.createElement('a-text');
-                titleText.setAttribute('value', title);
-                titleText.setAttribute('align', 'center');
-                titleText.setAttribute('color', '#00FF00');
-                titleText.setAttribute('width', '3.2');
-                titleText.setAttribute('position', '0 1 0.01');
-                briefing.appendChild(titleText);
-
-                // Message
-                const msgText = document.createElement('a-text');
-                msgText.setAttribute('value', text);
-                msgText.setAttribute('align', 'center');
-                msgText.setAttribute('color', '#FFFFFF');
-                msgText.setAttribute('width', '3');
-                msgText.setAttribute('position', '0 0.4 0.01');
-                msgText.setAttribute('wrap-count', '40');
-                briefing.appendChild(msgText);
-
-                // Instructions (HOW TO INTERACT)
-                const instructText = document.createElement('a-text');
-                instructText.setAttribute('value', instructions);
-                instructText.setAttribute('align', 'center');
-                instructText.setAttribute('color', '#FFD700');
-                instructText.setAttribute('width', '3');
-                instructText.setAttribute('position', '0 -0.2 0.01');
-                instructText.setAttribute('wrap-count', '40');
-                briefing.appendChild(instructText);
-
-                // Continue button (BIGGER clickable plane)
-                const button = document.createElement('a-plane');
-                button.setAttribute('width', '2.5'); // Even bigger
-                button.setAttribute('height', '0.6');
-                button.setAttribute('color', '#00FF00');
-                button.setAttribute('position', '0 -0.95 0.01');
-                button.classList.add('clickable');
-
-                const buttonText = document.createElement('a-text');
-                buttonText.setAttribute('value', 'DOORGAAN\n(Knijp duim+wijsvinger)');
-                buttonText.setAttribute('align', 'center');
-                buttonText.setAttribute('color', '#000000');
-                buttonText.setAttribute('width', '4');
-                buttonText.setAttribute('position', '0 0 0.01');
-                button.appendChild(buttonText);
-
-                // Click handler
-                const dismiss = () => {
-                    console.log('✓ Briefing dismissed by user');
-                    if (briefing.parentNode) briefing.parentNode.removeChild(briefing);
-                };
-
-                button.addEventListener('click', dismiss);
-
-                // NO AUTO-DISMISS - only manual click!
-                console.log('⏱️ Briefing will stay until user clicks DOORGAAN');
-
-                briefing.appendChild(button);
-                this.el.sceneEl.appendChild(briefing);
+            clearObjects: function() {
+                this.objects.forEach(obj => { if (obj.parentNode) obj.parentNode.removeChild(obj); });
+                this.objects = [];
+                this.spears = [];
             },
 
-            clearAllObjects: function() {
-                this.activeObjects.forEach(obj => {
-                    if (obj.parentNode) obj.parentNode.removeChild(obj);
+            showBriefing: function(title, message, instructions, callback) {
+                // Execute callback immediately
+                if (callback) callback();
+
+                // Create 3D briefing panel
+                const panel = document.createElement('a-entity');
+                panel.setAttribute('id', 'briefing');
+                panel.setAttribute('position', '0 1.6 -2');
+                panel.setAttribute('look-at', '[camera]');
+
+                // Background
+                const bg = document.createElement('a-plane');
+                bg.setAttribute('width', '3');
+                bg.setAttribute('height', '2.2');
+                bg.setAttribute('color', '#000000');
+                bg.setAttribute('opacity', '0.9');
+                panel.appendChild(bg);
+
+                // Title
+                const titleEl = document.createElement('a-text');
+                titleEl.setAttribute('value', title);
+                titleEl.setAttribute('align', 'center');
+                titleEl.setAttribute('color', '#00FF00');
+                titleEl.setAttribute('width', '2.8');
+                titleEl.setAttribute('position', '0 0.7 0.01');
+                panel.appendChild(titleEl);
+
+                // Message
+                const msgEl = document.createElement('a-text');
+                msgEl.setAttribute('value', message);
+                msgEl.setAttribute('align', 'center');
+                msgEl.setAttribute('color', '#FFFFFF');
+                msgEl.setAttribute('width', '2.5');
+                msgEl.setAttribute('position', '0 0.2 0.01');
+                msgEl.setAttribute('wrap-count', '35');
+                panel.appendChild(msgEl);
+
+                // Instructions
+                const instrEl = document.createElement('a-text');
+                instrEl.setAttribute('value', instructions);
+                instrEl.setAttribute('align', 'center');
+                instrEl.setAttribute('color', '#FFD700');
+                instrEl.setAttribute('width', '2.5');
+                instrEl.setAttribute('position', '0 -0.4 0.01');
+                instrEl.setAttribute('wrap-count', '40');
+                panel.appendChild(instrEl);
+
+                // Continue button
+                const btn = document.createElement('a-plane');
+                btn.setAttribute('width', '1.5');
+                btn.setAttribute('height', '0.4');
+                btn.setAttribute('color', '#00FF00');
+                btn.setAttribute('position', '0 -0.85 0.01');
+                btn.classList.add('clickable');
+
+                const btnText = document.createElement('a-text');
+                btnText.setAttribute('value', 'DOORGAAN');
+                btnText.setAttribute('align', 'center');
+                btnText.setAttribute('color', '#000000');
+                btnText.setAttribute('width', '3');
+                btnText.setAttribute('position', '0 0 0.01');
+                btn.appendChild(btnText);
+
+                btn.addEventListener('click', () => {
+                    if (panel.parentNode) panel.parentNode.removeChild(panel);
                 });
-                this.activeObjects = [];
-                this.physicsObjects = [];
+
+                panel.appendChild(btn);
+                this.el.sceneEl.appendChild(panel);
             },
 
             skipLevel: function() {
-                console.log('⏭️ Skipping level:', this.currentState);
-                switch(this.currentState) {
-                    case GAME_STATES.INTRO: this.startLevel1(); break;
-                    case GAME_STATES.LEVEL_1: this.completeLevel1(); break;
-                    case GAME_STATES.LEVEL_2: this.completeLevel2(); break;
-                    case GAME_STATES.LEVEL_3: this.completeLevel3(); break;
-                    case GAME_STATES.LEVEL_4: this.completeLevel4(); break;
-                    case GAME_STATES.VICTORY: location.reload(); break;
+                console.log('⏭️ Skipping:', this.state);
+                switch (this.state) {
+                    case STATES.INTRO: this.startLevel1(); break;
+                    case STATES.LEVEL_1: this.completeLevel1(); break;
+                    case STATES.LEVEL_2: this.completeLevel2(); break;
+                    case STATES.LEVEL_3: this.completeLevel3(); break;
+                    case STATES.LEVEL_4: this.completeLevel4(); break;
+                    case STATES.VICTORY: location.reload(); break;
+                }
+            },
+
+            createExplosion: function(pos, color, count) {
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('a-sphere');
+                    p.setAttribute('radius', 0.05 + Math.random() * 0.05);
+                    p.setAttribute('color', color);
+                    p.setAttribute('position', pos);
+                    p.setAttribute('animation__pos', {
+                        property: 'position',
+                        to: `${pos.x + (Math.random()-0.5)*3} ${pos.y + Math.random()*2} ${pos.z + (Math.random()-0.5)*3}`,
+                        dur: 1000,
+                        easing: 'easeOutQuad'
+                    });
+                    p.setAttribute('animation__scale', {
+                        property: 'scale',
+                        to: '0 0 0',
+                        dur: 1000,
+                        easing: 'easeInQuad'
+                    });
+                    this.el.sceneEl.appendChild(p);
+                    setTimeout(() => { if (p.parentNode) p.parentNode.removeChild(p); }, 1000);
                 }
             },
 
@@ -886,894 +610,710 @@
             // INTRO
             // =====================================================
             startIntro: function() {
-                console.log('🎬 Starting intro...');
-                this.currentState = GAME_STATES.INTRO;
-                this.updateHUD('🌍 VIBEKE\'S GROTE EXPEDITIE', 'Klaar voor vertrek...', '');
-                setTimeout(() => this.startLevel1(), 2000);
+                console.log('🎬 INTRO');
+                this.state = STATES.INTRO;
+                this.updateHUD('🌍 VIBEKE\'S GROTE EXPEDITIE', 'Klaar voor het avontuur?', '');
+
+                // Spawn some ambient animals
+                this.spawnAmbientAnimals();
+
+                setTimeout(() => this.startLevel1(), 3000);
+            },
+
+            spawnAmbientAnimals: function() {
+                const types = ['deer', 'stag', 'bull', 'horse', 'fox'];
+                for (let i = 0; i < 8; i++) {
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    if (!document.getElementById(`${type}-asset`)) continue;
+
+                    const animal = document.createElement('a-entity');
+                    animal.setAttribute('gltf-model', `#${type}-asset`);
+                    animal.setAttribute('position', `${-30 + Math.random()*60} 0 ${-25 + Math.random()*15}`);
+                    animal.setAttribute('rotation', `0 ${Math.random()*360} 0`);
+                    animal.setAttribute('scale', '0.2 0.2 0.2');
+                    animal.setAttribute('animation-mixer', 'clip: *; loop: repeat');
+                    this.el.sceneEl.appendChild(animal);
+                }
             },
 
             // =====================================================
-            // LEVEL 1: DE BESTEMMING (Find Namibia)
+            // LEVEL 1: FIND NAMIBIA (Gaze Cursor)
             // =====================================================
             startLevel1: function() {
-                console.log('🌍 Starting Level 1...');
-                this.currentState = GAME_STATES.LEVEL_1;
-                this.clearAllObjects();
-                this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië op de wereldkaart!', '');
+                console.log('🌍 LEVEL 1: Find Namibia');
+                this.state = STATES.LEVEL_1;
+                this.clearObjects();
+                this.updateHUD('🌍 NIVEAU 1: DE BESTEMMING', 'Zoek Namibië!', '');
 
-                // Show briefing in VR
                 this.showBriefing(
                     'NIVEAU 1: DE BESTEMMING',
-                    'Lieve Vibeke,\n\nWe gaan met de HELE familie op reis!\nMaar waarheen?\n\nZoek de juiste bestemming...',
-                    'HOE TE SPELEN:\n- MAKKELIJKST: Kijk 1 seconde naar een bol (gouden cursor)\n- OF: Wijs met je hand + knijp duim+wijsvinger\n- Zoek NAMIBIË!',
+                    'Lieve Vibeke,\n\nWe gaan op reis!\nMaar waarheen?\n\nZoek de juiste bestemming...',
+                    'KIJK 1 seconde naar NAMIBIË',
                     () => this.spawnGlobes()
                 );
             },
 
             spawnGlobes: function() {
                 const destinations = [
-                    { name: 'Xian', isTarget: false },
-                    { name: 'Texel', isTarget: false },
-                    { name: 'Jeruzalem', isTarget: false },
-                    { name: 'Denemarken', isTarget: false },
-                    { name: 'Hongarije', isTarget: false },
-                    { name: 'NAMIBIË', isTarget: true },
+                    { name: 'Xian', target: false },
+                    { name: 'Texel', target: false },
+                    { name: 'Jeruzalem', target: false },
+                    { name: 'Denemarken', target: false },
+                    { name: 'Hongarije', target: false },
+                    { name: 'NAMIBIË', target: true }
                 ];
 
                 destinations.forEach((dest, i) => {
                     setTimeout(() => {
-                        if (this.currentState === GAME_STATES.LEVEL_1) {
-                            // Add 180 degrees (Math.PI) to rotate all globes so Namibia is at the back
-                            this.spawnGlobe(dest, (Math.PI * 2 / destinations.length) * i + Math.PI);
-                        }
-                    }, i * 600);
+                        if (this.state !== STATES.LEVEL_1) return;
+
+                        const angle = (Math.PI * 2 / destinations.length) * i + Math.PI;
+                        const radius = 5;
+                        const x = Math.cos(angle) * radius;
+                        const z = Math.sin(angle) * radius;
+
+                        // Globe container
+                        const globe = document.createElement('a-entity');
+                        globe.setAttribute('position', `${x} 1.6 ${z}`);
+                        globe.classList.add('clickable');
+                        globe.dataset.target = dest.target;
+                        globe.dataset.name = dest.name;
+
+                        // Visible sphere
+                        const sphere = document.createElement('a-sphere');
+                        sphere.setAttribute('radius', '0.5');
+                        sphere.setAttribute('color', dest.target ? '#FFD700' : '#4169E1');
+                        sphere.setAttribute('metalness', '0.5');
+                        globe.appendChild(sphere);
+
+                        // Hitbox
+                        const hitbox = document.createElement('a-sphere');
+                        hitbox.setAttribute('radius', '1.2');
+                        hitbox.setAttribute('opacity', '0');
+                        hitbox.setAttribute('transparent', 'true');
+                        hitbox.classList.add('clickable');
+                        globe.appendChild(hitbox);
+
+                        // Rotation animation
+                        globe.setAttribute('animation', {
+                            property: 'rotation',
+                            to: '0 360 0',
+                            dur: 10000,
+                            loop: true,
+                            easing: 'linear'
+                        });
+
+                        // Click handler
+                        globe.addEventListener('click', () => this.handleGlobeClick(globe, dest));
+                        hitbox.addEventListener('click', () => this.handleGlobeClick(globe, dest));
+
+                        this.el.sceneEl.appendChild(globe);
+                        this.objects.push(globe);
+
+                        // Label (separate, doesn't rotate)
+                        const label = document.createElement('a-entity');
+                        label.setAttribute('position', `${x} 2.5 ${z}`);
+                        label.setAttribute('look-at', '[camera]');
+
+                        const text = document.createElement('a-text');
+                        text.setAttribute('value', dest.name);
+                        text.setAttribute('align', 'center');
+                        text.setAttribute('color', dest.target ? '#FF6347' : '#FFFFFF');
+                        text.setAttribute('width', '4');
+                        label.appendChild(text);
+
+                        this.el.sceneEl.appendChild(label);
+                        this.objects.push(label);
+
+                    }, i * 400);
                 });
             },
 
-            spawnGlobe: function(destination, angle) {
-                const globe = document.createElement('a-entity');
+            handleGlobeClick: function(globe, dest) {
+                console.log('🌍 Clicked:', dest.name, 'target:', dest.target);
 
-                const radius = 5;
-                const height = 1.6;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-
-                globe.setAttribute('position', `${x} ${height} ${z}`);
-                globe.classList.add('globe', 'clickable');
-                globe.setAttribute('data-name', destination.name);
-                globe.setAttribute('data-is-target', destination.isTarget);
-
-                // Visual sphere (0.5 radius)
-                const sphere = document.createElement('a-sphere');
-                sphere.setAttribute('radius', '0.5');
-                sphere.setAttribute('color', destination.isTarget ? '#FFD700' : '#4169E1');
-                sphere.setAttribute('metalness', '0.5');
-                sphere.setAttribute('roughness', '0.4');
-                sphere.setAttribute('shadow', 'cast: true');
-                globe.appendChild(sphere);
-
-                // LARGER INVISIBLE HITBOX for easier clicking with raycaster!
-                const hitbox = document.createElement('a-sphere');
-                hitbox.setAttribute('radius', '1.5'); // 3x bigger!
-                hitbox.setAttribute('opacity', '0');
-                hitbox.setAttribute('transparent', 'true');
-                hitbox.classList.add('clickable'); // Also clickable
-                globe.appendChild(hitbox);
-
-                // Label OUTSIDE globe container so it doesn't rotate with globe
-                const labelContainer = document.createElement('a-entity');
-                labelContainer.setAttribute('position', `${x} ${height + 0.9} ${z}`);
-                labelContainer.setAttribute('look-at', '[camera]');
-
-                const label = document.createElement('a-text');
-                label.setAttribute('value', destination.name);
-                label.setAttribute('align', 'center');
-                label.setAttribute('color', destination.isTarget ? '#FF6347' : '#FFFFFF');
-                label.setAttribute('width', '4');
-                label.setAttribute('position', '0 0 0');
-                labelContainer.appendChild(label);
-
-                this.el.sceneEl.appendChild(labelContainer);
-                this.activeObjects.push(labelContainer); // Track for cleanup
-
-                globe.setAttribute('animation', {
-                    property: 'rotation',
-                    to: '0 360 0',
-                    dur: 12000,
-                    loop: true,
-                    easing: 'linear'
-                });
-
-                globe.addEventListener('click', () => this.handleGlobeClick(globe));
-
-                this.el.sceneEl.appendChild(globe);
-                this.activeObjects.push(globe);
-            },
-
-            handleGlobeClick: function(globe) {
-                const isTarget = globe.getAttribute('data-is-target') === 'true';
-                const name = globe.getAttribute('data-name');
-
-                console.log('🌍 Globe clicked:', name, 'isTarget:', isTarget);
-
-                if (isTarget) {
-                    console.log('✓ Found Namibia!');
-                    audioEngine.playSuccess();
-                    this.updateHUD('✈️ NIVEAU 1', `✓ GEVONDEN: ${name}!`, '');
-                    this.createExplosion(globe.object3D.position, '#FFD700', 60);
-
-                    // Remove globe immediately
-                    globe.parentNode.removeChild(globe);
-                    this.activeObjects = this.activeObjects.filter(o => o !== globe);
-
-                    setTimeout(() => this.completeLevel1(), 2000);
+                if (dest.target) {
+                    AudioEngine.playSuccess();
+                    this.updateHUD('✅ GEVONDEN!', `${dest.name}!`, '');
+                    this.createExplosion(globe.object3D.position, '#FFD700', 40);
+                    setTimeout(() => this.completeLevel1(), 1500);
                 } else {
-                    // Wrong globe - POOF!
-                    console.log('✗ Wrong destination:', name, '- removing globe');
-                    audioEngine.playPoof();
-                    this.createExplosion(globe.object3D.position, '#888888', 20);
-
-                    // Remove globe immediately
-                    globe.parentNode.removeChild(globe);
-                    this.activeObjects = this.activeObjects.filter(o => o !== globe);
+                    AudioEngine.playPoof();
+                    this.createExplosion(globe.object3D.position, '#888888', 15);
+                    if (globe.parentNode) globe.parentNode.removeChild(globe);
+                    this.objects = this.objects.filter(o => o !== globe);
                 }
             },
 
             completeLevel1: function() {
-                console.log('✓ Level 1 complete!');
-                this.clearAllObjects();
-
-                // HIDE LASER POINTERS after Level 1
-                const leftLaser = document.getElementById('left-laser');
-                const rightLaser = document.getElementById('right-laser');
-                if (leftLaser) leftLaser.setAttribute('visible', 'false');
-                if (rightLaser) rightLaser.setAttribute('visible', 'false');
-                console.log('🔫 Laser pointers hidden');
-
-                audioEngine.playSuccess();
-                this.updateHUD('✓ NIVEAU 1 VOLTOOID!', 'JA! We gaan naar NAMIBIË!', '');
-                setTimeout(() => this.startLevel2(), 2500);
+                console.log('✅ Level 1 complete');
+                this.clearObjects();
+                AudioEngine.playSuccess();
+                this.updateHUD('✅ NIVEAU 1 VOLTOOID!', 'We gaan naar NAMIBIË!', '');
+                setTimeout(() => this.startLevel2(), 2000);
             },
 
             // =====================================================
-            // LEVEL 2: DE VOORBEREIDING (Swat Flies)
+            // LEVEL 2: SWAT FLIES (Hand Collision)
             // =====================================================
             startLevel2: function() {
-                console.log('🪰 Starting Level 2...');
-                this.currentState = GAME_STATES.LEVEL_2;
-                this.clearAllObjects();
-                this.level2FliesKilled = 0;
-                this.level2TotalFlies = 18; // Total flies to spawn
-                audioEngine.startInsects(); // Start insects loop
-                this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen weg!', `${this.level2FliesKilled} / ${this.level2Target}`);
+                console.log('🪰 LEVEL 2: Swat Flies');
+                this.state = STATES.LEVEL_2;
+                this.clearObjects();
+                this.score = 0;
+                this.target = 10;
+                AudioEngine.startInsects();
+                this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep de vliegen!', `${this.score}/${this.target}`);
 
                 this.showBriefing(
                     'NIVEAU 2: DE VOORBEREIDING',
-                    'Pas op! In de rimboe zoemen\nveel beestjes...\n\nEven oefenen!\nMep 10 vliegen weg\nmet je HANDEN!',
-                    'HOE TE SPELEN:\n- Sla om je heen om de vliegen te verwijderen!\n- Ze verdwijnen vanzelf na een paar seconden',
+                    'Pas op!\nIn de rimboe zoemen veel beestjes!\n\nMep 10 vliegen weg!',
+                    'SLA met je HANDEN naar de vliegen!',
                     () => this.spawnFlies()
                 );
             },
 
             spawnFlies: function() {
-                // Spawn 18 flies total, but only need to kill 10
-                for (let i = 0; i < this.level2TotalFlies; i++) {
+                const total = 18;
+                for (let i = 0; i < total; i++) {
                     setTimeout(() => {
-                        if (this.currentState === GAME_STATES.LEVEL_2) {
-                            this.spawnFly();
-                        }
-                    }, i * 500); // Faster spawn rate
+                        if (this.state !== STATES.LEVEL_2) return;
+                        this.spawnFly();
+                    }, i * 600);
                 }
             },
 
             spawnFly: function() {
                 const fly = document.createElement('a-entity');
 
-                if (this.hasFly) {
-                    // Use actual fly model
+                // Use model if available
+                if (document.getElementById('fly-model')) {
                     fly.setAttribute('gltf-model', '#fly-model');
-                    fly.setAttribute('scale', '0.05 0.05 0.05');
-                    fly.setAttribute('rotation', `0 ${Math.random() * 360} ${Math.random() * 360}`);
+                    fly.setAttribute('scale', '0.06 0.06 0.06');
                 } else {
-                    // Fallback: black sphere
+                    // Fallback sphere
                     const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('radius', '0.08');
-                    sphere.setAttribute('color', '#000000');
-                    sphere.setAttribute('metalness', '0.8');
+                    sphere.setAttribute('radius', '0.1');
+                    sphere.setAttribute('color', '#111111');
                     fly.appendChild(sphere);
                 }
 
-                // LARGE hitbox for easier hitting
-                const hitbox = document.createElement('a-sphere');
-                hitbox.setAttribute('radius', '0.5'); // Bigger again!
-                hitbox.setAttribute('opacity', '0');
-                hitbox.setAttribute('transparent', 'true');
-                hitbox.classList.add('fly-hitbox');
-                fly.appendChild(hitbox);
+                fly.classList.add('fly');
 
-                fly.classList.add('fly', 'clickable');
-
-                // CLOSE distance spawn - right in front!
-                const angle = Math.random() * Math.PI * 2; // Full 360 degrees
-                const distance = 0.5 + Math.random() * 0.4; // 0.5 to 0.9 meters away - VERY close!
-                const x = Math.cos(angle) * distance;
-                const y = 1.3 + Math.random() * 0.5; // Height: 1.3m to 1.8m (head level)
-                const z = Math.sin(angle) * distance;
+                // Position in front of player
+                const angle = (Math.random() - 0.5) * Math.PI * 0.8; // Front arc
+                const dist = 0.6 + Math.random() * 0.6; // 0.6-1.2m
+                const x = Math.sin(angle) * dist;
+                const y = 1.2 + Math.random() * 0.5; // Head height
+                const z = -Math.cos(angle) * dist; // In front
 
                 fly.setAttribute('position', `${x} ${y} ${z}`);
 
-                // Slower, smaller movement so easier to track
-                const moveRange = 0.3; // Smaller movement (was 0.8)
+                // Buzzing animation
+                const range = 0.15;
                 fly.setAttribute('animation__buzz', {
                     property: 'position',
-                    to: `${x + (Math.random() - 0.5) * moveRange} ${y + (Math.random() - 0.5) * moveRange} ${z + (Math.random() - 0.5) * moveRange}`,
-                    dur: 600 + Math.random() * 400, // Slower! (was 300-700)
-                    loop: true,
-                    dir: 'alternate',
-                    easing: 'linear'
-                });
-
-                fly.addEventListener('click', () => this.handleFlySplat(fly));
-
-                // AUTO-REMOVE after 8 seconds as BACKUP (in case hand tracking doesn't work)
-                setTimeout(() => {
-                    if (fly.parentNode && !fly.dataset.splatted) {
-                        console.log('⏱️ Fly auto-removed (timeout)');
-                        this.handleFlySplat(fly);
-                    }
-                }, 8000);
-
-                // Play buzz sound
-                audioEngine.playBuzz();
-
-                this.el.sceneEl.appendChild(fly);
-                this.activeObjects.push(fly);
-            },
-
-            handleFlySplat: function(fly) {
-                // Prevent double-splat
-                if (fly.dataset.splatted) return;
-                fly.dataset.splatted = 'true';
-
-                console.log('💥 Fly splatted! Total:', this.level2FliesKilled + 1);
-
-                // Visual explosion effect at fly position
-                this.createExplosion(fly.object3D.position, '#000000', 20);
-
-                audioEngine.playSplat();
-                this.level2FliesKilled++;
-                this.updateHUD('🪰 NIVEAU 2: DE VOORBEREIDING', 'Mep die vliegen!', `${this.level2FliesKilled} / ${this.level2Target}`);
-
-                // Remove fly immediately
-                if (fly.parentNode) {
-                    fly.parentNode.removeChild(fly);
-                }
-                this.activeObjects = this.activeObjects.filter(o => o !== fly);
-
-                if (this.level2FliesKilled >= this.level2Target) {
-                    console.log('✓ Level 2 target reached!');
-                    setTimeout(() => this.completeLevel2(), 1000);
-                }
-            },
-
-            checkHandFlyCollisions: function() {
-                if (!this.leftHand || !this.rightHand) return;
-
-                const leftPos = new THREE.Vector3();
-                const rightPos = new THREE.Vector3();
-                this.leftHand.object3D.getWorldPosition(leftPos);
-                this.rightHand.object3D.getWorldPosition(rightPos);
-
-                const fliesHit = [];
-                const flies = this.activeObjects.filter(obj => obj.classList && obj.classList.contains('fly'));
-
-                flies.forEach(obj => {
-                    const flyPos = new THREE.Vector3();
-                    obj.object3D.getWorldPosition(flyPos);
-
-                    const distLeft = leftPos.distanceTo(flyPos);
-                    const distRight = rightPos.distanceTo(flyPos);
-
-                    // Debug: Log closest distance every 60 frames
-                    if (this.debugFrameCount === undefined) this.debugFrameCount = 0;
-                    this.debugFrameCount++;
-                    if (this.debugFrameCount % 60 === 0 && flies.length > 0) {
-                        const minDist = Math.min(distLeft, distRight);
-                        console.log(`👋 Closest fly: ${minDist.toFixed(2)}m | Hand L:(${leftPos.x.toFixed(1)},${leftPos.y.toFixed(1)},${leftPos.z.toFixed(1)}) R:(${rightPos.x.toFixed(1)},${rightPos.y.toFixed(1)},${rightPos.z.toFixed(1)})`);
-                    }
-
-                    // MUCH LARGER: 1.2m radius so it definitely works!
-                    if (distLeft < 1.2 || distRight < 1.2) {
-                        console.log(`💥 HIT! Distance: L=${distLeft.toFixed(2)}m R=${distRight.toFixed(2)}m`);
-                        fliesHit.push(obj);
-                    }
-                });
-
-                // Handle all hits (prevent multiple removes)
-                fliesHit.forEach(fly => this.handleFlySplat(fly));
-            },
-
-            completeLevel2: function() {
-                console.log('✓ Level 2 complete!');
-                this.clearAllObjects();
-                audioEngine.stopInsects(); // Stop insects loop
-                audioEngine.playSuccess();
-                this.updateHUD('✓ NIVEAU 2 VOLTOOID!', 'Perfect! Klaar voor het avontuur!', '');
-                setTimeout(() => this.startLevel3(), 2500);
-            },
-
-            // =====================================================
-            // LEVEL 3: DE BESCHERMER (Block Spears)
-            // =====================================================
-            startLevel3: function() {
-                console.log('🛡️ Starting Level 3...');
-                this.currentState = GAME_STATES.LEVEL_3;
-                this.clearAllObjects();
-                this.level3Score = 0;
-
-                this.showBriefing(
-                    'NIVEAU 3: DE BESCHERMER',
-                    'Het wordt een wild avontuur!\n\nJij moet de familie beschermen.\n\nBlokkeer 15 speren met\nje LINKERHAND!',
-                    'HOE TE SPELEN:\n- Beweeg je LINKERHAND voor de speren\n- Een blauw schild verschijnt op je hand\n- Blokkeer de speren voordat ze je raken!',
-                    () => this.setupLevel3()
-                );
-            },
-
-            setupLevel3: function() {
-                this.updateHUD('🛡️ NIVEAU 3: DE BESCHERMER', 'Blokkeer speren met je LINKERHAND!', `${this.level3Score} / ${this.level3Target}`);
-
-                if (this.shield) {
-                    this.shield.setAttribute('visible', 'true');
-                }
-
-                this.spawnAmbushBushes();
-
-                let hunterIndex = 0;
-                for (let bushIndex = 0; bushIndex < 3; bushIndex++) {
-                    for (let row = 0; row < 2; row++) {
-                        const colsInRow = row === 0 ? 2 : 3;
-                        for (let col = 0; col < colsInRow; col++) {
-                            setTimeout(() => {
-                                if (this.currentState === GAME_STATES.LEVEL_3) {
-                                    this.spawnHunterWithSpear(bushIndex, row, col);
-                                }
-                            }, hunterIndex * 500);
-                            hunterIndex++;
-                        }
-                    }
-                }
-            },
-
-            spawnAmbushBushes: function() {
-                const bushRadius = 15;
-                for (let i = 0; i < 3; i++) {
-                    const angle = (Math.PI * 2 / 3) * i;
-                    const x = Math.cos(angle) * bushRadius;
-                    const z = Math.sin(angle) * bushRadius;
-
-                    const bush = document.createElement('a-entity');
-                    bush.setAttribute('position', `${x} 0 ${z}`);
-
-                    const foliage1 = document.createElement('a-sphere');
-                    foliage1.setAttribute('radius', '2');
-                    foliage1.setAttribute('position', '0 1.5 0');
-                    foliage1.setAttribute('color', '#2d5016');
-                    foliage1.setAttribute('roughness', '1');
-                    foliage1.setAttribute('shadow', 'cast: true; receive: true');
-                    bush.appendChild(foliage1);
-
-                    const trunk = document.createElement('a-cylinder');
-                    trunk.setAttribute('radius', '0.3');
-                    trunk.setAttribute('height', '2');
-                    trunk.setAttribute('position', '0 1 0');
-                    trunk.setAttribute('color', '#4a3c28');
-                    bush.appendChild(trunk);
-
-                    this.el.sceneEl.appendChild(bush);
-                    this.activeObjects.push(bush);
-                }
-            },
-
-            spawnHunterWithSpear: function(bushIndex, row, col) {
-                const bushRadius = 15;
-                const bushAngle = (Math.PI * 2 / 3) * bushIndex;
-                const bushX = Math.cos(bushAngle) * bushRadius;
-                const bushZ = Math.sin(bushAngle) * bushRadius;
-
-                const rightX = -Math.sin(bushAngle);
-                const rightZ = Math.cos(bushAngle);
-
-                const spacing = 1.5;
-                const x = bushX + rightX * 1 + (col - 1) * spacing * rightX;
-                const z = bushZ + rightZ * 1 + (col - 1) * spacing * rightZ - (row * spacing);
-                const height = 0;
-
-                const angleToCamera = Math.atan2(-x, -z);
-                const rotationY = THREE.MathUtils.radToDeg(angleToCamera);
-
-                if (this.hasHunter) {
-                    const hunter = document.createElement('a-entity');
-                    hunter.setAttribute('gltf-model', '#hunter-asset');
-                    hunter.setAttribute('position', `${x} ${height} ${z}`);
-                    hunter.setAttribute('scale', '0.1625 0.1625 0.1625');  // 65% of 0.25
-                    hunter.setAttribute('rotation', `0 ${rotationY} 0`);
-                    hunter.setAttribute('shadow', 'cast: true');
-
-                    const targetDistance = 5;
-                    const walkDuration = 30000;
-                    const directionToCamera = Math.sqrt(x*x + z*z);
-                    const walkRatio = targetDistance / directionToCamera;
-                    const targetX = x * walkRatio;
-                    const targetZ = z * walkRatio;
-
-                    hunter.setAttribute('animation', {
-                        property: 'position',
-                        to: `${targetX} ${height} ${targetZ}`,
-                        dur: walkDuration,
-                        easing: 'linear'
-                    });
-
-                    this.el.sceneEl.appendChild(hunter);
-                    this.activeObjects.push(hunter);
-                }
-
-                const spearInterval = setInterval(() => {
-                    if (this.currentState === GAME_STATES.LEVEL_3) {
-                        this.launchSpear(x, height + 1.5, z);
-                    } else {
-                        clearInterval(spearInterval);
-                    }
-                }, 3000 + Math.random() * 2000);
-            },
-
-            launchSpear: function(startX, startY, startZ) {
-                const spear = document.createElement('a-entity');
-                spear.setAttribute('position', `${startX} ${startY} ${startZ}`);
-                spear.classList.add('spear');
-                spear.setAttribute('shadow', 'cast: true');
-
-                const shaft = document.createElement('a-cylinder');
-                shaft.setAttribute('radius', '0.05');
-                shaft.setAttribute('height', '2.5');
-                shaft.setAttribute('color', '#8B4513');
-                shaft.setAttribute('rotation', '0 0 90');
-                shaft.setAttribute('metalness', '0.2');
-                shaft.setAttribute('roughness', '0.8');
-                spear.appendChild(shaft);
-
-                const tip = document.createElement('a-cone');
-                tip.setAttribute('radius-bottom', '0.12');
-                tip.setAttribute('height', '0.4');
-                tip.setAttribute('color', '#C0C0C0');
-                tip.setAttribute('position', '1.25 0 0');
-                tip.setAttribute('rotation', '0 0 -90');
-                tip.setAttribute('metalness', '0.9');
-                tip.setAttribute('roughness', '0.2');
-                spear.appendChild(tip);
-
-                spear.setAttribute('look-at', '[camera]');
-
-                // Target CHEST HEIGHT (1.5m) not feet!
-                const targetPos = new THREE.Vector3(0, 1.5, 0);
-                const direction = new THREE.Vector3(
-                    targetPos.x - startX,
-                    targetPos.y - startY,
-                    targetPos.z - startZ
-                ).normalize();
-
-                // FASTER velocity for straighter trajectory
-                spear.userData = {
-                    velocity: {
-                        x: direction.x * 25, // Increased from 15
-                        y: direction.y * 25, // Straighter flight
-                        z: direction.z * 25
-                    },
-                    isSpear: true
-                };
-
-                this.el.sceneEl.appendChild(spear);
-                this.activeObjects.push(spear);
-                this.physicsObjects.push(spear);
-            },
-
-            checkShieldCollisions: function() {
-                if (!this.shield || !this.shield.object3D) return;
-
-                const shieldPos = new THREE.Vector3();
-                this.shield.object3D.getWorldPosition(shieldPos);
-
-                this.physicsObjects.forEach(obj => {
-                    if (obj.userData && obj.userData.isSpear && obj.parentNode) {
-                        const spearPos = obj.object3D.position;
-                        const distance = shieldPos.distanceTo(spearPos);
-
-                        if (distance < 0.6) {
-                            audioEngine.playSuccess();
-                            this.level3Score++;
-                            this.updateHUD('🛡️ NIVEAU 3: DE BESCHERMER', 'Perfect! Blijf blokkeren!', `${this.level3Score} / ${this.level3Target}`);
-
-                            this.createExplosion(spearPos, '#FFD700', 30);
-                            obj.parentNode.removeChild(obj);
-                            this.physicsObjects = this.physicsObjects.filter(o => o !== obj);
-
-                            if (this.level3Score >= this.level3Target) {
-                                setTimeout(() => this.completeLevel3(), 1000);
-                            }
-                        }
-                    }
-                });
-            },
-
-            completeLevel3: function() {
-                console.log('✓ Level 3 complete!');
-                if (this.shield) {
-                    this.shield.setAttribute('visible', 'false');
-                }
-                this.clearAllObjects();
-                audioEngine.playSuccess();
-                this.updateHUD('✓ NIVEAU 3 VOLTOOID!', 'Je bent een held!', '');
-                setTimeout(() => this.startLevel4(), 2500);
-            },
-
-            // =====================================================
-            // LEVEL 4: DE ONTMOETING (Rhino Heart)
-            // =====================================================
-            startLevel4: function() {
-                console.log('🦏 Starting Level 4...');
-                this.currentState = GAME_STATES.LEVEL_4;
-                this.clearAllObjects();
-                this.rhinoTouched = false;
-                this.heartTouched = false;
-                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Raak de neushoorn aan...', '');
-
-                this.showBriefing(
-                    'NIVEAU 4: DE ONTMOETING',
-                    'Kijk! De Big Five!\n\nDeze neushoorn heeft\niets bijzonders voor je...\n\nSteek je hand erin\nom het hart te vinden!',
-                    'HOE TE SPELEN:\n- Beweeg je hand NAAR de neushoorn\n- Steek je hand DOOR hem heen\n- Vind het hart in zijn buik!',
-                    () => this.spawnRhino()
-                );
-            },
-
-            spawnRhino: function() {
-                const rhinoContainer = document.createElement('a-entity');
-                rhinoContainer.setAttribute('id', 'rhino-boss');
-                rhinoContainer.setAttribute('position', '0 0.5 -2.5'); // Further back and higher!
-                rhinoContainer.setAttribute('shadow', 'cast: true; receive: true');
-
-                // Flag to track if hand entered rhino
-                this.handInsideRhino = false;
-
-                if (this.hasRhino) {
-                    const rhino = document.createElement('a-entity');
-                    rhino.setAttribute('gltf-model', '#rhino-asset');
-                    rhino.setAttribute('scale', '2 2 2');
-                    rhino.setAttribute('rotation', '0 200 0');
-                    rhino.classList.add('clickable', 'rhino-body');
-
-                    rhino.setAttribute('animation__breath', {
-                        property: 'scale',
-                        from: '2 2 2',
-                        to: '2.05 2.05 2.05',
-                        dur: 3500,
-                        loop: true,
-                        dir: 'alternate',
-                        easing: 'easeInOutSine'
-                    });
-
-                    rhino.addEventListener('click', () => this.handleRhinoTouch(rhino));
-
-                    rhinoContainer.appendChild(rhino);
-                } else {
-                    const body = document.createElement('a-box');
-                    body.setAttribute('width', '2');
-                    body.setAttribute('height', '1.2');
-                    body.setAttribute('depth', '1');
-                    body.setAttribute('color', '#696969');
-                    body.setAttribute('opacity', '0.6');
-                    body.setAttribute('material', 'transparent: true; metalness: 0.3; roughness: 0.7');
-                    body.setAttribute('rotation', '0 180 0');
-                    body.classList.add('clickable', 'rhino-body');
-                    body.addEventListener('click', () => this.handleRhinoTouch(body));
-                    rhinoContainer.appendChild(body);
-                }
-
-                // Heart (hidden initially) - Using bottle.glb model - LOWER in belly, SMALLER
-                const heart = document.createElement('a-entity');
-                heart.setAttribute('id', 'rhino-heart');
-                heart.setAttribute('position', '0 -0.3 0'); // Lower - in the belly
-                heart.classList.add('clickable');
-
-                if (this.hasHeart) {
-                    // Use actual heart/bottle model - MUCH SMALLER
-                    heart.setAttribute('gltf-model', '#heart-model');
-                    heart.setAttribute('scale', '0.02 0.02 0.02'); // Tiny!
-                    heart.setAttribute('rotation', '0 0 0');
-                    heart.setAttribute('material', 'opacity: 0; transparent: true');
-                } else {
-                    // Fallback: red sphere - SMALLER
-                    const sphere = document.createElement('a-sphere');
-                    sphere.setAttribute('radius', '0.04'); // Small radius
-                    sphere.setAttribute('color', '#DC143C');
-                    sphere.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1.5; metalness: 0.8; roughness: 0.2; opacity: 0; transparent: true');
-                    heart.appendChild(sphere);
-                }
-
-                heart.setAttribute('animation__pulse', {
-                    property: 'scale',
-                    from: '0.02 0.02 0.02',
-                    to: '0.025 0.025 0.025',
-                    dur: 800,
+                    to: `${x + (Math.random()-0.5)*range} ${y + (Math.random()-0.5)*range} ${z + (Math.random()-0.5)*range}`,
+                    dur: 600 + Math.random() * 400,
                     loop: true,
                     dir: 'alternate',
                     easing: 'easeInOutSine'
                 });
 
-                heart.addEventListener('click', () => this.handleHeartTouch(heart));
+                // Store original position for collision check
+                fly.dataset.baseX = x;
+                fly.dataset.baseY = y;
+                fly.dataset.baseZ = z;
+                fly.dataset.splatted = 'false';
 
-                rhinoContainer.appendChild(heart);
+                AudioEngine.playBuzz();
 
+                this.el.sceneEl.appendChild(fly);
+                this.objects.push(fly);
+            },
+
+            tickLevel2: function(dt) {
+                const flies = this.objects.filter(o => o.classList && o.classList.contains('fly') && o.dataset.splatted === 'false');
+
+                // Check hand collisions
+                flies.forEach(fly => {
+                    const flyPos = new THREE.Vector3();
+                    fly.object3D.getWorldPosition(flyPos);
+
+                    let hit = false;
+                    const hitRadius = 0.35; // 35cm
+
+                    // Check left hand
+                    if (HandTracker.leftHand.active) {
+                        const dist = HandTracker.leftHand.position.distanceTo(flyPos);
+                        const speed = HandTracker.getSwipeSpeed('left');
+                        if (dist < hitRadius && speed > 0.5) { // Need some movement
+                            hit = true;
+                            console.log(`🪰 HIT! L dist=${dist.toFixed(2)} speed=${speed.toFixed(2)}`);
+                        }
+                    }
+
+                    // Check right hand
+                    if (HandTracker.rightHand.active) {
+                        const dist = HandTracker.rightHand.position.distanceTo(flyPos);
+                        const speed = HandTracker.getSwipeSpeed('right');
+                        if (dist < hitRadius && speed > 0.5) {
+                            hit = true;
+                            console.log(`🪰 HIT! R dist=${dist.toFixed(2)} speed=${speed.toFixed(2)}`);
+                        }
+                    }
+
+                    if (hit) {
+                        this.splatFly(fly);
+                    }
+                });
+            },
+
+            splatFly: function(fly) {
+                if (fly.dataset.splatted === 'true') return;
+                fly.dataset.splatted = 'true';
+
+                this.score++;
+                AudioEngine.playSplat();
+                this.updateHUD('🪰 NIVEAU 2', 'Mep die vliegen!', `${this.score}/${this.target}`);
+
+                this.createExplosion(fly.object3D.position, '#111111', 15);
+
+                if (fly.parentNode) fly.parentNode.removeChild(fly);
+                this.objects = this.objects.filter(o => o !== fly);
+
+                if (this.score >= this.target) {
+                    setTimeout(() => this.completeLevel2(), 500);
+                }
+            },
+
+            completeLevel2: function() {
+                console.log('✅ Level 2 complete');
+                this.clearObjects();
+                AudioEngine.stopInsects();
+                AudioEngine.playSuccess();
+                this.updateHUD('✅ NIVEAU 2 VOLTOOID!', 'Perfect!', '');
+                setTimeout(() => this.startLevel3(), 2000);
+            },
+
+            // =====================================================
+            // LEVEL 3: BLOCK SPEARS (Shield)
+            // =====================================================
+            startLevel3: function() {
+                console.log('🛡️ LEVEL 3: Block Spears');
+                this.state = STATES.LEVEL_3;
+                this.clearObjects();
+                this.score = 0;
+                this.target = 15;
+                this.updateHUD('🛡️ NIVEAU 3: DE BESCHERMER', 'Blokkeer speren!', `${this.score}/${this.target}`);
+
+                // Show shield
+                if (this.shield) this.shield.setAttribute('visible', 'true');
+
+                this.showBriefing(
+                    'NIVEAU 3: DE BESCHERMER',
+                    'Jij moet de familie beschermen!\n\nBlokkeer 15 speren!',
+                    'Beweeg je LINKERHAND\nom het schild te positioneren!',
+                    () => this.setupLevel3()
+                );
+            },
+
+            setupLevel3: function() {
+                // Spawn bushes
+                for (let i = 0; i < 3; i++) {
+                    const angle = (Math.PI * 2 / 3) * i;
+                    const x = Math.cos(angle) * 12;
+                    const z = Math.sin(angle) * 12;
+
+                    const bush = document.createElement('a-sphere');
+                    bush.setAttribute('radius', '2');
+                    bush.setAttribute('position', `${x} 1.5 ${z}`);
+                    bush.setAttribute('color', '#2d5016');
+                    this.el.sceneEl.appendChild(bush);
+                    this.objects.push(bush);
+                }
+
+                // Start spawning spears
+                this.spearInterval = setInterval(() => {
+                    if (this.state === STATES.LEVEL_3) {
+                        this.launchSpear();
+                    } else {
+                        clearInterval(this.spearInterval);
+                    }
+                }, 800);
+            },
+
+            launchSpear: function() {
+                const spear = document.createElement('a-entity');
+
+                // Random spawn position from bushes
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 10 + Math.random() * 5;
+                const x = Math.cos(angle) * dist;
+                const z = Math.sin(angle) * dist;
+                const y = 1.5 + Math.random() * 0.5;
+
+                spear.setAttribute('position', `${x} ${y} ${z}`);
+                spear.classList.add('spear');
+
+                // Spear visual
+                const shaft = document.createElement('a-cylinder');
+                shaft.setAttribute('radius', '0.04');
+                shaft.setAttribute('height', '2');
+                shaft.setAttribute('color', '#8B4513');
+                shaft.setAttribute('rotation', '0 0 90');
+                spear.appendChild(shaft);
+
+                const tip = document.createElement('a-cone');
+                tip.setAttribute('radius-bottom', '0.1');
+                tip.setAttribute('height', '0.3');
+                tip.setAttribute('color', '#C0C0C0');
+                tip.setAttribute('position', '1 0 0');
+                tip.setAttribute('rotation', '0 0 -90');
+                spear.appendChild(tip);
+
+                // Calculate direction to player
+                const targetPos = new THREE.Vector3(0, 1.5, 0);
+                const startPos = new THREE.Vector3(x, y, z);
+                const dir = new THREE.Vector3().subVectors(targetPos, startPos).normalize();
+
+                spear.userData = {
+                    velocity: dir.multiplyScalar(8), // 8 m/s
+                    active: true
+                };
+
+                // Make spear look at target
+                spear.object3D.lookAt(targetPos);
+
+                this.el.sceneEl.appendChild(spear);
+                this.spears.push(spear);
+            },
+
+            tickLevel3: function(dt) {
+                // Update shield position based on left hand
+                if (HandTracker.leftHand.active && this.shield) {
+                    this.shield.object3D.position.copy(HandTracker.leftHand.position);
+                } else if (this.camera && this.shield) {
+                    // Fallback: shield follows camera
+                    const camPos = new THREE.Vector3();
+                    const camDir = new THREE.Vector3();
+                    this.camera.object3D.getWorldPosition(camPos);
+                    this.camera.object3D.getWorldDirection(camDir);
+
+                    const shieldPos = camPos.clone().addScaledVector(camDir, -0.8);
+                    shieldPos.y = camPos.y;
+                    this.shield.object3D.position.copy(shieldPos);
+                }
+
+                const shieldPos = new THREE.Vector3();
+                if (this.shield) this.shield.object3D.getWorldPosition(shieldPos);
+
+                // Update spears
+                this.spears.forEach(spear => {
+                    if (!spear.userData || !spear.userData.active) return;
+
+                    // Move spear
+                    const v = spear.userData.velocity;
+                    spear.object3D.position.x += v.x * dt;
+                    spear.object3D.position.y += v.y * dt;
+                    spear.object3D.position.z += v.z * dt;
+
+                    const spearPos = spear.object3D.position;
+
+                    // Check shield collision
+                    const distToShield = shieldPos.distanceTo(spearPos);
+                    if (distToShield < 0.8) {
+                        spear.userData.active = false;
+                        this.score++;
+                        AudioEngine.playBlock();
+                        this.updateHUD('🛡️ NIVEAU 3', 'Geblokkeerd!', `${this.score}/${this.target}`);
+                        this.createExplosion(spearPos, '#FFD700', 20);
+                        if (spear.parentNode) spear.parentNode.removeChild(spear);
+
+                        if (this.score >= this.target) {
+                            setTimeout(() => this.completeLevel3(), 500);
+                        }
+                        return;
+                    }
+
+                    // Check if spear passed player (miss)
+                    const camPos = new THREE.Vector3();
+                    this.camera.object3D.getWorldPosition(camPos);
+                    if (spearPos.distanceTo(camPos) < 1.5) {
+                        // Auto-block for accessibility
+                        spear.userData.active = false;
+                        this.score++;
+                        AudioEngine.playBlock();
+                        this.updateHUD('🛡️ NIVEAU 3', 'Net op tijd!', `${this.score}/${this.target}`);
+                        this.createExplosion(spearPos, '#FFD700', 15);
+                        if (spear.parentNode) spear.parentNode.removeChild(spear);
+
+                        if (this.score >= this.target) {
+                            setTimeout(() => this.completeLevel3(), 500);
+                        }
+                    }
+
+                    // Remove if too far
+                    if (spearPos.lengthSq() > 400) {
+                        spear.userData.active = false;
+                        if (spear.parentNode) spear.parentNode.removeChild(spear);
+                    }
+                });
+
+                // Cleanup inactive spears
+                this.spears = this.spears.filter(s => s.userData && s.userData.active);
+            },
+
+            completeLevel3: function() {
+                console.log('✅ Level 3 complete');
+                clearInterval(this.spearInterval);
+                if (this.shield) this.shield.setAttribute('visible', 'false');
+                this.clearObjects();
+                this.spears = [];
+                AudioEngine.playSuccess();
+                this.updateHUD('✅ NIVEAU 3 VOLTOOID!', 'Je bent een held!', '');
+                setTimeout(() => this.startLevel4(), 2000);
+            },
+
+            // =====================================================
+            // LEVEL 4: RHINO HEART (Hand Touch)
+            // =====================================================
+            startLevel4: function() {
+                console.log('🦏 LEVEL 4: Rhino Heart');
+                this.state = STATES.LEVEL_4;
+                this.clearObjects();
+                this.rhinoTouched = false;
+                this.heartTouched = false;
+                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'De Big Five!', '');
+
+                this.showBriefing(
+                    'NIVEAU 4: DE ONTMOETING',
+                    'Kijk! De Big Five!\n\nDeze neushoorn heeft\niets bijzonders voor je...',
+                    'Steek je HAND in de neushoorn\nom het hart te vinden!',
+                    () => this.spawnRhino()
+                );
+            },
+
+            spawnRhino: function() {
+                const container = document.createElement('a-entity');
+                container.setAttribute('id', 'rhino-boss');
+                container.setAttribute('position', '0 0.5 -3');
+
+                if (document.getElementById('rhino-asset')) {
+                    const rhino = document.createElement('a-entity');
+                    rhino.setAttribute('gltf-model', '#rhino-asset');
+                    rhino.setAttribute('scale', '2.5 2.5 2.5');
+                    rhino.setAttribute('rotation', '0 200 0');
+                    rhino.classList.add('rhino-body');
+
+                    rhino.setAttribute('animation__breath', {
+                        property: 'scale',
+                        from: '2.5 2.5 2.5',
+                        to: '2.55 2.55 2.55',
+                        dur: 3000,
+                        loop: true,
+                        dir: 'alternate'
+                    });
+
+                    container.appendChild(rhino);
+                } else {
+                    // Fallback box
+                    const body = document.createElement('a-box');
+                    body.setAttribute('width', '2.5');
+                    body.setAttribute('height', '1.5');
+                    body.setAttribute('depth', '1.2');
+                    body.setAttribute('color', '#696969');
+                    body.setAttribute('position', '0 0.75 0');
+                    container.appendChild(body);
+                }
+
+                // Heart (hidden initially)
+                const heart = document.createElement('a-entity');
+                heart.setAttribute('id', 'rhino-heart');
+                heart.setAttribute('position', '0 0.5 0');
+                heart.setAttribute('visible', 'false');
+
+                if (document.getElementById('heart-model')) {
+                    heart.setAttribute('gltf-model', '#heart-model');
+                    heart.setAttribute('scale', '0.05 0.05 0.05');
+                } else {
+                    const sphere = document.createElement('a-sphere');
+                    sphere.setAttribute('radius', '0.15');
+                    sphere.setAttribute('color', '#DC143C');
+                    sphere.setAttribute('material', 'emissive: #FF0000; emissiveIntensity: 1');
+                    heart.appendChild(sphere);
+                }
+
+                heart.setAttribute('animation__pulse', {
+                    property: 'scale',
+                    from: '0.05 0.05 0.05',
+                    to: '0.06 0.06 0.06',
+                    dur: 600,
+                    loop: true,
+                    dir: 'alternate'
+                });
+
+                container.appendChild(heart);
+
+                // Label
                 const label = document.createElement('a-text');
-                label.setAttribute('value', 'Raak de neushoorn aan...');
+                label.setAttribute('id', 'rhino-label');
+                label.setAttribute('value', 'Steek je hand erin...');
                 label.setAttribute('align', 'center');
                 label.setAttribute('color', '#FFD700');
                 label.setAttribute('width', '3');
-                label.setAttribute('position', '0 1.8 0');
+                label.setAttribute('position', '0 2.5 0');
                 label.setAttribute('look-at', '[camera]');
-                label.setAttribute('id', 'rhino-label');
-                rhinoContainer.appendChild(label);
+                container.appendChild(label);
 
-                this.el.sceneEl.appendChild(rhinoContainer);
-                this.activeObjects.push(rhinoContainer);
+                this.el.sceneEl.appendChild(container);
+                this.objects.push(container);
             },
 
-            checkHandRhinoCollision: function() {
-                if (!this.leftHand || !this.rightHand) return;
+            tickLevel4: function(dt) {
+                const rhino = document.getElementById('rhino-boss');
+                if (!rhino) return;
 
-                const rhinoContainer = document.getElementById('rhino-boss');
-                if (!rhinoContainer) return;
+                const rhinoPos = new THREE.Vector3();
+                rhino.object3D.getWorldPosition(rhinoPos);
 
-                const leftPos = new THREE.Vector3();
-                const rightPos = new THREE.Vector3();
-                this.leftHand.object3D.getWorldPosition(leftPos);
-                this.rightHand.object3D.getWorldPosition(rightPos);
+                // Check for hand entering rhino
+                let handInRhino = false;
+                const touchRadius = 1.5;
 
-                const rhinoPos = rhinoContainer.object3D.position;
-                const distLeft = leftPos.distanceTo(rhinoPos);
-                const distRight = rightPos.distanceTo(rhinoPos);
+                if (HandTracker.leftHand.active) {
+                    const dist = HandTracker.leftHand.position.distanceTo(rhinoPos);
+                    if (dist < touchRadius) handInRhino = true;
+                }
+                if (HandTracker.rightHand.active) {
+                    const dist = HandTracker.rightHand.position.distanceTo(rhinoPos);
+                    if (dist < touchRadius) handInRhino = true;
+                }
 
-                // Check if hand is inside rhino (within 1.5m radius)
-                if ((distLeft < 1.5 || distRight < 1.5) && !this.handInsideRhino) {
-                    this.handInsideRhino = true;
+                if (handInRhino && !this.rhinoTouched) {
+                    this.rhinoTouched = true;
                     console.log('👋 Hand entered rhino!');
 
-                    // Play FART sound once
-                    audioEngine.playFart();
+                    AudioEngine.playFart();
+                    AudioEngine.startSquishy();
 
-                    // Start SQUISHY loop
-                    audioEngine.startSquishyLoop();
+                    // Make rhino semi-transparent
+                    const rhinoBody = rhino.querySelector('.rhino-body');
+                    if (rhinoBody) {
+                        rhinoBody.setAttribute('material', 'opacity: 0.4; transparent: true');
+                    }
 
-                    // Make rhino transparent
-                    this.handleRhinoTouch(rhinoContainer);
-                }
-            },
+                    // Show heart
+                    const heart = document.getElementById('rhino-heart');
+                    if (heart) heart.setAttribute('visible', 'true');
 
-            handleRhinoTouch: function(rhino) {
-                if (this.rhinoTouched) return;
-                this.rhinoTouched = true;
+                    // Update label
+                    const label = document.getElementById('rhino-label');
+                    if (label) label.setAttribute('value', 'Raak het hart aan!');
 
-                console.log('🦏 Rhino becoming transparent!');
-                this.updateHUD('🦏 NIVEAU 4: DE ONTMOETING', 'Zoek het hart...', '');
+                    this.updateHUD('🦏 NIVEAU 4', 'Zoek het hart...', '');
 
-                // Make rhino transparent (X-ray)
-                rhino.setAttribute('material', 'opacity: 0.3; transparent: true');
-
-                // Reveal heart
-                const heart = document.getElementById('rhino-heart');
-                if (heart) {
-                    heart.setAttribute('animation__reveal', {
-                        property: 'material.opacity',
-                        from: 0,
-                        to: 1,
-                        dur: 2000,
-                        easing: 'easeInQuad'
-                    });
-
-                    // Start heartbeat sound loop
+                    // Start heartbeat
                     this.heartbeatInterval = setInterval(() => {
-                        if (this.currentState === GAME_STATES.LEVEL_4 && !this.heartTouched) {
-                            audioEngine.playHeartbeat();
-                        } else {
-                            clearInterval(this.heartbeatInterval);
+                        if (!this.heartTouched) AudioEngine.playHeartbeat();
+                    }, 700);
+                }
+
+                // Check for heart touch
+                if (this.rhinoTouched && !this.heartTouched) {
+                    const heart = document.getElementById('rhino-heart');
+                    if (heart) {
+                        const heartPos = new THREE.Vector3();
+                        heart.object3D.getWorldPosition(heartPos);
+                        const heartRadius = 0.4;
+
+                        let touched = false;
+                        if (HandTracker.leftHand.active) {
+                            if (HandTracker.leftHand.position.distanceTo(heartPos) < heartRadius) touched = true;
                         }
-                    }, 800);
+                        if (HandTracker.rightHand.active) {
+                            if (HandTracker.rightHand.position.distanceTo(heartPos) < heartRadius) touched = true;
+                        }
+
+                        if (touched) {
+                            this.heartTouched = true;
+                            console.log('💖 Heart touched!');
+                            clearInterval(this.heartbeatInterval);
+                            AudioEngine.stopSquishy();
+                            AudioEngine.playSuccess();
+
+                            this.createExplosion(heartPos, '#FF0000', 50);
+                            setTimeout(() => this.completeLevel4(), 1500);
+                        }
+                    }
                 }
-
-                // Update label
-                const label = document.getElementById('rhino-label');
-                if (label) {
-                    label.setAttribute('value', 'Raak het hart aan!');
-                }
-            },
-
-            handleHeartTouch: function(heart) {
-                if (this.heartTouched) return;
-                this.heartTouched = true;
-
-                console.log('💖 Heart touched!');
-                audioEngine.stopSquishyLoop(); // Stop squishy loop
-                audioEngine.playMagicalChime();
-                this.updateHUD('💖 NIVEAU 4 VOLTOOID!', 'Het hart van Afrika!', '');
-
-                heart.setAttribute('animation__explode', {
-                    property: 'scale',
-                    to: '2 2 2',
-                    dur: 1500,
-                    easing: 'easeOutQuad'
-                });
-
-                heart.setAttribute('animation__fade', {
-                    property: 'material.opacity',
-                    to: 0,
-                    dur: 1500,
-                    easing: 'easeInQuad'
-                });
-
-                setTimeout(() => this.completeLevel4(), 2000);
             },
 
             completeLevel4: function() {
-                console.log('✓ Level 4 complete!');
-                this.clearAllObjects();
-                this.startVictory();
+                console.log('✅ Level 4 complete');
+                this.clearObjects();
+                this.updateHUD('💖 NIVEAU 4 VOLTOOID!', 'Het hart van Afrika!', '');
+                setTimeout(() => this.startVictory(), 2000);
             },
 
             // =====================================================
-            // VICTORY SEQUENCE
+            // VICTORY
             // =====================================================
             startVictory: function() {
                 console.log('🏆 VICTORY!');
-                this.currentState = GAME_STATES.VICTORY;
-                audioEngine.playVictory();
-                this.updateHUD('🏆 MISSIE VOLTOOID!', 'Alle levels uitgespeeld!', '');
+                this.state = STATES.VICTORY;
+                AudioEngine.playVictory();
+                this.updateHUD('🏆 MISSIE VOLTOOID!', 'GEFELICITEERD VIBEKE!', '');
 
-                for (let i = 0; i < 12; i++) {
+                // Fireworks
+                for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         const pos = new THREE.Vector3(
-                            (Math.random() - 0.5) * 10,
-                            2 + Math.random() * 5,
-                            -4 - Math.random() * 4
+                            (Math.random() - 0.5) * 8,
+                            2 + Math.random() * 4,
+                            -3 - Math.random() * 4
                         );
-                        this.createExplosion(pos, ['#FFD700', '#FF6347', '#00FF00', '#87CEEB', '#FF69B4', '#FFA500'][i % 6], 80);
-                    }, i * 800);
+                        const colors = ['#FFD700', '#FF6347', '#00FF00', '#87CEEB', '#FF69B4'];
+                        this.createExplosion(pos, colors[i % colors.length], 60);
+                    }, i * 600);
                 }
 
-                setTimeout(() => this.showFinalReward(), 5000);
-            },
+                // Final message
+                setTimeout(() => {
+                    const panel = document.createElement('a-entity');
+                    panel.setAttribute('position', '0 1.6 -4');
+                    panel.setAttribute('look-at', '[camera]');
 
-            showFinalReward: function() {
-                console.log('🎁 Showing final reward...');
-                audioEngine.playMagicalChime();
-                this.createGroundParticles();
+                    const bg = document.createElement('a-plane');
+                    bg.setAttribute('width', '4');
+                    bg.setAttribute('height', '2.5');
+                    bg.setAttribute('color', '#000000');
+                    bg.setAttribute('opacity', '0.9');
+                    panel.appendChild(bg);
 
-                const panel = document.createElement('a-entity');
-                panel.setAttribute('position', '0 1.6 -5');
-                panel.setAttribute('look-at', '[camera]');
+                    const title = document.createElement('a-text');
+                    title.setAttribute('value', '🏆 GEFELICITEERD VIBEKE!');
+                    title.setAttribute('align', 'center');
+                    title.setAttribute('color', '#FFD700');
+                    title.setAttribute('width', '4');
+                    title.setAttribute('position', '0 0.8 0.01');
+                    panel.appendChild(title);
 
-                const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '5');
-                bg.setAttribute('height', '3.5');
-                bg.setAttribute('color', '#000000');
-                bg.setAttribute('opacity', '0.95');
-                bg.setAttribute('shadow', 'receive: true');
-                panel.appendChild(bg);
+                    const msg = document.createElement('a-text');
+                    msg.setAttribute('value', 'DIT IS JE CADEAU!\n\nGraai nu met je handen\nnaar beneden in het zand\nom je schat te vinden!');
+                    msg.setAttribute('align', 'center');
+                    msg.setAttribute('color', '#FFFFFF');
+                    msg.setAttribute('width', '3.5');
+                    msg.setAttribute('position', '0 0 0.01');
+                    msg.setAttribute('wrap-count', '30');
+                    panel.appendChild(msg);
 
-                const border = document.createElement('a-plane');
-                border.setAttribute('width', '5.2');
-                border.setAttribute('height', '3.7');
-                border.setAttribute('color', '#FFD700');
-                border.setAttribute('opacity', '0.8');
-                border.setAttribute('position', '0 0 -0.01');
-                panel.appendChild(border);
-
-                const title = document.createElement('a-text');
-                title.setAttribute('value', '🏆 GEFELICITEERD VIBEKE!');
-                title.setAttribute('align', 'center');
-                title.setAttribute('color', '#00FF00');
-                title.setAttribute('width', '4.5');
-                title.setAttribute('position', '0 1.3 0.02');
-                panel.appendChild(title);
-
-                const reward = document.createElement('a-text');
-                reward.setAttribute('value', 'DIT IS JE CADEAU!\n\nGraai nu met je handen naar onder\nin het zand om je schat te vinden.\n\n✨ GRAAIEN MAAR! ✨');
-                reward.setAttribute('align', 'center');
-                reward.setAttribute('color', '#FFD700');
-                reward.setAttribute('width', '4');
-                reward.setAttribute('position', '0 0.3 0.02');
-                reward.setAttribute('wrap-count', '35');
-                panel.appendChild(reward);
-
-                this.el.sceneEl.appendChild(panel);
-                this.activeObjects.push(panel);
-            },
-
-            // =====================================================
-            // VISUAL EFFECTS
-            // =====================================================
-            createExplosion: function(position, color, count = 50) {
-                for (let i = 0; i < count; i++) {
-                    const particle = document.createElement('a-sphere');
-                    particle.setAttribute('radius', 0.06 + Math.random() * 0.08);
-                    particle.setAttribute('color', color);
-                    particle.setAttribute('position', position);
-
-                    const vx = (Math.random() - 0.5) * 5;
-                    const vy = Math.random() * 4 + 1;
-                    const vz = (Math.random() - 0.5) * 5;
-
-                    particle.setAttribute('animation__pos', {
-                        property: 'position',
-                        to: `${position.x + vx} ${position.y + vy} ${position.z + vz}`,
-                        dur: 1800,
-                        easing: 'easeOutQuad'
-                    });
-
-                    particle.setAttribute('animation__scale', {
-                        property: 'scale',
-                        to: '0 0 0',
-                        dur: 1800,
-                        easing: 'easeInQuad'
-                    });
-
-                    this.el.sceneEl.appendChild(particle);
-                    setTimeout(() => {
-                        if (particle.parentNode) particle.parentNode.removeChild(particle);
-                    }, 1800);
-                }
-            },
-
-            createGroundParticles: function() {
-                const center = new THREE.Vector3(0, 0, 0.5);
-
-                for (let i = 0; i < 80; i++) {
-                    setTimeout(() => {
-                        const particle = document.createElement('a-sphere');
-                        particle.setAttribute('radius', 0.03 + Math.random() * 0.05);
-                        particle.setAttribute('color', '#FFD700');
-                        particle.setAttribute('material', 'emissive: #FFD700; emissiveIntensity: 0.8; metalness: 0.8');
-
-                        const angle = Math.random() * Math.PI * 2;
-                        const radius = Math.random() * 0.8;
-                        const x = center.x + Math.cos(angle) * radius;
-                        const z = center.z + Math.sin(angle) * radius;
-
-                        particle.setAttribute('position', `${x} 0.05 ${z}`);
-
-                        particle.setAttribute('animation__float', {
-                            property: 'position',
-                            to: `${x} ${0.5 + Math.random() * 0.3} ${z}`,
-                            dur: 2000,
-                            easing: 'easeOutQuad',
-                            loop: false
-                        });
-
-                        particle.setAttribute('animation__fade', {
-                            property: 'scale',
-                            to: '0 0 0',
-                            dur: 2000,
-                            easing: 'easeInQuad',
-                            loop: false
-                        });
-
-                        this.el.sceneEl.appendChild(particle);
-                        setTimeout(() => {
-                            if (particle.parentNode) particle.parentNode.removeChild(particle);
-                        }, 2000);
-                    }, i * 50);
-                }
+                    this.el.sceneEl.appendChild(panel);
+                }, 5000);
             }
         });
 
-        console.log('✓ All scripts loaded');
+        console.log('✅ Game script loaded');
     </script>
 
 </body>
