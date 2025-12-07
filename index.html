@@ -678,6 +678,19 @@
                 this.objects.forEach(obj => { if (obj.parentNode) obj.parentNode.removeChild(obj); });
                 this.objects = [];
                 this.spears = [];
+
+                // Also remove any briefing panels
+                const briefing = document.getElementById('briefing');
+                if (briefing && briefing.parentNode) {
+                    briefing.parentNode.removeChild(briefing);
+                }
+            },
+
+            hideBriefing: function() {
+                const briefing = document.getElementById('briefing');
+                if (briefing && briefing.parentNode) {
+                    briefing.parentNode.removeChild(briefing);
+                }
             },
 
             showBriefing: function(title, message, instructions, callback) {
@@ -839,9 +852,7 @@
 
                     this.el.sceneEl.appendChild(animal);
                 }
-
-                // Spawn running giraffe that passes by the player
-                this.spawnRunningGiraffe();
+                // Giraffe spawns only during Level 3 (spears)
             },
 
             spawnRunningGiraffe: function() {
@@ -1259,6 +1270,9 @@
                         clearInterval(this.spearInterval);
                     }
                 }, 800);
+
+                // Spawn running giraffe during this level!
+                this.spawnRunningGiraffe();
             },
 
             launchSpear: function() {
