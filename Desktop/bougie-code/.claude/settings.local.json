@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh repo sync:*)",
+      "Bash(git reset:*)",
+      "Bash(dir:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(explorer \"c:\\Users\\donku\\Desktop\\bougie-code\\bougie-fe\\dist\")",
+      "Bash(npx netlify-cli:*)",
+      "Bash(npx localtunnel:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"(Invoke-WebRequest -Uri ''https://api.ipify.org'').Content\")",
+      "Bash(start \"\" \"c:\\Users\\donku\\Desktop\\bougie-code\\bougie-fe\\dist\")",
+      "Bash(powershell -Command \"Compress-Archive -Path ''dist\\*'' -DestinationPath ''bougie-dist.zip'' -Force\")",
+      "Bash(npx surge:*)"
+    ]
+  }
+}
