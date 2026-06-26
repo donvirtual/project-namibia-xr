@@ -11,7 +11,7 @@ export default function Header() {
       {/* Top bar */}
       <div style={{ backgroundColor: "var(--navy-dark)" }} className="text-white text-xs py-1.5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex justify-between items-center">
-          <span>Gecertificeerde TV-specialisten</span>
+          <span>Officieel schaderapport — kosten verhaalbaar op verzekeraar (art. 7:959 BW)</span>
           <span className="font-semibold">24/7 bereikbaar — <a href="tel:+31630192552" className="hover:underline">+31 6 30 19 25 52</a> · info@tvschaderapport.nl</span>
         </div>
       </div>
