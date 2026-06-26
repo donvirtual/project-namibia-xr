@@ -139,12 +139,12 @@ export default async function HomePage() {
               alt="TV specialist beoordeelt schade aan televisie — tvschaderapport.nl"
               width={520}
               height={620}
-              className="w-full object-cover max-h-64 lg:max-h-none object-top lg:object-center"
+              className="w-full object-cover max-h-64 lg:max-h-none object-center"
               priority
             />
-            <div className="absolute bottom-0 left-0 right-0 p-3 lg:p-4" style={{ backgroundColor: "var(--navy)" }}>
-              <p className="text-white text-sm font-bold">Gecertificeerde TV-specialist</p>
-              <p className="text-blue-200 text-xs mt-0.5">Rapport binnen 24 uur · kosten verhaalbaar op verzekeraar</p>
+            <div className="absolute bottom-0 left-0 right-0 p-4" style={{ backgroundColor: "var(--navy)" }}>
+              <p className="text-white text-sm font-semibold">Gecertificeerde TV-specialist</p>
+              <p className="text-blue-200 text-xs">Rapport geleverd binnen 24 uur</p>
             </div>
           </div>
         </div>
