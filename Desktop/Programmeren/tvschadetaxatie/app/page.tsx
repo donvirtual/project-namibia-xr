@@ -143,7 +143,7 @@ export default async function HomePage() {
               priority
             />
             <div className="absolute bottom-0 left-0 right-0 p-4" style={{ backgroundColor: "var(--navy)" }}>
-              <p className="text-white text-sm font-semibold">Gecertificeerde TV-specialist</p>
+              <p className="text-white text-sm font-semibold">Professionele TV-specialisten</p>
               <p className="text-blue-200 text-xs">Rapport geleverd binnen 24 uur</p>
             </div>
           </div>
