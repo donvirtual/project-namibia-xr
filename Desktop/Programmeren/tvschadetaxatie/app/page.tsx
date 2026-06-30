@@ -229,7 +229,7 @@ export default async function HomePage() {
             {[
               { name: "Dennis", city: "Tilburg", text: "Mijn tv was gevallen. Via de mail snel contact gehad en duidelijke uitleg wat er in het rapport zou komen. Verzekeraar ging akkoord. Ben er blij mee." },
               { name: "Marjolein", city: "Haarlem", text: "Was een beetje bang dat de foto's die ik zelf maakte niet goed genoeg zouden zijn, maar dat was gewoon prima. Geen gedoe." },
-              { name: "Bas", city: "Groningen", text: "Eerlijk gezegd had ik zoiets van 49 euro daarvoor? Maar mijn tv van 1400 euro is gewoon uitbetaald dus dan is het rekenen." },
+              { name: "Bas", city: "Groningen", text: "Eerlijk gezegd had ik mijn twijfels over de prijs, maar mijn tv van 1400 euro is gewoon uitbetaald dus dan is het rekenen." },
             ].map((r, i) => (
               <div key={r.name} className={`bg-white p-6 ${i < 2 ? "border-b md:border-b-0 md:border-r border-gray-200" : ""}`}>
                 <div className="flex gap-1 mb-3">
