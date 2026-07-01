@@ -129,8 +129,8 @@ export default function AanvragenPage() {
       }).catch(() => {})
     }
     if (step === 3) {
-      if (!form.naam || !form.email || !form.akkoord) {
-        setError("Vul uw naam, e-mailadres in en accepteer de voorwaarden.")
+      if (!form.naam || !form.email || !form.serienummer || !form.straat || !form.postcode || !form.woonplaats || !form.akkoord) {
+        setError("Vul alle verplichte velden in en accepteer de voorwaarden.")
         return
       }
       // Lead opslaan — betaalt nog niet maar heeft gegevens ingevuld
@@ -293,7 +293,7 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serienummer tv (optioneel)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Serienummer tv *</label>
             <input
               type="text"
               value={form.serienummer}
@@ -304,17 +304,17 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Straat + huisnummer (optioneel)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Straat + huisnummer *</label>
             <input type="text" value={form.straat} onChange={(e) => set("straat", e.target.value)} placeholder="Bijv. Keizersgracht 123" className={inputCls} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Postcode (optioneel)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Postcode *</label>
               <input type="text" value={form.postcode} onChange={(e) => set("postcode", e.target.value)} placeholder="1234 AB" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Woonplaats (optioneel)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Woonplaats *</label>
               <input type="text" value={form.woonplaats} onChange={(e) => set("woonplaats", e.target.value)} placeholder="Amsterdam" className={inputCls} />
             </div>
           </div>
