@@ -169,7 +169,7 @@ export default function AdminPage() {
           ) : (
             <div className="space-y-4">
               {filtered.map((order) => (
-                <OrderCard key={order.orderId} order={order} onStatusUpdate={updateOrder} />
+                <OrderCard key={order.orderId} order={order} password={password} onStatusUpdate={updateOrder} />
               ))}
             </div>
           )}

@@ -87,6 +87,34 @@ export async function sendAdminNotification(order: Order) {
   })
 }
 
+export async function sendRapportToCustomer(order: Order, rapportHtmlUrl: string) {
+  const resend = getResend()
+  const rapportRes = await fetch(rapportHtmlUrl)
+  const rapportHtml = await rapportRes.text()
+
+  await resend.emails.send({
+    from: "tvschaderapport.nl <info@tvschaderapport.nl>",
+    replyTo: "info@tvschaderapport.nl",
+    to: order.customerEmail,
+    subject: `Uw TV schaderapport — ${order.orderId}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; color: #000;">
+        <p style="font-size: 15px; font-style: italic; font-weight: bold; margin-bottom: 4px;">tvschaderapport.nl</p>
+        <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 20px;">
+        <p>Geachte ${order.customerName},</p>
+        <p>Hierbij ontvangt u uw officieel schadetaxatierapport. U kunt dit doorsturen naar uw verzekeraar${order.referentieNummer ? ` onder vermelding van schadenummer ${order.referentieNummer}` : ""}.</p>
+        <p style="font-size: 12px; color: #555;">Om een PDF-versie te maken: open deze e-mail in een browser en druk op Ctrl+P → Opslaan als PDF.</p>
+        <p>Wij raden aan om eventuele reparatie altijd uit te laten voeren door een erkende servicepartner van het merk of een betrouwbare TV-specialist.</p>
+        <p>Heeft u vragen? Stuur een antwoord op deze e-mail of bel ons op +31 6 30 19 25 52.</p>
+        <p>Met vriendelijke groet,<br><strong>tvschaderapport.nl</strong><br>
+        <a href="mailto:info@tvschaderapport.nl">info@tvschaderapport.nl</a> | +31 6 30 19 25 52</p>
+        <hr style="border: none; border-top: 2px solid #000; margin: 32px 0 24px;">
+        ${rapportHtml.replace(/^[\s\S]*<body[^>]*>/, "").replace(/<\/body>[\s\S]*$/, "")}
+      </div>
+    `,
+  })
+}
+
 export async function sendCustomerFactuur(order: Order) {
   const resend = getResend()
   const datum = new Date(order.paidAt || order.createdAt).toLocaleDateString("nl-NL", {
