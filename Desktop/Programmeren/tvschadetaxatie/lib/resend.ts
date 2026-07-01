@@ -51,14 +51,6 @@ export async function sendAdminNotification(order: Order) {
     .map((url, i) => `<a href="${url}">Foto ${i + 1}</a>`)
     .join(" | ")
 
-  const jaar = order.aanschafjaar
-  const huidigJaar = new Date().getFullYear()
-  const leeftijd = typeof jaar === "number" ? huidigJaar - jaar : "?"
-  const afschrijving = typeof leeftijd === "number" ? Math.min(leeftijd * 20, 80) : "?"
-  const dagwaarde = typeof afschrijving === "number"
-    ? Math.round(order.aankoopprijs * (1 - afschrijving / 100))
-    : "?"
-
   await resend.emails.send({
     from: "tvschaderapport.nl <info@tvschaderapport.nl>",
     to: (process.env.ADMIN_EMAIL ?? "").replace(/^﻿/, "").trim(),
@@ -85,13 +77,6 @@ export async function sendAdminNotification(order: Order) {
         <b>Aangeschaft:</b> ${order.aanschafjaar} voor EUR ${order.aankoopprijs}<br>
         <b>Oorzaak:</b> ${order.oorzaak}<br>
         <b>Beschrijving:</b> ${order.omschrijving}</p>
-
-        <h3>KOSTENSCATTING (indicatief)</h3>
-        <p><b>Leeftijd toestel:</b> ~${leeftijd} jaar<br>
-        <b>Afschrijving:</b> ${afschrijving}%<br>
-        <b>Dagwaarde:</b> ~EUR ${dagwaarde}<br>
-        <b>Oorzaak:</b> ${order.oorzaak}<br>
-        <i>Beoordeel foto's voor definitieve schatting reparatiekosten.</i></p>
 
         <h3>FOTO'S (${order.fotos.length})</h3>
         <p>${fotoLinks}</p>
