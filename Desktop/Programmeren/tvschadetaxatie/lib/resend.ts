@@ -81,6 +81,8 @@ export async function sendAdminNotification(order: Order) {
         <h3>FOTO'S (${order.fotos.length})</h3>
         <p>${fotoLinks}</p>
 
+        ${order.rapportUrl ? `<h3>RAPPORT</h3><p><a href="${order.rapportUrl}">→ Bekijk gegenereerd rapport</a></p>` : ""}
+
         <p><a href="${process.env.NEXT_PUBLIC_URL || "https://tvschaderapport.nl"}/admin">→ Open Admin Dashboard</a></p>
       </div>
     `,

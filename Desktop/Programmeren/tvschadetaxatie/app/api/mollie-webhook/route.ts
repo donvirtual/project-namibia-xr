@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
+import { put } from "@vercel/blob"
 import { getPayment } from "@/lib/mollie"
 import { getOrder, updateOrder } from "@/lib/orders"
 import { sendCustomerConfirmation, sendAdminNotification, sendCustomerFactuur } from "@/lib/resend"
+import { generateRapportAssessment } from "@/lib/claude"
+import { generateRapportHTML } from "@/lib/rapport"
 
 export async function POST(request: Request) {
   try {
@@ -43,12 +46,25 @@ export async function POST(request: Request) {
     })
 
     if (updatedOrder) {
+      let finalOrder = updatedOrder
+      try {
+        const assessment = await generateRapportAssessment(updatedOrder)
+        const html = generateRapportHTML(updatedOrder, assessment)
+        const token = process.env.BLOB_READ_WRITE_TOKEN
+        const blob = await put(`rapporten/${orderId}.html`, html, {
+          access: "public", token, allowOverwrite: true, contentType: "text/html; charset=utf-8",
+        })
+        finalOrder = await updateOrder(orderId, { rapportUrl: blob.url }) ?? updatedOrder
+      } catch (err) {
+        console.error(`Webhook: rapport generatie mislukt`, err)
+      }
+
       await Promise.all([
-        sendCustomerConfirmation(updatedOrder),
-        sendAdminNotification(updatedOrder),
-        sendCustomerFactuur(updatedOrder),
+        sendCustomerConfirmation(finalOrder),
+        sendCustomerFactuur(finalOrder),
+        sendAdminNotification(finalOrder),
       ])
-      console.log(`Webhook: order ${orderId} marked paid, emails sent`)
+      console.log(`Webhook: order ${orderId} klaar, emails verstuurd`)
     }
 
     return NextResponse.json({ ok: true })

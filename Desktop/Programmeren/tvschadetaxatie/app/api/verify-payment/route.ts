@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
+import { put } from "@vercel/blob"
 import { getPayment } from "@/lib/mollie"
 import { getOrder, updateOrder } from "@/lib/orders"
 import { sendCustomerConfirmation, sendAdminNotification, sendCustomerFactuur } from "@/lib/resend"
+import { generateRapportAssessment } from "@/lib/claude"
+import { generateRapportHTML } from "@/lib/rapport"
 
 export const runtime = "nodejs"
 
@@ -24,19 +27,31 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: true, status: payment.status })
   }
 
-  const updated = await updateOrder(orderId, {
-    status: "paid",
-    paidAt: new Date().toISOString(),
-  })
+  let updated = await updateOrder(orderId, { status: "paid", paidAt: new Date().toISOString() })
+  if (!updated) return NextResponse.json({ ok: false, reason: "update_failed" })
 
-  if (updated) {
-    await Promise.all([
-      sendCustomerConfirmation(updated),
-      sendAdminNotification(updated),
-      sendCustomerFactuur(updated),
-    ])
-    console.log(`verify-payment: ${orderId} marked paid, emails sent`)
+  // Genereer rapport VOOR admin email
+  let rapportUrl: string | undefined
+  try {
+    const assessment = await generateRapportAssessment(updated)
+    const html = generateRapportHTML(updated, assessment)
+    const token = process.env.BLOB_READ_WRITE_TOKEN
+    const blob = await put(`rapporten/${orderId}.html`, html, {
+      access: "public", token, allowOverwrite: true, contentType: "text/html; charset=utf-8",
+    })
+    rapportUrl = blob.url
+    updated = await updateOrder(orderId, { rapportUrl }) ?? updated
+    console.log(`verify-payment: rapport gegenereerd ${rapportUrl}`)
+  } catch (err) {
+    console.error("verify-payment: rapport generatie mislukt", err)
   }
 
-  return NextResponse.json({ ok: true, status: "paid" })
+  await Promise.all([
+    sendCustomerConfirmation(updated),
+    sendCustomerFactuur(updated),
+    sendAdminNotification(updated),
+  ])
+  console.log(`verify-payment: ${orderId} klaar, emails verstuurd`)
+
+  return NextResponse.json({ ok: true, status: "paid", rapportUrl })
 }
