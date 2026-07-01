@@ -212,17 +212,6 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serienummer</label>
-            <input
-              type="text"
-              value={form.serienummer}
-              onChange={(e) => set("serienummer", e.target.value)}
-              placeholder="Staat op het sticker achterop de tv"
-              className={inputCls}
-            />
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Schermformaat *</label>
             <select value={form.schermformaat} onChange={(e) => set("schermformaat", e.target.value)} className={inputCls}>
               <option value="">Selecteer formaat</option>
@@ -301,6 +290,17 @@ export default function AanvragenPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Telefoonnummer (optioneel)</label>
             <input type="tel" value={form.telefoon} onChange={(e) => set("telefoon", e.target.value)} className={inputCls} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Serienummer tv (optioneel)</label>
+            <input
+              type="text"
+              value={form.serienummer}
+              onChange={(e) => set("serienummer", e.target.value)}
+              placeholder="Staat op het sticker achterop de tv"
+              className={inputCls}
+            />
           </div>
 
           <div>
