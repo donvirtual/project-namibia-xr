@@ -30,6 +30,7 @@ const STEP_LABELS = ["Apparaat", "Foto's", "Uw gegevens", "Betaling"]
 interface FormData {
   merk: string
   model: string
+  serienummer: string
   schermformaat: string
   aanschafjaar: string
   aankoopprijs: string
@@ -39,6 +40,9 @@ interface FormData {
   naam: string
   email: string
   telefoon: string
+  straat: string
+  postcode: string
+  woonplaats: string
   verzekeraar: string
   referentieNummer: string
   opmerkingen: string
@@ -48,6 +52,7 @@ interface FormData {
 const initialForm: FormData = {
   merk: "",
   model: "",
+  serienummer: "",
   schermformaat: "",
   aanschafjaar: "",
   aankoopprijs: "",
@@ -57,6 +62,9 @@ const initialForm: FormData = {
   naam: "",
   email: "",
   telefoon: "",
+  straat: "",
+  postcode: "",
+  woonplaats: "",
   verzekeraar: "",
   referentieNummer: "",
   opmerkingen: "",
@@ -204,6 +212,17 @@ export default function AanvragenPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Serienummer</label>
+            <input
+              type="text"
+              value={form.serienummer}
+              onChange={(e) => set("serienummer", e.target.value)}
+              placeholder="Staat op het sticker achterop de tv"
+              className={inputCls}
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Schermformaat *</label>
             <select value={form.schermformaat} onChange={(e) => set("schermformaat", e.target.value)} className={inputCls}>
               <option value="">Selecteer formaat</option>
@@ -282,6 +301,22 @@ export default function AanvragenPage() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Telefoonnummer (optioneel)</label>
             <input type="tel" value={form.telefoon} onChange={(e) => set("telefoon", e.target.value)} className={inputCls} />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Straat + huisnummer (optioneel)</label>
+            <input type="text" value={form.straat} onChange={(e) => set("straat", e.target.value)} placeholder="Bijv. Keizersgracht 123" className={inputCls} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Postcode (optioneel)</label>
+              <input type="text" value={form.postcode} onChange={(e) => set("postcode", e.target.value)} placeholder="1234 AB" className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Woonplaats (optioneel)</label>
+              <input type="text" value={form.woonplaats} onChange={(e) => set("woonplaats", e.target.value)} placeholder="Amsterdam" className={inputCls} />
+            </div>
           </div>
 
           <div>

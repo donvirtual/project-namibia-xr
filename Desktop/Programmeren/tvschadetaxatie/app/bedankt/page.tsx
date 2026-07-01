@@ -4,6 +4,12 @@ import { useEffect } from "react"
 
 export default function BedanktPage() {
   useEffect(() => {
+    // Webhook fallback: verifieer betaling via Mollie als webhook niet aankwam
+    const orderId = new URLSearchParams(window.location.search).get("order")
+    if (orderId) {
+      fetch(`/api/verify-payment?order=${orderId}`).catch(() => {})
+    }
+
     // Google Ads + GA4 conversie: betaling voltooid
     if (typeof window !== "undefined" && (window as any).gtag) {
       // GA4 purchase event
