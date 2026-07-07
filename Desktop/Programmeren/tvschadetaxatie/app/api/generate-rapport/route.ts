@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 import { getOrder, updateOrder } from "@/lib/orders"
-import { generateRapportAssessment } from "@/lib/claude"
+import { generateRapportAssessment, generateKnownIssues } from "@/lib/claude"
 import { generateRapportHTML } from "@/lib/rapport"
 
 export const runtime = "nodejs"
@@ -21,7 +21,10 @@ export async function POST(request: Request) {
   const order = await getOrder(orderId)
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
 
-  const assessment = await generateRapportAssessment(order)
+  const [assessment, bekendeProblemen] = await Promise.all([
+    generateRapportAssessment(order),
+    generateKnownIssues(order),
+  ])
   const html = generateRapportHTML(order, assessment)
 
   const token = process.env.BLOB_READ_WRITE_TOKEN
@@ -32,7 +35,11 @@ export async function POST(request: Request) {
     contentType: "text/html; charset=utf-8",
   })
 
-  await updateOrder(orderId, { rapportUrl: blob.url })
+  await updateOrder(orderId, {
+    rapportUrl: blob.url,
+    rapportAssessment: assessment,
+    bekendeProblemenGevonden: bekendeProblemen,
+  })
 
-  return NextResponse.json({ url: blob.url, assessment })
+  return NextResponse.json({ url: blob.url, assessment, bekendeProblemen })
 }

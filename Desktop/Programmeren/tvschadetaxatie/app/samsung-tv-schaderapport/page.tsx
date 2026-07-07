@@ -23,7 +23,7 @@ export default function SamsungPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Samsung televisie beschadigd? Wij stellen een officieel schaderapport op voor alle Samsung modellen —
-          QLED, Neo QLED, Crystal UHD, The Frame. Geaccepteerd door alle verzekeraars. v.a. €30, binnen 24 uur per e-mail.
+          QLED, Neo QLED, Crystal UHD, The Frame. Geaccepteerd door alle verzekeraars. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Schaderapport voor alle Samsung modellen</h2>
         <p className="text-gray-700 leading-relaxed mb-4">

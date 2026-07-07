@@ -18,8 +18,6 @@ export function getVariant(cookieValue: string | undefined): Variant {
 }
 
 export function assignVariant(): Variant {
-  const r = Math.random()
-  if (r < 1 / 3) return "A"
-  if (r < 2 / 3) return "B"
-  return "C"
+  // Variant A (€30) staat uit — B en C converteren beter
+  return Math.random() < 0.5 ? "B" : "C"
 }

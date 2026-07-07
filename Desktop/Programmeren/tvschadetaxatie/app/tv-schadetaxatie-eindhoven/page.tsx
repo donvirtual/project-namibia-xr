@@ -24,7 +24,7 @@ export default function EindhovenPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           TV beschadigd in Eindhoven? Online TV schadetaxatie, geen bezoek nodig. Officieel schaderapport
-          voor uw verzekeraar. v.a. €30, binnen 24 uur per e-mail.
+          voor uw verzekeraar. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <p className="text-gray-700 leading-relaxed mb-6">
           In Eindhoven kunt u voor een professionele TV schadetaxatie terecht bij tvschaderapport.nl.

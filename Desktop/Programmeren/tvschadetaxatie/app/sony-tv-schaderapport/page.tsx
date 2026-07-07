@@ -23,7 +23,7 @@ export default function SonyPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Sony BRAVIA televisie beschadigd? Officieel schaderapport voor alle Sony modellen — OLED, 4K LED,
-          8K. Geaccepteerd door alle verzekeraars. v.a. €30, binnen 24 uur per e-mail.
+          8K. Geaccepteerd door alle verzekeraars. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Sony BRAVIA — alle modellen</h2>
         <p className="text-gray-700 leading-relaxed mb-4">

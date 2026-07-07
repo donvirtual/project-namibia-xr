@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 import { getPayment } from "@/lib/mollie"
-import { getOrder, updateOrder } from "@/lib/orders"
+import { getOrder, updateOrder, tryClaimOrder } from "@/lib/orders"
 import { sendCustomerConfirmation, sendAdminNotification, sendCustomerFactuur } from "@/lib/resend"
-import { generateRapportAssessment } from "@/lib/claude"
+import { generateRapportAssessment, generateKnownIssues } from "@/lib/claude"
 import { generateRapportHTML } from "@/lib/rapport"
 
 export async function POST(request: Request) {
@@ -40,6 +40,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true })
     }
 
+    // Lock — voorkomt dat een gelijktijdige Mollie-retry of de verify-payment
+    // fallback dezelfde order nogmaals verwerkt (race condition tussen de check
+    // hierboven en de update hieronder)
+    if (!(await tryClaimOrder(orderId))) {
+      console.log(`Webhook: order ${orderId} wordt al verwerkt door een andere aanroep, skip`)
+      return NextResponse.json({ ok: true })
+    }
+
     const updatedOrder = await updateOrder(orderId, {
       status: "paid",
       paidAt: new Date().toISOString(),
@@ -48,13 +56,20 @@ export async function POST(request: Request) {
     if (updatedOrder) {
       let finalOrder = updatedOrder
       try {
-        const assessment = await generateRapportAssessment(updatedOrder)
+        const [assessment, bekendeProblemen] = await Promise.all([
+          generateRapportAssessment(updatedOrder),
+          generateKnownIssues(updatedOrder),
+        ])
         const html = generateRapportHTML(updatedOrder, assessment)
         const token = process.env.BLOB_READ_WRITE_TOKEN
         const blob = await put(`rapporten/${orderId}.html`, html, {
           access: "public", token, allowOverwrite: true, contentType: "text/html; charset=utf-8",
         })
-        finalOrder = await updateOrder(orderId, { rapportUrl: blob.url }) ?? updatedOrder
+        finalOrder = await updateOrder(orderId, {
+          rapportUrl: blob.url,
+          rapportAssessment: assessment,
+          bekendeProblemenGevonden: bekendeProblemen,
+        }) ?? updatedOrder
       } catch (err) {
         console.error(`Webhook: rapport generatie mislukt`, err)
       }

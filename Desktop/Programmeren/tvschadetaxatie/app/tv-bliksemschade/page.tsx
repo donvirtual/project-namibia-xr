@@ -51,7 +51,7 @@ export default function BliksemschadePage() {
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Uw televisie kapot door blikseminslag? Bliksemschade valt in de meeste gevallen volledig onder
           uw inboedelverzekering. Wij stellen het officiële schaderapport op dat uw verzekeraar nodig heeft.
-          v.a. €30, binnen 24 uur per e-mail.
+          v.a. €49, binnen 24 uur per e-mail.
         </p>
 
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5 mb-10">
@@ -101,7 +101,7 @@ export default function BliksemschadePage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Hoe vraag ik het schaderapport aan?</h2>
         <p className="text-gray-700 leading-relaxed mb-6">
           Vul ons formulier in met de gegevens van uw televisie, omschrijf de omstandigheden van de
-          blikseminslag, upload foto&apos;s van het toestel en betaal veilig v.a. €30 via iDEAL. Binnen 24 uur
+          blikseminslag, upload foto&apos;s van het toestel en betaal veilig v.a. €49 via iDEAL. Binnen 24 uur
           ontvangt u het officiële schaderapport per e-mail — klaar om in te dienen bij uw verzekeraar.
         </p>
 

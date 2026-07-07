@@ -33,7 +33,7 @@ export default function DagwaardePage() {
 
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           De dagwaarde van uw televisie is het bedrag dat uw verzekeraar uitkeert bij total loss. Wij berekenen
-          de dagwaarde conform de officiële afschrijvingsrichtlijnen van het Verbond van Verzekeraars. v.a. €30,
+          de dagwaarde conform de officiële afschrijvingsrichtlijnen van het Verbond van Verzekeraars. v.a. €49,
           binnen 24 uur inclusief volledig rapport.
         </p>
 
@@ -84,7 +84,7 @@ export default function DagwaardePage() {
         <div className="bg-sky-50 border border-sky-200 rounded-xl p-6 mb-8">
           <p className="font-bold text-sky-900 mb-2">Wij berekenen de dagwaarde voor u</p>
           <p className="text-sky-800 text-sm leading-relaxed">
-            Voor v.a. €30 stellen wij een volledig officieel rapport op met de dagwaardeberekening, schade-oordeel
+            Voor v.a. €49 stellen wij een volledig officieel rapport op met de dagwaardeberekening, schade-oordeel
             en alle informatie die uw verzekeraar nodig heeft. U hoeft zelf niets te berekenen.
           </p>
         </div>

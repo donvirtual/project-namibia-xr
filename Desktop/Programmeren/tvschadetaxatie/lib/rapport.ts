@@ -10,9 +10,10 @@ export function generateRapportHTML(order: Order, assessment: RapportAssessment)
     return `<tr><td>${label}</td><td><a href="${url}">Link foto ${i + 1}</a></td><td></td></tr>`
   }).join("\n  ")
 
-  const [eerste, ...rest] = assessment.defecte_onderdelen
+  const defecteOnderdelen = assessment.defecte_onderdelen ?? []
+  const [eerste, ...rest] = defecteOnderdelen
   const eersteRij = eerste
-    ? `<tr><td>${eerste.naam} defect &nbsp;&nbsp; ${eerste.partnummer}</td><td colspan="1">Reparatiekosten all-in</td><td>&euro; ${assessment.reparatiekosten_totaal.toFixed(2).replace(".", ",")}</td></tr>`
+    ? `<tr><td>${eerste.naam} defect &nbsp;&nbsp; ${eerste.partnummer}</td><td colspan="1">Reparatiekosten all-in</td><td>&euro; ${(assessment.reparatiekosten_totaal ?? 0).toFixed(2).replace(".", ",")}</td></tr>`
     : ""
   const restRijen = rest.map(o =>
     `<tr><td>${o.naam} defect &nbsp;&nbsp; ${o.partnummer}</td><td></td><td></td></tr>`
@@ -75,7 +76,7 @@ export function generateRapportHTML(order: Order, assessment: RapportAssessment)
   <tr><td>Aankoopprijs*</td><td>&euro; ${Number(order.aankoopprijs).toLocaleString("nl-NL", { minimumFractionDigits: 2 })}</td><td></td></tr>
   ${order.verzekeraar ? `<tr><td>Verzekeraar</td><td>${order.verzekeraar}</td><td></td></tr>` : ""}
   ${order.referentieNummer ? `<tr><td>Schadenummer</td><td>${order.referentieNummer}</td><td></td></tr>` : ""}
-  <tr><td>Aankoopdatum*</td><td>${order.aanschafjaar}</td><td></td></tr>
+  <tr><td>Aankoopdatum*</td><td>${new Date(order.aankoopdatum).toLocaleDateString("nl-NL")}</td><td></td></tr>
   <tr><td>Oorzaak van de schade</td><td>${order.oorzaak}</td><td></td></tr>
   ${eersteRij}
   ${restRijen}

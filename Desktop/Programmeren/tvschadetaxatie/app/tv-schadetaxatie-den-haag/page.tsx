@@ -24,7 +24,7 @@ export default function DenHaagPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           TV beschadigd in Den Haag? Online TV schadetaxatie zonder taxateur aan huis. Officieel
-          schaderapport voor uw verzekeraar. v.a. €30, binnen 24 uur per e-mail.
+          schaderapport voor uw verzekeraar. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <p className="text-gray-700 leading-relaxed mb-6">
           In Den Haag — van Centrum tot Scheveningen, van Laak tot Escamp — kunt u eenvoudig een
@@ -33,7 +33,7 @@ export default function DenHaagPage() {
         </p>
         <p className="text-gray-700 leading-relaxed mb-8">
           Uw TV schadetaxatie in Den Haag verloopt volledig digitaal. Upload uw foto&apos;s, vul het formulier
-          in en betaal veilig v.a. €30 via iDEAL. Binnen 24 uur ontvangt u het officiële PDF-rapport dat uw
+          in en betaal veilig v.a. €49 via iDEAL. Binnen 24 uur ontvangt u het officiële PDF-rapport dat uw
           verzekeraar nodig heeft voor de schadeclaim.
         </p>
         <TrustBadges />

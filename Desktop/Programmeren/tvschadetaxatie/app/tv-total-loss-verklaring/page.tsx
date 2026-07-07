@@ -12,7 +12,7 @@ const faq = [
   {
     question: "Wanneer is mijn televisie officieel total loss?",
     answer:
-      "Uw televisie is total loss wanneer de reparatiekosten de dagwaarde overschrijden. Bij schermschade is dit bijna altijd het geval: een vervangend scherm kost €300-600, terwijl een vergelijkbare nieuwe tv vaak hetzelfde kost.",
+      "Uw televisie is total loss wanneer de reparatiekosten de dagwaarde overschrijden. Bij schermschade is dit bijna altijd het geval: vervanging van het paneel overschrijdt doorgaans de dagwaarde van het toestel.",
   },
   {
     question: "Accepteert mijn verzekeraar een total-loss verklaring van tvschaderapport.nl?",
@@ -48,7 +48,7 @@ export default function TotalLossPage() {
 
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Is uw televisie total loss verklaard? Wij stellen de officiële total-loss verklaring op die uw
-          verzekeraar nodig heeft om de schadevergoeding uit te keren. Binnen 24 uur per e-mail, voor slechts v.a. €30.
+          verzekeraar nodig heeft om de schadevergoeding uit te keren. Binnen 24 uur per e-mail, voor slechts v.a. €49.
         </p>
 
         <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-10 flex items-start gap-3">
@@ -66,17 +66,16 @@ export default function TotalLossPage() {
           Televisies schrijven gemiddeld 20% per jaar af volgens de richtlijnen van het Verbond van Verzekeraars.
         </p>
         <p className="text-gray-700 leading-relaxed mb-8">
-          In de praktijk is een televisie bij schermschade bijna altijd total loss. Een vervangend LCD- of
-          OLED-paneel kost doorgaans €300 tot €600, terwijl een vergelijkbaar nieuw toestel voor dezelfde
-          prijs beschikbaar is. Bij bliksemschade of inwendige schade kan dit anders liggen: dan beoordelen
-          wij of reparatie economisch zinvol is.
+          In de praktijk is een televisie bij schermschade bijna altijd total loss. Vervanging van het LCD- of
+          OLED-paneel overschrijdt doorgaans de dagwaarde van het toestel. Bij bliksemschade of inwendige
+          schade kan dit anders liggen: dan beoordelen wij of reparatie economisch zinvol is.
         </p>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Hoe verloopt de aanvraag?</h2>
         <ol className="list-decimal ml-5 space-y-3 text-gray-700 mb-8">
           <li>U vult het formulier in met uw televisiegegevens en een omschrijving van de schade</li>
           <li>U uploadt minimaal 2 foto&apos;s van de schade en het typeplaatje</li>
-          <li>U betaalt veilig v.a. €30 via iDEAL of creditcard</li>
+          <li>U betaalt veilig v.a. €49 via iDEAL of creditcard</li>
           <li>Wij beoordelen de schade en stellen de officiële total-loss verklaring op</li>
           <li>U ontvangt de PDF binnen 24 uur per e-mail</li>
         </ol>

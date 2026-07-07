@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "TV Schaderapport | Officiële Schadetaxatie Televisie | tvschaderapport.nl",
   description:
-    "TV kapotgemaakt door iemand anders? Vraag binnen 5 minuten uw officieel schaderapport aan. Dagwaardeberekening + total-loss oordeel. Vanaf €30, binnen 24 uur. Geaccepteerd door alle verzekeraars.",
+    "TV kapotgemaakt door iemand anders? Vraag binnen 5 minuten uw officieel schaderapport aan. Dagwaardeberekening + total-loss oordeel. Vanaf €49, binnen 24 uur. Geaccepteerd door alle verzekeraars.",
   metadataBase: new URL("https://tvschaderapport.nl"),
   openGraph: {
     type: "website",

@@ -24,7 +24,7 @@ export default function InboedelPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Uw televisie is beschadigd en u wilt dit claimen via uw inboedelverzekering? U heeft een officieel
-          schaderapport nodig. Wij stellen dit op voor v.a. €30, binnen 24 uur per e-mail.
+          schaderapport nodig. Wij stellen dit op voor v.a. €49, binnen 24 uur per e-mail.
         </p>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Wanneer dekt de inboedelverzekering TV-schade?</h2>

@@ -25,7 +25,7 @@ export default function AmsterdamPage() {
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           TV beschadigd in Amsterdam? U heeft geen taxateur nodig die bij u langskomt. Onze online TV
           schadetaxatie werkt volledig op afstand — u uploadt de foto&apos;s, wij stellen het officiële
-          schaderapport op. Binnen 24 uur per e-mail, voor v.a. €30.
+          schaderapport op. Binnen 24 uur per e-mail, voor v.a. €49.
         </p>
         <p className="text-gray-700 leading-relaxed mb-6">
           Als Amsterdammer kunt u gebruik maken van onze volledig online dienstverlening voor TV

@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { useEffect } from "react"
+import { AB_COOKIE, AB_VARIANTS, getVariant } from "@/lib/abtest"
 
 export default function BedanktPage() {
   useEffect(() => {
@@ -10,20 +11,22 @@ export default function BedanktPage() {
       fetch(`/api/verify-payment?order=${orderId}`).catch(() => {})
     }
 
+    // Echte betaalde prijs via AB-cookie
+    const match = document.cookie.match(new RegExp(`(?:^|; )${AB_COOKIE}=([^;]*)`))
+    const value = Number(AB_VARIANTS[getVariant(match?.[1])].price)
+
     // Google Ads + GA4 conversie: betaling voltooid
     if (typeof window !== "undefined" && (window as any).gtag) {
-      // GA4 purchase event
       ;(window as any).gtag("event", "purchase", {
         event_category: "ecommerce",
         event_label: "schaderapport",
-        value: 49,
+        value,
         currency: "EUR",
       })
-      // Google Ads conversie (werkt zodra AW-ID is ingesteld)
       if (process.env.NEXT_PUBLIC_AW_ID && process.env.NEXT_PUBLIC_AW_CONVERSION) {
         ;(window as any).gtag("event", "conversion", {
           send_to: `${process.env.NEXT_PUBLIC_AW_ID}/${process.env.NEXT_PUBLIC_AW_CONVERSION}`,
-          value: 49,
+          value,
           currency: "EUR",
         })
       }

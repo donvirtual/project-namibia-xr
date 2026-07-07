@@ -23,7 +23,7 @@ export default function LGPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           LG televisie beschadigd? Officieel schaderapport voor alle LG modellen — OLED, QNED, NanoCell, UHD.
-          Geaccepteerd door alle verzekeraars. v.a. €30, binnen 24 uur per e-mail.
+          Geaccepteerd door alle verzekeraars. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Alle LG modellen</h2>
         <p className="text-gray-700 leading-relaxed mb-4">

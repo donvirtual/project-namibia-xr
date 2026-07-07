@@ -3,6 +3,7 @@ import { getOrder } from "@/lib/orders"
 import { sendRapportToCustomer } from "@/lib/resend"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 function checkAuth(request: Request) {
   const auth = request.headers.get("authorization")
@@ -15,12 +16,15 @@ function checkAuth(request: Request) {
 export async function POST(request: Request) {
   if (!checkAuth(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { orderId } = await request.json()
+  const { orderId, testEmail, herzien } = await request.json()
   const order = await getOrder(orderId)
   if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
   if (!order.rapportUrl) return NextResponse.json({ error: "Rapport not generated yet" }, { status: 400 })
 
-  await sendRapportToCustomer(order, order.rapportUrl)
+  let pdfError: string | undefined
+  await sendRapportToCustomer(order, order.rapportUrl, { testEmail, herzien }).catch((e: unknown) => {
+    pdfError = String(e)
+  })
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, pdfError })
 }

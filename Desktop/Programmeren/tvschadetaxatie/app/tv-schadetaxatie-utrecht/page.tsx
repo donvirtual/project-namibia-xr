@@ -24,7 +24,7 @@ export default function UtrechtPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           TV beschadigd in Utrecht? Online TV schadetaxatie, geen bezoek nodig. Officieel schaderapport
-          voor uw verzekeraar. v.a. €30, binnen 24 uur per e-mail.
+          voor uw verzekeraar. v.a. €49, binnen 24 uur per e-mail.
         </p>
         <p className="text-gray-700 leading-relaxed mb-6">
           Bewoners van Utrecht kunnen voor een TV schadetaxatie volledig online terecht bij
@@ -33,7 +33,7 @@ export default function UtrechtPage() {
         </p>
         <p className="text-gray-700 leading-relaxed mb-8">
           Vul het formulier in, upload minimaal 2 foto&apos;s van uw beschadigde televisie en betaal veilig
-          v.a. €30 via iDEAL. Uw TV schadetaxatie in Utrecht leidt binnen 24 uur tot een officieel PDF-rapport
+          v.a. €49 via iDEAL. Uw TV schadetaxatie in Utrecht leidt binnen 24 uur tot een officieel PDF-rapport
           dat geaccepteerd wordt door alle Nederlandse verzekeraars.
         </p>
         <TrustBadges />

@@ -24,7 +24,7 @@ export default function RotterdamPage() {
         </h1>
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           TV beschadigd in Rotterdam? Volledig online TV schadetaxatie in Rotterdam — geen taxateur aan huis
-          nodig. Upload uw foto&apos;s en ontvang uw officieel schaderapport binnen 24 uur. v.a. €30.
+          nodig. Upload uw foto&apos;s en ontvang uw officieel schaderapport binnen 24 uur. v.a. €49.
         </p>
         <p className="text-gray-700 leading-relaxed mb-6">
           Rotterdammers kunnen eenvoudig en snel gebruik maken van onze online TV schadetaxatie dienst.

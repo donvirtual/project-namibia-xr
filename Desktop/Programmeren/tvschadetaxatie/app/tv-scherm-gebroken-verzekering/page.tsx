@@ -26,7 +26,7 @@ export default function SchermGebrokenPage() {
 
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Uw TV-scherm is gebroken en u wilt dit claimen bij uw verzekering? U heeft een officieel schaderapport
-          nodig. Wij stellen dit op — inclusief reparatiekostenanalyse en total-loss oordeel. v.a. €30, binnen 24 uur.
+          nodig. Wij stellen dit op — inclusief reparatiekostenanalyse en total-loss oordeel. v.a. €49, binnen 24 uur.
         </p>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Dekt mijn verzekering een gebroken TV scherm?</h2>
@@ -50,8 +50,7 @@ export default function SchermGebrokenPage() {
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Is een gebroken TV scherm altijd total loss?</h2>
         <p className="text-gray-700 leading-relaxed mb-4">
-          Bijna altijd. Een vervangende LCD- of OLED-paneel voor een televisie kost doorgaans tussen de
-          €250 en €600, afhankelijk van het model en het formaat. Dit overschrijdt in de meeste gevallen
+          Bijna altijd. Vervanging van het LCD- of OLED-paneel overschrijdt in de meeste gevallen
           de dagwaarde van de televisie — zeker bij toestellen ouder dan 2-3 jaar.
         </p>
         <p className="text-gray-700 leading-relaxed mb-8">

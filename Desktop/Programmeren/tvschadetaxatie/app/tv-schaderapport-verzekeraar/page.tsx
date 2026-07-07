@@ -27,7 +27,7 @@ export default function SchaderapportVerzekeraarsPage() {
         <p className="text-xl text-gray-600 leading-relaxed mb-8">
           Heeft uw verzekeraar een officieel schaderapport nodig voor uw beschadigde televisie? Wij stellen
           het op. Conform de richtlijnen van het Verbond van Verzekeraars, inclusief dagwaardeberekening en
-          schade-oordeel. v.a. €30, binnen 24 uur per e-mail.
+          schade-oordeel. v.a. €49, binnen 24 uur per e-mail.
         </p>
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Waarom heeft mijn verzekeraar een schaderapport nodig?</h2>
@@ -72,7 +72,7 @@ export default function SchaderapportVerzekeraarsPage() {
         </ul>
 
         <div className="bg-sky-50 border border-sky-200 rounded-xl p-6 mb-10">
-          <p className="font-bold text-sky-900 text-lg mb-2">v.a. €30 — Binnen 24 uur geleverd</p>
+          <p className="font-bold text-sky-900 text-lg mb-2">v.a. €49 — Binnen 24 uur geleverd</p>
           <p className="text-sky-800 text-sm leading-relaxed">
             Na uw betaling beoordelen wij uw aanvraag en foto&apos;s. U ontvangt het PDF-rapport binnen 24 uur op
             uw e-mailadres. Kosten zijn in veel gevallen verhaalbaar op uw verzekeraar of de veroorzaker.

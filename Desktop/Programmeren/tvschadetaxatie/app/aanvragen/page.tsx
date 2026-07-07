@@ -13,7 +13,6 @@ function readVariantCookie(): Variant {
 
 const merken = ["Samsung", "LG", "Philips", "Sony", "Panasonic", "TCL", "Hisense", "Sharp", "Loewe", "Anders"]
 const schermformaten = ["t/m 32\"", "33-42\"", "43-55\"", "56-65\"", "66-75\"", "76\" of groter"]
-const aanschafjaren = ["Voor 2015", ...Array.from({ length: 11 }, (_, i) => String(2025 - i))]
 const oorzaken = [
   "Gevallen",
   "Iets ertegen gevallen",
@@ -32,7 +31,7 @@ interface FormData {
   model: string
   serienummer: string
   schermformaat: string
-  aanschafjaar: string
+  aankoopdatum: string
   aankoopprijs: string
   oorzaak: string
   omschrijving: string
@@ -54,7 +53,7 @@ const initialForm: FormData = {
   model: "",
   serienummer: "",
   schermformaat: "",
-  aanschafjaar: "",
+  aankoopdatum: "",
   aankoopprijs: "",
   oorzaak: "",
   omschrijving: "",
@@ -103,7 +102,7 @@ export default function AanvragenPage() {
   function nextStep() {
     setError("")
     if (step === 1) {
-      if (!form.merk || !form.schermformaat || !form.aanschafjaar || !form.aankoopprijs || !form.oorzaak || !form.omschrijving) {
+      if (!form.merk || !form.schermformaat || !form.aankoopdatum || !form.aankoopprijs || !form.oorzaak || !form.omschrijving) {
         setError("Vul alle verplichte velden in.")
         return
       }
@@ -129,7 +128,7 @@ export default function AanvragenPage() {
       }).catch(() => {})
     }
     if (step === 3) {
-      if (!form.naam || !form.email || !form.serienummer || !form.straat || !form.postcode || !form.woonplaats || !form.akkoord) {
+      if (!form.naam || !form.email || !form.serienummer || !form.straat || !form.postcode || !form.woonplaats || !form.verzekeraar || !form.referentieNummer || !form.akkoord) {
         setError("Vul alle verplichte velden in en accepteer de voorwaarden.")
         return
       }
@@ -221,11 +220,14 @@ export default function AanvragenPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Aanschafjaar *</label>
-              <select value={form.aanschafjaar} onChange={(e) => set("aanschafjaar", e.target.value)} className={inputCls}>
-                <option value="">Jaar</option>
-                {aanschafjaren.map((j) => <option key={j} value={j}>{j}</option>)}
-              </select>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Aankoopdatum *</label>
+              <input
+                type="date"
+                value={form.aankoopdatum}
+                onChange={(e) => set("aankoopdatum", e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className={inputCls}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Aankoopprijs (€) *</label>
@@ -248,16 +250,16 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Schadeomschrijving *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Wat is er precies met de tv gebeurd? *</label>
             <textarea
               value={form.omschrijving}
               onChange={(e) => set("omschrijving", e.target.value)}
-              placeholder="Beschrijf wat er precies is gebeurd en welke schade zichtbaar is"
+              placeholder='Beschrijf alleen de schade aan de tv, bijv. "scherm gebarsten na val van tafel" of "beeld valt uit na blikseminslag". Geen persoonlijke omstandigheden nodig.'
               rows={4}
               maxLength={500}
               className={`${inputCls} resize-none`}
             />
-            <p className="text-xs text-gray-400 mt-1">{form.omschrijving.length}/500 tekens</p>
+            <p className="text-xs text-gray-400 mt-1">Alleen de schade zelf, geen aanleiding of persoonlijke situatie. {form.omschrijving.length}/500 tekens</p>
           </div>
         </div>
       )}
@@ -320,7 +322,7 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Verzekeraar (optioneel)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Verzekeraar *</label>
             <input
               type="text"
               value={form.verzekeraar}
@@ -331,7 +333,7 @@ export default function AanvragenPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Referentienummer verzekeraar (optioneel)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Referentienummer / schadenummer verzekeraar *</label>
             <input type="text" value={form.referentieNummer} onChange={(e) => set("referentieNummer", e.target.value)} className={inputCls} />
           </div>
 
@@ -375,7 +377,7 @@ export default function AanvragenPage() {
           <div className="bg-gray-50 border border-gray-200 p-5 space-y-2 text-sm">
             <p><b>Merk/Model:</b> {form.merk} {form.model}</p>
             <p><b>Schermformaat:</b> {form.schermformaat}</p>
-            <p><b>Aanschafjaar:</b> {form.aanschafjaar} | €{form.aankoopprijs}</p>
+            <p><b>Aankoopdatum:</b> {form.aankoopdatum ? new Date(form.aankoopdatum).toLocaleDateString("nl-NL") : ""} | €{form.aankoopprijs}</p>
             <p><b>Oorzaak:</b> {form.oorzaak}</p>
             <p><b>Schade:</b> {form.omschrijving}</p>
             <p><b>Foto&apos;s:</b> {form.fotos.length} geüpload</p>
@@ -383,7 +385,7 @@ export default function AanvragenPage() {
             <p><b>Naam:</b> {form.naam}</p>
             <p><b>E-mail:</b> {form.email}</p>
             {form.telefoon && <p><b>Tel:</b> {form.telefoon}</p>}
-            {form.verzekeraar && <p><b>Verzekeraar:</b> {form.verzekeraar}</p>}
+            <p><b>Verzekeraar:</b> {form.verzekeraar} ({form.referentieNummer})</p>
           </div>
 
           <div className="border-2 p-6 text-center" style={{ borderColor: "var(--navy)" }}>

@@ -49,7 +49,12 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
     const data = await res.json()
     if (data.url) {
       setRapportUrl(data.url)
-      onStatusUpdate({ ...order, rapportUrl: data.url })
+      onStatusUpdate({
+        ...order,
+        rapportUrl: data.url,
+        rapportAssessment: data.assessment,
+        bekendeProblemenGevonden: data.bekendeProblemen,
+      })
     }
     setRapportLoading(false)
   }
@@ -95,10 +100,55 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
         {order.verzekeraar && <p><b>Verzekeraar:</b> {order.verzekeraar}</p>}
         {order.referentieNummer && <p><b>Schadenummer:</b> {order.referentieNummer}</p>}
         <p><b>Schermformaat:</b> {order.schermformaat}</p>
-        <p><b>Aanschafjaar:</b> {order.aanschafjaar} | &euro;{order.aankoopprijs}</p>
+        <p><b>Aankoopdatum:</b> {new Date(order.aankoopdatum).toLocaleDateString("nl-NL")} | &euro;{order.aankoopprijs}</p>
         <p className="sm:col-span-2"><b>Oorzaak:</b> {order.oorzaak}</p>
         <p className="sm:col-span-2"><b>Omschrijving:</b> {order.omschrijving}</p>
       </div>
+
+      {order.rapportAssessment && (
+        <div className="border border-amber-200 bg-amber-50 rounded-lg p-4 mb-4 text-sm text-gray-800">
+          <p className="font-bold text-amber-800 text-xs uppercase tracking-wide mb-2">Interne prijsopbouw — niet zichtbaar voor klant</p>
+          <ul className="space-y-1 mb-2">
+            {order.rapportAssessment.defecte_onderdelen.map((o, i) => (
+              <li key={i} className="flex justify-between">
+                <span>{o.naam} <span className="text-gray-500">({o.partnummer})</span></span>
+                <span>&euro; {o.kosten_onderdeel}</span>
+              </li>
+            ))}
+            <li className="flex justify-between">
+              <span>Arbeidskosten</span>
+              <span>&euro; {order.rapportAssessment.arbeidskosten}</span>
+            </li>
+          </ul>
+          <p className="flex justify-between font-bold border-t border-amber-200 pt-1">
+            <span>Totaal (= bedrag in klantrapport)</span>
+            <span>&euro; {order.rapportAssessment.reparatiekosten_totaal}</span>
+          </p>
+        </div>
+      )}
+
+      {order.bekendeProblemenGevonden && order.bekendeProblemenGevonden.length > 0 && (
+        <div className="border border-blue-200 bg-blue-50 rounded-lg p-4 mb-4 text-sm text-gray-800">
+          <p className="font-bold text-blue-800 text-xs uppercase tracking-wide mb-2">
+            Gevonden via web search — niet zichtbaar voor klant, zelf verifiëren voor gebruik
+          </p>
+          <ul className="space-y-1.5">
+            {order.bekendeProblemenGevonden.map((issue, i) => (
+              <li key={i}>
+                <span>{issue.omschrijving}</span>
+                {issue.bron && (
+                  <>
+                    {" "}
+                    <a href={issue.bron} target="_blank" rel="noopener noreferrer" className="text-sky-700 underline">
+                      bron
+                    </a>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {order.fotos.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">

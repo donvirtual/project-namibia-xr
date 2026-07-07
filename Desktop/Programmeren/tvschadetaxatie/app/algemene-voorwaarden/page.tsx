@@ -24,7 +24,7 @@ export default function VoorwaardenPage() {
         },
         {
           title: "Artikel 4 — Prijs en betaling",
-          body: "De prijs voor het schaderapport bedraagt v.a. €30 incl. BTW. Betaling dient te geschieden via de door tvschaderapport.nl aangeboden betaalmethoden (iDEAL of creditcard). Na ontvangst van de betaling wordt het rapport opgesteld.",
+          body: "De prijs voor het schaderapport bedraagt v.a. €49 incl. BTW. Betaling dient te geschieden via de door tvschaderapport.nl aangeboden betaalmethoden (iDEAL of creditcard). Na ontvangst van de betaling wordt het rapport opgesteld.",
         },
         {
           title: "Artikel 5 — Levertijd",

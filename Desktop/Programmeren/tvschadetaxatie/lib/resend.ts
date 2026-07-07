@@ -1,5 +1,6 @@
 import { Resend } from "resend"
 import { Order } from "./orders"
+import { htmlToPdf } from "./pdf"
 
 function getResend() {
   const key = (process.env.RESEND_API_KEY ?? "").replace(/﻿/g, "").trim()
@@ -28,8 +29,8 @@ export async function sendCustomerConfirmation(order: Order) {
             <td style="padding:10px;">${order.merk} ${order.model || ""}</td>
           </tr>
           <tr style="background:#f8fafc;">
-            <td style="padding:10px; font-weight:bold;">Aanschafjaar</td>
-            <td style="padding:10px;">${order.aanschafjaar}</td>
+            <td style="padding:10px; font-weight:bold;">Aankoopdatum</td>
+            <td style="padding:10px;">${new Date(order.aankoopdatum).toLocaleDateString("nl-NL")}</td>
           </tr>
           <tr>
             <td style="padding:10px; font-weight:bold;">Betaald</td>
@@ -74,7 +75,7 @@ export async function sendAdminNotification(order: Order) {
         <p><b>Merk/Model:</b> ${order.merk} ${order.model || ""}<br>
         <b>Serienummer:</b> ${order.serienummer || "—"}<br>
         <b>Formaat:</b> ${order.schermformaat}<br>
-        <b>Aangeschaft:</b> ${order.aanschafjaar} voor EUR ${order.aankoopprijs}<br>
+        <b>Aangeschaft:</b> ${new Date(order.aankoopdatum).toLocaleDateString("nl-NL")} voor EUR ${order.aankoopprijs}<br>
         <b>Oorzaak:</b> ${order.oorzaak}<br>
         <b>Beschrijving:</b> ${order.omschrijving}</p>
 
@@ -89,21 +90,43 @@ export async function sendAdminNotification(order: Order) {
   })
 }
 
-export async function sendRapportToCustomer(order: Order, rapportHtmlUrl: string) {
+export async function sendRapportToCustomer(order: Order, rapportHtmlUrl: string, options?: { testEmail?: string; herzien?: boolean }) {
   const resend = getResend()
   const rapportRes = await fetch(rapportHtmlUrl)
   const rapportHtml = await rapportRes.text()
 
+  const to = options?.testEmail ?? order.customerEmail
+  const herzienIntro = options?.herzien
+    ? `<p style="background:#fff8e1; border-left:4px solid #f59e0b; padding:10px 14px; font-size:13px; margin-bottom:16px;">
+        <strong>Herzien rapport</strong> — Na nader technisch onderzoek van uw specifieke model hebben wij de schadeomvang nauwkeuriger vastgesteld. Gebruik dit herziene rapport bij uw verzekeraar in plaats van het eerder ontvangen exemplaar.
+       </p>`
+    : ""
+
+  let pdfAttachment: { filename: string; content: string } | undefined
+  try {
+    const pdfBuffer = await htmlToPdf(rapportHtml)
+    pdfAttachment = {
+      filename: `schaderapport-${order.orderId}.pdf`,
+      content: pdfBuffer.toString("base64"),
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message + "\n" + err.stack : String(err)
+    console.error("PDF generatie mislukt:", msg)
+  }
+
   await resend.emails.send({
     from: "tvschaderapport.nl <info@tvschaderapport.nl>",
     replyTo: "info@tvschaderapport.nl",
-    to: order.customerEmail,
-    subject: `Uw TV schaderapport — ${order.orderId}`,
+    to,
+    bcc: "donkuenen@gmail.com",
+    subject: options?.herzien ? `Herzien TV schaderapport — ${order.orderId}` : `Uw TV schaderapport — ${order.orderId}`,
+    ...(pdfAttachment ? { attachments: [pdfAttachment] } : {}),
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 640px; color: #000;">
         <p style="font-size: 15px; font-style: italic; font-weight: bold; margin-bottom: 4px;">tvschaderapport.nl</p>
         <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 20px;">
         <p>Geachte ${order.customerName},</p>
+        ${herzienIntro}
         <p>Hierbij ontvangt u uw officieel schadetaxatierapport. U kunt dit doorsturen naar uw verzekeraar${order.referentieNummer ? ` onder vermelding van schadenummer ${order.referentieNummer}` : ""}.</p>
         <p style="font-size: 12px; color: #555;">Om een PDF-versie te maken: open deze e-mail in een browser en druk op Ctrl+P → Opslaan als PDF.</p>
         <p>Wij raden aan om eventuele reparatie altijd uit te laten voeren door een erkende servicepartner van het merk of een betrouwbare TV-specialist.</p>

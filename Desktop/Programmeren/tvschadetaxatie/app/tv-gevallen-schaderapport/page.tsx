@@ -67,8 +67,7 @@ export default function TvGevallenPage() {
 
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Is een gevallen TV altijd total loss?</h2>
         <p className="text-gray-700 leading-relaxed mb-4">
-          Bijna altijd. De reden: een vervanging van het LCD- of OLED-paneel kost doorgaans €250–€600,
-          afhankelijk van merk en schermgrootte. Dit bedrag overschrijdt in de meeste gevallen de dagwaarde
+          Bijna altijd. Vervanging van het LCD- of OLED-paneel overschrijdt in de meeste gevallen de dagwaarde
           van de televisie — zeker bij toestellen ouder dan 2–3 jaar.
         </p>
         <p className="text-gray-700 leading-relaxed mb-8">

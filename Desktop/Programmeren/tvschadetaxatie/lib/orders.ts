@@ -1,4 +1,5 @@
 import { put, list, del } from "@vercel/blob"
+import type { RapportAssessment, KnownIssue } from "./claude"
 
 export interface Order {
   orderId: string
@@ -14,7 +15,7 @@ export interface Order {
   model?: string
   serienummer?: string
   schermformaat: string
-  aanschafjaar: number
+  aankoopdatum: string
   aankoopprijs: number
   oorzaak: string
   omschrijving: string
@@ -28,6 +29,10 @@ export interface Order {
   paidAt?: string
   completedAt?: string
   rapportUrl?: string
+  // Interne prijsopbouw van Claude — nooit naar de klant sturen, alleen tonen in admin
+  rapportAssessment?: RapportAssessment
+  // Bekende problemen gevonden via web search — nooit naar de klant sturen, alleen tonen in admin
+  bekendeProblemenGevonden?: KnownIssue[]
 }
 
 function generateOrderId(): string {
@@ -41,6 +46,28 @@ const token = process.env.BLOB_READ_WRITE_TOKEN
 
 // In-memory fallback for local dev without blob token
 const memStore: Record<string, Order> = {}
+const memLocks = new Set<string>()
+
+// Compare-and-swap lock: voorkomt dat de mollie-webhook en de verify-payment
+// fallback (of dubbele webhook-aanroepen door Mollie-retries) dezelfde order
+// gelijktijdig verwerken en de klant/admin dubbele mails sturen.
+export async function tryClaimOrder(orderId: string): Promise<boolean> {
+  if (!token) {
+    if (memLocks.has(orderId)) return false
+    memLocks.add(orderId)
+    return true
+  }
+  try {
+    await put(`${ORDERS_PREFIX}${orderId}.lock`, "1", {
+      access: "public",
+      token,
+      allowOverwrite: false,
+    })
+    return true
+  } catch {
+    return false
+  }
+}
 
 async function saveOrder(order: Order): Promise<void> {
   if (!token) {

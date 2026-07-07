@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       model: body.model,
       serienummer: body.serienummer,
       schermformaat: body.schermformaat,
-      aanschafjaar: Number(body.aanschafjaar),
+      aankoopdatum: body.aankoopdatum,
       aankoopprijs: Number(body.aankoopprijs),
       oorzaak: body.oorzaak,
       omschrijving: body.omschrijving,
