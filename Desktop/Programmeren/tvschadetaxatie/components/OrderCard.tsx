@@ -49,6 +49,7 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
     const data = await res.json()
     if (data.url) {
       setRapportUrl(data.url)
+      setSent(false)
       onStatusUpdate({
         ...order,
         rapportUrl: data.url,
@@ -190,6 +191,10 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
               className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold px-4 py-2 rounded-lg">
               Bekijk rapport
             </a>
+            <button onClick={generateRapport} disabled={rapportLoading}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
+              {rapportLoading ? "Bezig..." : "Opnieuw genereren"}
+            </button>
             <button onClick={sendRapport} disabled={sendLoading || sent}
               className="bg-sky-700 hover:bg-sky-800 text-white text-sm font-semibold px-4 py-2 rounded-lg disabled:opacity-50">
               {sent ? "Verstuurd ✓" : sendLoading ? "Versturen..." : "Verstuur naar klant"}
