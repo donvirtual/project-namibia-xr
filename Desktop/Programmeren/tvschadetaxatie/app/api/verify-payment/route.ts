@@ -50,6 +50,7 @@ export async function GET(request: Request) {
     const token = process.env.BLOB_READ_WRITE_TOKEN
     const blob = await put(`rapporten/${orderId}.html`, html, {
       access: "public", token, allowOverwrite: true, contentType: "text/html; charset=utf-8",
+      cacheControlMaxAge: 60,
     })
     rapportUrl = blob.url
     updated = await updateOrder(orderId, {

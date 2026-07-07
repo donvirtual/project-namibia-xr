@@ -66,6 +66,7 @@ export async function POST(request: Request) {
         const token = process.env.BLOB_READ_WRITE_TOKEN
         const blob = await put(`rapporten/${orderId}.html`, html, {
           access: "public", token, allowOverwrite: true, contentType: "text/html; charset=utf-8",
+          cacheControlMaxAge: 60,
         })
         finalOrder = await updateOrder(orderId, {
           rapportUrl: blob.url,

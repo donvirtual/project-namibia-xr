@@ -34,6 +34,9 @@ export async function POST(request: Request) {
     token,
     allowOverwrite: true,
     contentType: "text/html; charset=utf-8",
+    // Zonder dit blijft dezelfde URL na "opnieuw genereren" tot een maand
+    // lang de oude inhoud tonen (browser + CDN cache) — 60s is het minimum
+    cacheControlMaxAge: 60,
   })
 
   await updateOrder(orderId, {
