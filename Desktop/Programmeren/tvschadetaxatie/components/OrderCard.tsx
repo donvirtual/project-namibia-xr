@@ -26,6 +26,7 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
   const [rapportUrl, setRapportUrl] = useState(order.rapportUrl ?? "")
   const [sendLoading, setSendLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [rapportError, setRapportError] = useState("")
 
   async function updateStatus(status: Order["status"]) {
     setLoading(true)
@@ -41,34 +42,52 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
 
   async function generateRapport() {
     setRapportLoading(true)
-    const res = await fetch("/api/generate-rapport", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${password}` },
-      body: JSON.stringify({ orderId: order.orderId }),
-    })
-    const data = await res.json()
-    if (data.url) {
-      setRapportUrl(data.url)
-      setSent(false)
-      onStatusUpdate({
-        ...order,
-        rapportUrl: data.url,
-        rapportAssessment: data.assessment,
-        bekendeProblemenGevonden: data.bekendeProblemen,
+    setRapportError("")
+    try {
+      const res = await fetch("/api/generate-rapport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ orderId: order.orderId }),
       })
+      if (!res.ok) {
+        setRapportError(`Genereren mislukt (${res.status}). Probeer het opnieuw.`)
+        return
+      }
+      const data = await res.json()
+      if (data.url) {
+        setRapportUrl(data.url)
+        setSent(false)
+        onStatusUpdate({
+          ...order,
+          rapportUrl: data.url,
+          rapportAssessment: data.assessment,
+          bekendeProblemenGevonden: data.bekendeProblemen,
+        })
+      } else {
+        setRapportError("Genereren mislukt. Probeer het opnieuw.")
+      }
+    } catch {
+      setRapportError("Genereren mislukt (netwerk/timeout). Probeer het opnieuw.")
+    } finally {
+      setRapportLoading(false)
     }
-    setRapportLoading(false)
   }
 
   async function sendRapport() {
     setSendLoading(true)
-    await fetch("/api/send-rapport", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${password}` },
-      body: JSON.stringify({ orderId: order.orderId }),
-    })
-    setSent(true)
-    setSendLoading(false)
+    try {
+      const res = await fetch("/api/send-rapport", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${password}` },
+        body: JSON.stringify({ orderId: order.orderId }),
+      })
+      if (res.ok) setSent(true)
+      else setRapportError(`Versturen mislukt (${res.status}). Probeer het opnieuw.`)
+    } catch {
+      setRapportError("Versturen mislukt (netwerk/timeout). Probeer het opnieuw.")
+    } finally {
+      setSendLoading(false)
+    }
   }
 
   return (
@@ -162,6 +181,10 @@ export default function OrderCard({ order, password, onStatusUpdate }: {
             </a>
           ))}
         </div>
+      )}
+
+      {rapportError && (
+        <p className="text-red-600 text-sm mb-2">{rapportError}</p>
       )}
 
       <div className="flex flex-wrap gap-2">

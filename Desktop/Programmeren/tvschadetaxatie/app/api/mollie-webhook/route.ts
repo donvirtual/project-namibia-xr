@@ -6,6 +6,8 @@ import { sendCustomerConfirmation, sendAdminNotification, sendCustomerFactuur } 
 import { generateRapportAssessment, generateKnownIssues } from "@/lib/claude"
 import { generateRapportHTML } from "@/lib/rapport"
 
+export const maxDuration = 60
+
 export async function POST(request: Request) {
   try {
     const body = await request.formData()

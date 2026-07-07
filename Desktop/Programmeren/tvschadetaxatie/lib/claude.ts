@@ -86,6 +86,11 @@ Geef aan het eind van je antwoord ALLEEN geldige JSON, geen andere tekst erna, i
 }`
 
   try {
+    // Web search kan traag zijn (meerdere zoekopdrachten server-side) — harde
+    // deadline zodat dit de rapport-generatie nooit laat vasthangen/timeouten
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 25000)
+
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -99,7 +104,8 @@ Geef aan het eind van je antwoord ALLEEN geldige JSON, geen andere tekst erna, i
         tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
         messages: [{ role: "user", content: prompt }],
       }),
-    })
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout))
 
     const data = await res.json()
     const text: string = (data.content ?? [])

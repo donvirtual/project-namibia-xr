@@ -5,6 +5,7 @@ import { generateRapportAssessment, generateKnownIssues } from "@/lib/claude"
 import { generateRapportHTML } from "@/lib/rapport"
 
 export const runtime = "nodejs"
+export const maxDuration = 60
 
 function checkAuth(request: Request) {
   const auth = request.headers.get("authorization")
